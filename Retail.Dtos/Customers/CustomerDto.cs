@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,31 +12,17 @@ namespace Retail.DTOs.Customers;
 public class CustomerDto
 {
     /// <summary>
-    /// Gets or sets the CustomerNo
-    /// </summary>
-    [Required]
-    [StringLength(5)]
-    public string CustomerNo { get; set; }
-
-    /// <summary>
     /// Gets or sets the CustomerName
     /// </summary>
     [Required]
-    public string CustomerName { get; set; }
-
-
-    /// <summary>
-    /// Gets or sets the CustomerCode
-    /// </summary>
-    [Required]
-    [StringLength(5)]
-    public string CustomerCode { get; set; }
+    [StringLength(256)]
+    public string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the Mail
     /// </summary>
     [Required]
-    [StringLength(50)]
+    [StringLength(256)]
     public string Email { get; set; }
 
     /// <summary>
@@ -43,18 +30,45 @@ public class CustomerDto
     /// </summary>
     [Required]
     [StringLength(50)]
-    public string Phone { get; set; }
+    public string PhoneNumber { get; set; }
+
+
+
+  
+    public Guid AddressId { get; set; }
 
     /// <summary>
-    /// Gets or sets the Address
-    /// </summary>
-    public string? Address { get; set; }
+    /// Gets or sets the reference of Address 
+    /// </summary> 
+    public AddressDto Address { get; set; }
+
+
+}
+
+public class AddressDto 
+{
 
     /// <summary>
-    /// Gets or sets the CompanyName
+    /// Gets or sets the Street
     /// </summary>
-    [StringLength(50)]
-    public string? CompanyName { get; set; }
+    [StringLength(256)]
+    public string Street { get; set; }
 
+    /// <summary>
+    /// Gets or sets the City
+    /// </summary>
+    [StringLength(256)]
+    public string City { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Country
+    /// </summary>
+    [StringLength(256)]
+    public string Country { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ZipCode
+    /// </summary>
+    [StringLength(10)]
+    public string ZipCode { get; set; }
 }

@@ -1,4 +1,6 @@
-﻿namespace Retail.DTOs.Customers;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Retail.DTOs.Customers;
 
 
 
@@ -15,5 +17,6 @@ public class CustomerResponseDto : CustomerDto
     /// <summary>
     /// Gets or sets the ImageUrl
     /// </summary>
-    public string? ImageUrl { get; set; }
+    //public string? ImageUrl { get; set; }
+
 }

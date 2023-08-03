@@ -143,6 +143,16 @@ public class UserService : IUserService
             var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == userResponse.CustomerId, ct);
 
             var customerInfo = _mapper.Map<CustomerResponseDto>(customer);
+
+
+            var result = _repositoryContext.Addresses.Where(x => x.Id == customerInfo.AddressId).FirstOrDefault();
+            if (result != null)
+            {
+                var customerAddress = _mapper.Map<AddressDto>(result);
+                customerInfo.Address = customerAddress;
+            }
+
+
             userResponse.Customer = customerInfo;
 
         }

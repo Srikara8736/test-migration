@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Retail.Data.Entities.Customers;
+using Retail.Data.Entities.UserAccount;
 using Retail.DTOs.Customers;
 
 namespace RetailApp.Profiles;
@@ -13,6 +14,9 @@ public class CustomerProfile : Profile
     {
         CreateMap<Customer, CustomerDto>().ReverseMap();
         CreateMap<Customer, CustomerResponseDto>().ReverseMap();
+
+
+        CreateMap<Address, AddressDto > ().ReverseMap();
 
     }
 

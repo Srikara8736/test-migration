@@ -1,7 +1,4 @@
-﻿using Retail.Data.Entities.Common;
-using Retail.Data.Entities.Customers;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Retail.Data.Entities.Stores;
 
@@ -9,8 +6,8 @@ namespace Retail.Data.Entities.Stores;
 /// <summary>
 /// Represents a CategoryAreaTypeGroup
 /// </summary>
-[Table("CategoryAreaTypeGroup")]
-public class CategoryAreaTypeGroup : BaseEntity
+[Table("StoreCategoryAreaTypeGroup")]
+public class StoreCategoryAreaTypeGroup : BaseEntity
 {
 
     /// Gets or sets the reference of Store entity

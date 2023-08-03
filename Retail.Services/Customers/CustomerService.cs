@@ -6,6 +6,8 @@ using Retail.DTOs;
 using Retail.Services.Common;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
+using Retail.Data.Entities.UserAccount;
+using Retail.DTOs.UserAccounts;
 
 namespace Retail.Services.Customers;
 
@@ -32,6 +34,70 @@ public class CustomerService : ICustomerService
 
     #endregion
 
+
+    #region Utilities
+
+    /// <summary>
+    /// Validate User Is Already Exists
+    /// </summary>
+    /// <param name="emailAdrress">emailAdrress</param>
+    /// <returns>Flag Value</returns>
+    public bool ValidateCustomerEmail(string emailAdrress)
+    {
+        bool isExists = false;
+
+        if (emailAdrress != "" && emailAdrress != null)
+            isExists = _repositoryContext.Customers.Any(x => x.Email.ToLower().Trim() == emailAdrress.ToLower().Trim());
+
+        return isExists;
+
+    }
+
+
+    public Address InsertCustomerAddress(AddressDto addressDto, CancellationToken ct)
+    {
+        try
+        {
+            var address = _mapper.Map<Address>(addressDto);
+            _repositoryContext.Addresses.AddAsync(address, ct);
+            _repositoryContext.SaveChangesAsync(ct);
+            return address;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+
+    }
+
+
+    public Address UpdateCustomerAddress(Guid addressId, AddressDto addressDto, CancellationToken ct)
+    {
+        try
+        {
+            var address = _repositoryContext.Addresses.Where(x => x.Id == addressId).FirstOrDefault();
+            if (address == null)
+                return null;
+
+            address.City = addressDto.City;
+            address.Street = addressDto.Street;
+            address.ZipCode = addressDto.ZipCode;
+            address.Country = addressDto.Country;
+
+
+            _repositoryContext.SaveChangesAsync(ct);
+            return address;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+
+    }
+
+
+
+    #endregion
 
     #region Methods
 
@@ -178,6 +244,172 @@ public class CustomerService : ICustomerService
         };
         return response;
     }
+
+
+
+    /// <summary>
+    /// Add the Customer details 
+    /// </summary>
+    /// <param name="customerRequestDto">Customer Request DTO</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Customer Information</returns>
+    public async Task<ResultDto<CustomerResponseDto>> InsertCustomer(CustomerDto customerRequestDto, CancellationToken ct)
+    {
+        if (customerRequestDto == null)
+        {
+            var UserResult = new ResultDto<CustomerResponseDto>()
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest
+            };
+            return UserResult;
+
+        }
+
+
+        var resultCusEmail = ValidateCustomerEmail(customerRequestDto.Email);
+
+        if (resultCusEmail)
+        {
+            var errorResponse = new ResultDto<CustomerResponseDto>
+            {
+                ErrorMessage = StringResources.UserRecordExists,
+                StatusCode = HttpStatusCode.Conflict
+
+            };
+            return errorResponse;
+        }
+
+        var address = InsertCustomerAddress(customerRequestDto.Address, ct);
+
+        var customer = _mapper.Map<Customer>(customerRequestDto);
+
+        if(address != null)
+            customer.Address = address;
+
+        customer.CreatedOn = DateTime.UtcNow;
+     
+        await _repositoryContext.Customers.AddAsync(customer, ct);
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var customerResponse = _mapper.Map<CustomerResponseDto>(customer);
+
+        
+       var customerAddress = _mapper.Map<AddressDto>(address);
+       customerResponse.Address = customerAddress;
+
+
+        var resultResponse = new ResultDto<CustomerResponseDto>
+        {
+            Data = customerResponse,
+            IsSuccess = true
+        };
+        return resultResponse;
+
+    }
+
+
+
+    /// <summary>
+    /// Update the Customer details 
+    /// </summary>
+    /// <param name="id">Customer id</param>
+    /// <param name="customerDto">Customer Request DTO</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Customer Information</returns>
+    public virtual async Task<ResultDto<CustomerResponseDto>> UpdateCustomer(Guid id, CustomerDto customerDto, CancellationToken ct = default)
+    {
+        if (customerDto == null)
+        {
+            var response = new ResultDto<CustomerResponseDto>
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return response;
+
+        }
+
+        var result = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == id, ct);
+
+
+
+        if (result == null)
+        {
+            var response = new ResultDto<CustomerResponseDto>
+            {
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return response;
+
+        }
+
+       
+        result.Name = customerDto.Name;
+        result.PhoneNumber = customerDto.PhoneNumber;
+        result.Email = customerDto.Email;
+
+
+       
+        await _repositoryContext.SaveChangesAsync(ct);
+        
+        var customerResponse = _mapper.Map<CustomerResponseDto>(result);
+
+        var address = UpdateCustomerAddress(result.AddressId, customerDto.Address, ct);
+        if(address != null)
+        {
+            var customerAddress = _mapper.Map<AddressDto>(address);
+            customerResponse.Address = customerAddress;
+
+        }
+
+
+        var successResponse = new ResultDto<CustomerResponseDto>
+        {
+            IsSuccess = true,
+            Data = customerResponse,
+            StatusCode = HttpStatusCode.OK
+        };
+        return successResponse;
+    }
+
+
+
+    /// <summary>
+    /// Delete Customer
+    /// </summary>
+    /// <param name="id">Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Response Customer Delete Status</returns>
+    public virtual async Task<ResultDto<CustomerResponseDto>> DeleteCustomer(Guid id, CancellationToken ct = default)
+    {
+        var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (customer == null)
+        {
+            var response = new ResultDto<CustomerResponseDto>
+            {
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return response;
+
+        }
+
+        customer.IsDeleted = true;
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var successResponse = new ResultDto<CustomerResponseDto>
+        {
+            IsSuccess = true,
+            StatusCode = HttpStatusCode.OK
+        };
+        return successResponse;
+
+
+
+    }
+
 
     #endregion
 

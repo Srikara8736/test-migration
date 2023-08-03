@@ -64,4 +64,10 @@ public class Customer : BaseEntity
     public Guid AddressId { get; set; }
     public virtual Address Address { get; set; }
 
+    /// <summary>
+    /// Gets or sets the IsDeleted
+    /// </summary>
+    [Required]
+    public bool IsDeleted { get; set; }
+
 }

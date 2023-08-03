@@ -38,7 +38,7 @@ public class RepositoryContext : DbContext
     public DbSet<Store> Stores { get; set; }
     public DbSet<StoreData> StoreDatas { get; set; }
     public DbSet<StoreDocument> StoreDocuments { get; set; }
-    public DbSet<CategoryAreaTypeGroup> CategoryAreaTypeGroups { get; set; }
+    public DbSet<StoreCategoryAreaTypeGroup> CategoryAreaTypeGroups { get; set; }
     public DbSet<StoreImage> StoreImages { get; set; }
     public DbSet<StoreSpace> StoreSpaces { get; set; }
     public DbSet<StoreProject> StoreProjects { get; set; }
@@ -49,6 +49,11 @@ public class RepositoryContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        builder.Entity<User>()
+        .HasOne(x => x.Customer)
+        .WithMany()
+        .HasForeignKey(x => x.CustomerId)
+        .IsRequired(false);
 
         builder.Entity<StoreData>()
            .HasOne(x => x.Document)

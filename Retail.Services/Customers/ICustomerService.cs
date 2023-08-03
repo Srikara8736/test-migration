@@ -1,6 +1,7 @@
 ﻿using Retail.DTOs.Customers;
 using Retail.DTOs;
 using Retail.Services.Common;
+using Retail.DTOs.UserAccounts;
 
 namespace Retail.Services.Customers;
 
@@ -31,6 +32,37 @@ public interface ICustomerService
     Task<ResultDto<CustomerResponseDto>> GetCustomerById(Guid id, CancellationToken ct);
 
     Task<ResultDto<CustomerResponseDto>> UploadLogoByCustomerId(Guid id, string ImgUrl, CancellationToken ct);
+
+
+    /// <summary>
+    /// Add the Customer details 
+    /// </summary>
+    /// <param name="customerRequestDto">Customer Request DTO</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Customer Information</returns>
+    Task<ResultDto<CustomerResponseDto>> InsertCustomer(CustomerDto customerRequestDto, CancellationToken ct);
+
+
+
+    /// <summary>
+    /// Update the Customer details 
+    /// </summary>
+    /// <param name="id">Customer id</param>
+    /// <param name="customerDto">Customer Request DTO</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Customer Information</returns>
+    Task<ResultDto<CustomerResponseDto>> UpdateCustomer(Guid id, CustomerDto customerDto, CancellationToken ct = default);
+
+
+
+
+    /// <summary>
+    /// Delete Customer
+    /// </summary>
+    /// <param name="id">Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Response Customer Delete Status</returns>
+    Task<ResultDto<CustomerResponseDto>> DeleteCustomer(Guid id, CancellationToken ct = default);
 
     #endregion
 }

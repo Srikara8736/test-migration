@@ -16,7 +16,7 @@ public static class StringResources
 
     public const string RecordExists = "Record Already Exists";
 
-    public const string UserRecordExists = "The Username / Email already Exists";
+    public const string UserRecordExists = "The  Email already Exists";
 
     public const string InvalidArgument = "Invalid Request Payload";
 

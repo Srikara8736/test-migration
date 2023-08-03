@@ -170,7 +170,7 @@ public class UserService : IUserService
     /// <summary>
     /// Gets the user details by User Id
     /// </summary>
-    /// <param name="userId">User Id</param>
+    /// <param name="id">User Id</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>User Details</returns>
     public async Task<ResultDto<UserResponseDto>> GetUserById(Guid id, CancellationToken ct)

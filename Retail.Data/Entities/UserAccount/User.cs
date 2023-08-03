@@ -97,6 +97,6 @@ public class User : BaseEntity
     /// Gets or sets the reference of Customer entity
     /// </summary>
     [ForeignKey(nameof(Customer))]
-    public Guid CustomerId { get; set; }
+    public Guid? CustomerId { get; set; }
     public virtual Customer Customer { get; set; }
 }

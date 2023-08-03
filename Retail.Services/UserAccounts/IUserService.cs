@@ -10,12 +10,12 @@ public interface IUserService
     #region User
 
     /// <summary>
-    /// gets the User details by UserName
+    /// gets the User details by User
     /// </summary>
     /// <param name="userDto">userDto</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns> User Infromation</returns>
-    Task<ResultDto<UserResponseDto>> GetUserAuthByUserName(UserDto userDto, CancellationToken ct);
+    Task<ResultDto<UserResponseDto>> GetUserAuthByUser(UserDto userDto, CancellationToken ct);
 
 
     /// <summary>

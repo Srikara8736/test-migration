@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Retail.Data.Repository;
+using Retail.Services.UserAccounts;
+using RetailApp.Authentication;
 using RetailApp.Configuration;
 using System.Reflection;
 using System.Text;
@@ -77,6 +79,12 @@ builder.Services.AddAuthentication(options =>
 
 //Auto mapper Injections
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+//Service Registration
+builder.Services.AddScoped<IAuthTokenBuilder, AuthTokenBuilder>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+//builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 builder.Services.AddHttpContextAccessor();
 

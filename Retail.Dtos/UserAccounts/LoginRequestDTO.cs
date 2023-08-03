@@ -11,8 +11,9 @@ public class LoginRequestDTO
     /// <summary>
     /// Gets or sets the Is UserName
     /// </summary>
-    [Required(ErrorMessage = "User Name is required")]
-    public string Username { get; set; }
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress]
+    public string Email { get; set; }
 
     /// <summary>
     /// Gets or sets the Is Password

@@ -44,7 +44,7 @@ public class UserDto
     /// </summary>
     [Required]
     [StringLength(256)]
-    public string Password { get; set; }
+    public string PasswordHash { get; set; }
 
     /// <summary>
     /// Gets or sets the IsActive

@@ -41,11 +41,7 @@ public class User : BaseEntity
     public string PasswordHash { get; set; }
 
 
-    /// <summary>
-    /// Gets or sets the IsActive
-    /// </summary>
-    [Required]
-    public bool IsActive { get; set; }
+
 
 
     /// <summary>

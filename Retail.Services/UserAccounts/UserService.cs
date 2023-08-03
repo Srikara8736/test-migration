@@ -48,22 +48,6 @@ public class UserService : IUserService
     }
 
 
-    /// <summary>
-    /// Validate User Is Already Exists
-    /// </summary>
-    /// <param name="userName">userName</param>
-    /// <returns>Flag value</returns>
-    public bool ValidateUserName(string userName)
-    {
-        bool isExists = false;
-
-        if (userName != "" && userName != null)
-            isExists = _repositoryContext.Users.Any(x => x.IsDeleted == false && x.Email.ToLower().Trim() == userName.ToLower().Trim());
-
-        return isExists;
-
-    }
-
 
     /// <summary>
     /// Validate User Is Already Exists
@@ -81,6 +65,22 @@ public class UserService : IUserService
 
     }
 
+
+    public bool  InsertUserRole(UserRole userRole, CancellationToken ct)
+    {
+        try
+        {
+            _repositoryContext.UserRoles.AddAsync(userRole, ct);
+            _repositoryContext.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+        
+    }
+
     #endregion
 
 
@@ -95,7 +95,7 @@ public class UserService : IUserService
     /// <param name="userName">User Name</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>User Details</returns>
-    public async Task<ResultDto<UserResponseDto>> GetUserAuthByUserName(UserDto userDto, CancellationToken ct)
+    public async Task<ResultDto<UserResponseDto>> GetUserAuthByUser(UserDto userDto, CancellationToken ct)
     {
         if (userDto == null)
         {
@@ -106,7 +106,7 @@ public class UserService : IUserService
             };
             return UserResult;
         }
-        var user = await _repositoryContext.Users.FirstOrDefaultAsync(x => x.Email == userDto.UserName && x.IsDeleted == false, ct);
+        var user = await _repositoryContext.Users.FirstOrDefaultAsync(x => x.Email == userDto.Email && x.IsDeleted == false, ct);
         if (user == null)
         {
             var UserResult = new ResultDto<UserResponseDto>()
@@ -119,9 +119,9 @@ public class UserService : IUserService
 
         var userDetails = _mapper.Map<UserDto>(user);
 
-        var password = HashPassword(userDto.Password);
+        var password = HashPassword(userDto.PasswordHash);
 
-        if (userDetails.Password.ToUpper() != password)
+        if (userDetails.PasswordHash.ToUpper() != password)
         {
             var UserResult = new ResultDto<UserResponseDto>()
             {
@@ -132,7 +132,11 @@ public class UserService : IUserService
         }
 
         var userResponse = _mapper.Map<UserResponseDto>(user);
-        userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userResponse.RoleId, ct))?.Name ?? string.Empty;
+
+        var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
+        if (userRole != null)
+            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
+       
 
         if (userResponse.CustomerId != null)
         {
@@ -186,7 +190,11 @@ public class UserService : IUserService
         }
 
         var userResponse = _mapper.Map<UserResponseDto>(user);
-        userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userResponse.RoleId, ct))?.Name ?? string.Empty;
+
+        var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == user.Id).FirstOrDefault();
+        if (userRole != null)
+            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userResponse.RoleId, ct))?.Name ?? string.Empty;
+
 
 
         if (userResponse.CustomerId != null)
@@ -226,10 +234,10 @@ public class UserService : IUserService
 
         }
 
-        var resultUserName = ValidateUserName(userRequestDto.UserName);
+      
         var resultUserEmail = ValidateUserEmail(userRequestDto.Email);
 
-        if (resultUserName || resultUserEmail)
+        if (resultUserEmail)
         {
             var errorResponse = new ResultDto<UserResponseDto>
             {
@@ -242,13 +250,12 @@ public class UserService : IUserService
 
 
         var user = _mapper.Map<User>(userRequestDto);
+
         user.CreatedOn = DateTime.UtcNow;
         //hash password
-        var hashedPasword = HashPassword(userRequestDto.Password);
+        var hashedPasword = HashPassword(userRequestDto.PasswordHash);
         user.PasswordHash = hashedPasword;
-
-
-
+              
 
         await _repositoryContext.Users.AddAsync(user, ct);
         await _repositoryContext.SaveChangesAsync(ct);
@@ -256,7 +263,17 @@ public class UserService : IUserService
         var userResponse = _mapper.Map<UserResponseDto>(user);
 
 
-        userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userResponse.RoleId, ct))?.Name ?? string.Empty;
+        var userRole = new UserRole()
+        {
+            UserId = user.Id,
+            RoleId  = userRequestDto.RoleId,
+        };
+
+        var  userRoleResult =  InsertUserRole(userRole,ct);
+
+        var userRoleItem = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
+        if (userRoleItem != null)
+            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRoleItem.RoleId, ct))?.Name ?? string.Empty;
 
         if (userResponse.CustomerId != null)
         {
@@ -316,7 +333,9 @@ public class UserService : IUserService
 
         foreach (var user in usersResponse)
         {
-            user.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == user.RoleId, ct))?.Name ?? string.Empty;
+            var userRole = _repositoryContext.UserRoles.Where( x => x.UserId == user.Id).FirstOrDefault();
+            if(userRole != null) 
+                user.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
 
             if (user.CustomerId != null)
             {
@@ -376,14 +395,15 @@ public class UserService : IUserService
         result.FirstName = userDto.FirstName;
         result.LastName = userDto.LastName;
         result.Email = userDto.Email;
-        //result.RoleId = userDto.RoleId;
         result.CustomerId = (Guid)userDto.CustomerId;
 
         await _repositoryContext.SaveChangesAsync(ct);
 
         var userResponse = _mapper.Map<UserResponseDto>(result);
 
-        userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userResponse.RoleId, ct))?.Name ?? string.Empty;
+        var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
+        if (userRole != null)
+            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
 
         if (userResponse.CustomerId != null)
         {

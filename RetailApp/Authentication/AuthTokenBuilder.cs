@@ -131,13 +131,13 @@ public class AuthTokenBuilder : IAuthTokenBuilder
 
         UserDto userRequestDto = new UserDto
         {
-            UserName = user.Username,
-            Password = user.Password,
+            Email = user.Email,
+            PasswordHash = user.Password,
         };
 
         CancellationToken ct = new CancellationToken();
 
-        var userDetails = await _userService.GetUserAuthByUserName(userRequestDto, ct);
+        var userDetails = await _userService.GetUserAuthByUser(userRequestDto, ct);
 
         if (userDetails.Data == null)
         {
@@ -154,7 +154,7 @@ public class AuthTokenBuilder : IAuthTokenBuilder
         {
 
             new Claim("UserId", userDetails.Data.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Name, user.Email),
             new Claim(ClaimTypes.Role, userDetails.Data.RoleName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
@@ -165,7 +165,6 @@ public class AuthTokenBuilder : IAuthTokenBuilder
 
         var userInfo = new UserInformation()
         {
-            UserName = userDetails.Data.UserName,
             Email = userDetails.Data.Email,
             Role = userDetails.Data.RoleName,
             Id = userDetails.Data.Id,
@@ -237,7 +236,6 @@ public class AuthTokenBuilder : IAuthTokenBuilder
 
         var userInfo = new UserInformation()
         {
-            UserName = userDetails.Data.UserName,
             Email = userDetails.Data.Email,
             Role = userDetails.Data.RoleName,
             Id = userDetails.Data.Id

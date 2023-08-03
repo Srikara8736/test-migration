@@ -39,10 +39,7 @@ public class UserInformation
     /// </summary>
     public Guid Id { get; set; }
 
-    /// <summary>
-    /// Gets or sets the UserName
-    /// </summary>
-    public string UserName { get; set; }
+   
 
     /// <summary>
     /// Gets or sets the Email

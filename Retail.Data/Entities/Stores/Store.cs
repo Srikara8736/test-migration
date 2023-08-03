@@ -31,9 +31,8 @@ public class Store : BaseEntity
     /// <summary>
     /// Gets or sets the TotalArea
     /// </summary>
-    [Required]
     [Column(TypeName = "decimal(18,2)")]
-    public decimal TotalArea { get; set; }
+    public decimal? TotalArea { get; set; }
 
 
     /// <summary>

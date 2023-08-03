@@ -50,7 +50,7 @@ public class StoreData : BaseEntity
     /// Gets or sets the reference of Document entity
     /// </summary>
     [ForeignKey(nameof(Document))]
-    public Guid DocumentId { get; set; }
+    public Guid? DocumentId { get; set; }
     public virtual Document Document { get; set; }
 
 }

@@ -21,25 +21,25 @@ public class StoreSpace : BaseEntity
     /// <summary>
     /// Gets or sets the Area
     /// </summary>
-    [Required]
+    
     [Column(TypeName = "decimal(18,2)")]
-    public decimal Area { get; set; }
+    public decimal? Area { get; set; }
 
 
     /// <summary>
     /// Gets or sets the Pieces
     /// </summary>
-    [Required]
+  
     [Column(TypeName = "decimal(18,2)")]
-    public decimal Pieces { get; set; }
+    public decimal? Pieces { get; set; }
 
 
     /// <summary>
     /// Gets or sets the Articles
     /// </summary>
-    [Required]
+   
     [Column(TypeName = "decimal(18,2)")]
-    public decimal Articles { get; set; }
+    public decimal? Articles { get; set; }
 
     /// <summary>
     /// Gets or sets the reference of Store entity
@@ -60,7 +60,7 @@ public class StoreSpace : BaseEntity
     /// Gets or sets the reference of Space entity
     /// </summary>
     [ForeignKey(nameof(Space))]
-    public Guid SpaceId { get; set; }
+    public Guid? SpaceId { get; set; }
     public virtual Space Space { get; set; }
 
 

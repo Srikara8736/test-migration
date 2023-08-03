@@ -31,4 +31,11 @@ public class StoreCategoryAreaTypeGroup : BaseEntity
     public virtual AreaTypeGroup AreaTypeGroup { get; set; }
 
 
+    /// Gets or sets the reference of Category entity
+    /// </summary>
+    [ForeignKey(nameof(Space))]
+    public Guid? SpaceId { get; set; }
+    public virtual Space Space { get; set; }
+
+
 }

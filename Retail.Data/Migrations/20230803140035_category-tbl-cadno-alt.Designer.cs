@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Retail.Data.Repository;
 
@@ -11,9 +12,10 @@ using Retail.Data.Repository;
 namespace Retail.Data.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20230803140035_category-tbl-cadno-alt")]
+    partial class categorytblcadnoalt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -357,9 +359,6 @@ namespace Retail.Data.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("SpaceId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("StoreId")
                         .HasColumnType("uniqueidentifier");
 
@@ -368,8 +367,6 @@ namespace Retail.Data.Migrations
                     b.HasIndex("AreaTypeGroupId");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("SpaceId");
 
                     b.HasIndex("StoreId");
 
@@ -459,19 +456,19 @@ namespace Retail.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal?>("Area")
+                    b.Property<decimal>("Area")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("Articles")
+                    b.Property<decimal>("Articles")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal?>("Pieces")
+                    b.Property<decimal>("Pieces")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid?>("SpaceId")
+                    b.Property<Guid>("SpaceId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("StoreDataId")
@@ -753,10 +750,6 @@ namespace Retail.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Retail.Data.Entities.Stores.Space", "Space")
-                        .WithMany()
-                        .HasForeignKey("SpaceId");
-
                     b.HasOne("Retail.Data.Entities.Stores.Store", "Store")
                         .WithMany()
                         .HasForeignKey("StoreId")
@@ -766,8 +759,6 @@ namespace Retail.Data.Migrations
                     b.Navigation("AreaTypeGroup");
 
                     b.Navigation("Category");
-
-                    b.Navigation("Space");
 
                     b.Navigation("Store");
                 });
@@ -843,7 +834,8 @@ namespace Retail.Data.Migrations
 
                     b.HasOne("Retail.Data.Entities.Stores.Space", "Space")
                         .WithMany()
-                        .HasForeignKey("SpaceId");
+                        .HasForeignKey("SpaceId")
+                        .IsRequired();
 
                     b.HasOne("Retail.Data.Entities.Stores.StoreData", "StoreData")
                         .WithMany()

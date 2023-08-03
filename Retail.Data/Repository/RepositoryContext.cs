@@ -55,11 +55,36 @@ public class RepositoryContext : DbContext
         .HasForeignKey(x => x.CustomerId)
         .IsRequired(false);
 
+
+        builder.Entity<Category>()
+            .HasOne(x => x.AreaType)
+            .WithMany()
+            .HasForeignKey(x => x.AreaTypeId)
+            .IsRequired(false);
+
+
         builder.Entity<StoreData>()
            .HasOne(x => x.Document)
            .WithMany()
            .HasForeignKey(x => x.DocumentId)
-           .OnDelete(DeleteBehavior.ClientSetNull);
+           .OnDelete(DeleteBehavior.ClientSetNull)
+           .IsRequired(false);
+
+
+        builder.Entity<StoreCategoryAreaTypeGroup>()
+           .HasOne(x => x.Space)
+           .WithMany()
+           .HasForeignKey(x => x.SpaceId)
+           .OnDelete(DeleteBehavior.ClientSetNull)
+           .IsRequired(false);
+
+
+        builder.Entity<StoreSpace>()
+            .HasOne(x => x.Space)
+            .WithMany()
+            .HasForeignKey(x => x.SpaceId)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .IsRequired(false);
 
         builder.Entity<StoreData>()
             .HasOne(x => x.Store)

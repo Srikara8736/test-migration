@@ -12,6 +12,14 @@ namespace Retail.Data.Entities.Stores;
 [Table("Category")]
 public class Category : BaseEntity
 {
+
+    /// <summary>
+    /// Gets or sets the Store Name
+    /// </summary>
+    [Required]
+    [StringLength(256)]
+    public string CategoryId { get; set; }
+
     /// <summary>
     /// Gets or sets the Store Name
     /// </summary>
@@ -24,7 +32,8 @@ public class Category : BaseEntity
     /// Gets or sets the CAD service Number
     /// </summary>
     [Required]
-    public int CadServiceNumber { get; set; }
+    [StringLength(10)]
+    public string CadServiceNumber { get; set; }
 
 
 
@@ -32,6 +41,6 @@ public class Category : BaseEntity
     /// Gets or sets the reference of AreaType entity
     /// </summary>
     [ForeignKey(nameof(AreaType))]
-    public Guid AreaTypeId { get; set; }
+    public Guid? AreaTypeId { get; set; }
     public virtual AreaType AreaType { get; set; }
 }

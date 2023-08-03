@@ -37,8 +37,13 @@ public class UserDto
     /// Gets or sets the Password
     /// </summary>
     [Required]
-    [StringLength(256)]
     public string PasswordHash { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the PhoneNumber
+    /// </summary>
+    public string PhoneNumber { get; set; }
 
 
     /// <summary>
@@ -46,6 +51,10 @@ public class UserDto
     /// </summary>
     [Required]
     public Guid RoleId { get; set; }
+
+
+    [Required]
+    public Guid StatusId { get; set; }
 
     /// <summary>
     /// Gets or sets the CustomerId

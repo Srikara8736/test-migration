@@ -262,6 +262,7 @@ public class UserService : IUserService
         var user = _mapper.Map<User>(userRequestDto);
 
         user.CreatedOn = DateTime.UtcNow;
+        user.PhoneNumber = userRequestDto.PhoneNumber;
         //hash password
         var hashedPasword = HashPassword(userRequestDto.PasswordHash);
         user.PasswordHash = hashedPasword;
@@ -405,7 +406,10 @@ public class UserService : IUserService
         result.FirstName = userDto.FirstName;
         result.LastName = userDto.LastName;
         result.Email = userDto.Email;
+        result.PhoneNumber = userDto.PhoneNumber;
+        result.UpdatedOn = DateTime.UtcNow;
         result.CustomerId = (Guid)userDto.CustomerId;
+        result.StatusId = userDto.StatusId;
 
         await _repositoryContext.SaveChangesAsync(ct);
 

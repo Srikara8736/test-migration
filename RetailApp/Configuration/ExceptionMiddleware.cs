@@ -32,8 +32,8 @@ public class ExceptionMiddleware
         {
             StatusCode = context.Response.StatusCode,
             Message = "Internal Server Error from the custom middleware.",
-            //InnerException = exception?.InnerException,
-            //MessageDetail = exception?.Message,
+            InnerException = exception?.InnerException,
+           MessageDetail = exception?.Message,
         }));
     }
 }

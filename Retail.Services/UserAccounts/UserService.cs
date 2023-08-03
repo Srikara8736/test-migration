@@ -203,7 +203,7 @@ public class UserService : IUserService
 
         var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == user.Id).FirstOrDefault();
         if (userRole != null)
-            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userResponse.RoleId, ct))?.Name ?? string.Empty;
+            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
 
 
 

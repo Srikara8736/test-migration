@@ -32,6 +32,19 @@ public class CustomerDto
     [StringLength(50)]
     public string PhoneNumber { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Phone
+    /// </summary>
+
+    [Required]
+    public string CreatedBy { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the Phone
+    /// </summary>
+    public string? UpdatedBy { get; set; }
+
 
 
   

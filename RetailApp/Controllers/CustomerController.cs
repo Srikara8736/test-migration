@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Retail.DTOs.Customers;
 using Retail.Services.Customers;
 using RetailApp.Helpers;
 
 namespace RetailApp.Controllers;
 
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CustomerController : BaseController
@@ -112,6 +113,52 @@ public class CustomerController : BaseController
     {
 
         return this.Result(await _customerService.GetCustomerById(new Guid(id), ct));
+
+    }
+
+
+    /// <summary>
+    /// Add a new Customer item
+    /// </summary>
+    /// <param name="customerModel">Customer Information</param>  
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return newly added Customer</returns>
+    [HttpPost]
+    public async Task<IActionResult> AddCustomer([FromBody] CustomerDto customerModel, CancellationToken ct = default)
+    {
+
+        return this.Result(await _customerService.InsertCustomer(customerModel, ct));
+
+    }
+
+    /// <summary>
+    /// Update a Customer item
+    /// </summary>
+    /// <param name="id">Customer Identifier</param>
+    /// <param name="customerModel">Customer infromation</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return updated Customer Information</returns>
+    [HttpPut]
+    [Route("{id}")]
+    public async Task<IActionResult> UpdateCustomer(Guid id, [FromBody] CustomerDto customerModel, CancellationToken ct)
+    {
+        return this.Result(await _customerService.UpdateCustomer(id, customerModel, ct));
+    }
+
+
+
+
+    /// <summary>
+    /// Delete a Customer item
+    /// </summary>
+    /// <param name="id">id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return Customer Deleted Status</returns>
+    [HttpDelete]
+    [Route("{id}")]
+    public async Task<IActionResult> DeleteCustomer(string id, CancellationToken ct)
+    {
+        return this.Result(await _customerService.DeleteCustomer(new Guid(id), ct));
 
     }
 

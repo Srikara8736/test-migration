@@ -284,8 +284,8 @@ public class CustomerService : ICustomerService
 
         var customer = _mapper.Map<Customer>(customerRequestDto);
 
-        if(address != null)
-            customer.Address = address;
+        customer.AddressId = address.Id;
+        customer.CreatedBy = customerRequestDto.CreatedBy;
 
         customer.CreatedOn = DateTime.UtcNow;
      
@@ -350,7 +350,8 @@ public class CustomerService : ICustomerService
         result.PhoneNumber = customerDto.PhoneNumber;
         result.Email = customerDto.Email;
 
-
+        result.UpdatedOn = DateTime.UtcNow;
+        result.UpdatedBy = customerDto.UpdatedBy;
        
         await _repositoryContext.SaveChangesAsync(ct);
         

@@ -7,7 +7,7 @@ using RetailApp.Helpers;
 namespace RetailApp.Controllers;
 
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CustomerController : BaseController

@@ -42,6 +42,7 @@ public class Customer : BaseEntity
     /// <summary>
     /// Gets or sets the CreatedBy
     /// </summary>
+    [StringLength(256)]
     public string CreatedBy { get; set; }
 
 

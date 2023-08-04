@@ -1,6 +1,6 @@
 ﻿namespace Retail.DTOs.Stores;
 
-public class AreaTypeGridDto
+public class ChartGridDto
 {
 
     public string AreaType { get; set; }

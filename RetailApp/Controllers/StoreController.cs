@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Retail.DTOs.Roles;
 using Retail.Services.Stores;
-using Retail.Services.UserAccounts;
 using RetailApp.Helpers;
 using System.ComponentModel.DataAnnotations;
 
 namespace RetailApp.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class StoreController : BaseController
@@ -48,7 +45,12 @@ public class StoreController : BaseController
     }
 
 
-
+    /// <summary>
+    /// Gets all Grid Data of Store
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
     [HttpGet]
     [Route("GetGridData")]
     public async Task<IActionResult> GetGridData([Required]Guid StoreId, CancellationToken ct = default)
@@ -57,6 +59,19 @@ public class StoreController : BaseController
         return this.Result(await _storeService.GetGridData(StoreId, ct));
     }
 
+    /// <summary>
+    /// Gets all Chart Data of Store
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Chart Data</returns>
+    [HttpGet]
+    [Route("GetChartData")]
+    public async Task<IActionResult> GetChartData([Required] Guid StoreId, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetChartData(StoreId, ct));
+    }
 
 
     #endregion

@@ -118,14 +118,19 @@ public class StoreService : IStoreService
     }
 
 
-
-    public async Task<ResultDto<List<AreaTypeGridDto>>> GetGridData(Guid StoreId, CancellationToken ct = default)
+    /// <summary>
+    /// gets all Grid Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    public async Task<ResultDto<List<ChartGridDto>>> GetGridData(Guid StoreId, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
         if (store == null)
         {
-            var storeResult = new ResultDto<List < AreaTypeGridDto>> ()
+            var storeResult = new ResultDto<List < ChartGridDto>> ()
             {
                 ErrorMessage = StringResources.NoResultsFound,
                 StatusCode = HttpStatusCode.NotFound
@@ -156,13 +161,13 @@ public class StoreService : IStoreService
 
 
 
-            var areaTypeGrid = new List<AreaTypeGridDto>();
+            var areaTypeGrid = new List<ChartGridDto>();
 
             var areaTypeGroupResult = query.GroupBy(x => x.AreaTypeId).ToList();
 
             foreach (var item in areaTypeGroupResult)
             {
-                var areaType = new AreaTypeGridDto();
+                var areaType = new ChartGridDto();
 
                 var categoryGrid = new List<CategoryGridDto>();
 
@@ -205,7 +210,7 @@ public class StoreService : IStoreService
             }
 
 
-            var successResponse = new ResultDto<List<AreaTypeGridDto>>
+            var successResponse = new ResultDto<List<ChartGridDto>>
             {
                 IsSuccess = true,
                 Data = areaTypeGrid
@@ -216,7 +221,7 @@ public class StoreService : IStoreService
         }
         catch(Exception ex)
         {
-            var storeResult = new ResultDto<List<AreaTypeGridDto>>()
+            var storeResult = new ResultDto<List<ChartGridDto>>()
             {
                 ErrorMessage = StringResources.InvalidArgument,
                 StatusCode = HttpStatusCode.InternalServerError
@@ -228,5 +233,315 @@ public class StoreService : IStoreService
     }
 
 
-   
+    public void DraftCategoryChart(List<ChartGraphDto> charts)
+    {
+        var query = (from cat in _repositoryContext.Categories
+                     join stsp in _repositoryContext.StoreSpaces on cat.Id equals stsp.CategoryId
+                     where cat.AreaTypeId == null
+                     orderby cat.CadServiceNumber
+                     select new
+                     {
+                         categoryName = cat.Name.Trim(),
+                         article = stsp.Articles
+
+                     });
+
+        var DraftchartData = new ChartGraphDto();
+        DraftchartData.ChartTitle = "Draft Area";
+        DraftchartData.ChartType = "Pie";
+
+
+        foreach (var item in query)
+        {
+            var chartItem = new ChartItemDto
+            {
+                Key = item.categoryName,
+                Value = (decimal)item.article
+            };
+            DraftchartData.chartItems.Add(chartItem);
+        }
+        charts.Add(DraftchartData);
+
+    }
+
+    /// <summary>
+    /// gets all Chart Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Chart Data</returns>
+    public async Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, CancellationToken ct = default)
+    {
+
+        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
+        if (store == null)
+        {
+            var storeResult = new ResultDto<List<ChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return storeResult;
+        }
+
+        try
+        {
+            var query = (from at in _repositoryContext.AreaTypes
+                         join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
+                         join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
+                         join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
+                         where stsp.StoreId == StoreId
+                         orderby cat.CadServiceNumber 
+                         select new
+                         {
+                             CategoryId = cat.Id,
+                             CategoryName = cat.Name,
+                             AreaTypeId = at.Id,
+                             AreaTypeName = at.Name,
+                             SpaceName = sp.Name,
+                             SpaceUnit = stsp.Unit,
+                             SpaceAtricles = stsp.Articles,
+                             SpaceArea = stsp.Area,
+                             SpacePieces = stsp.Pieces,
+                             SpaceCadNumber = sp.CadServiceNumber
+
+                         }).ToList();
+
+
+
+            var areaTypeGrid = new List<ChartGridDto>();
+
+            var areaTypeGroupResult = query.GroupBy(x => x.AreaTypeId).ToList();
+
+            foreach (var item in areaTypeGroupResult)
+            {
+                var areaType = new ChartGridDto();
+
+                var categoryGrid = new List<CategoryGridDto>();
+
+                var categoryGroup = item.GroupBy(x => x.CategoryId).ToList();
+                foreach (var categoryResult in categoryGroup)
+                {
+                    var category = new CategoryGridDto();
+
+                    var spaceGrid = new List<SpaceGridDto>();
+
+                    foreach (var result in categoryResult.OrderBy(x => x.SpaceCadNumber) )
+                    {
+                        areaType.AreaType = result.AreaTypeName.Trim();
+                        areaType.AreaTypeId = result.AreaTypeId;
+
+                        category.CategoryId = result.CategoryId;
+                        category.Category = result.CategoryName.Trim();
+
+                        var space = new SpaceGridDto
+                        {
+                            Space = result.SpaceName.Trim(),
+                            Unit = result.SpaceUnit,
+                            Area = (decimal)result.SpaceArea,
+                            Pieces = (decimal)result.SpacePieces,
+                            Atricles = (decimal)result.SpaceAtricles
+                        };
+                        spaceGrid.Add(space);
+
+                    }
+                    category.Spaces = spaceGrid;
+                    category.TotalArea = spaceGrid.Sum(x => x.Area);
+                    categoryGrid.Add(category);
+
+                };
+
+
+                areaType.Categories = categoryGrid;
+                areaType.TotalArea = categoryGrid.Sum(x => x.TotalArea);
+                areaTypeGrid.Add(areaType);
+            }
+
+
+
+
+
+            var chartItems = new List<ChartGraphDto>();
+
+            //Chart Total Area
+
+
+            var areachartData = new ChartGraphDto();
+            areachartData.ChartTitle = "Total Area";
+            areachartData.ChartType = "Pie";
+
+            foreach (var areaType in areaTypeGrid)
+            {
+                var chartItem = new ChartItemDto
+                {
+                    Key = areaType.AreaType,
+                    Value = areaType.TotalArea
+                };
+                areachartData.chartItems.Add(chartItem);
+            }
+
+            chartItems.Add(areachartData);
+
+
+
+
+
+            //Chart Pie Sales Area
+
+
+            var categoriesItems = areaTypeGrid.Where( y => y.AreaType == "SalesArea").Select(x => x.Categories);
+
+            foreach (var categories in categoriesItems)
+            {
+                var chartData = new ChartGraphDto();
+                chartData.ChartTitle = "Sales Area";
+                chartData.ChartType = "Pie";
+                foreach (var category in categories)
+                {
+                    var chartItem = new ChartItemDto
+                    {
+                        Key = category.Category,
+                        Value = category.TotalArea
+                    };
+
+                    chartData.chartItems.Add(chartItem);
+
+                    var spaceData = new ChartGraphDto();
+                    spaceData.ChartTitle = category.Category;
+                    spaceData.ChartType = "Pie";
+
+
+                    foreach (var spaceItem in category.Spaces)
+                    {
+                        var spaceChartItem = new ChartItemDto
+                        {
+                            Key = spaceItem.Space,
+                            Value = spaceItem.Area
+                        };
+                        spaceData.chartItems.Add(spaceChartItem);
+                    }
+                    chartItems.Add(spaceData);
+                }
+
+
+
+                chartItems.Add(chartData);
+            }
+
+
+
+
+            //Chart Serice & various
+
+
+            var mainAreaItems = areaTypeGrid.Where(y => y.AreaType != "SalesArea");
+
+            foreach (var mainItem in mainAreaItems)
+            {
+                var chartData = new ChartGraphDto();
+                chartData.ChartTitle = mainItem.AreaType;
+                chartData.ChartType = "Pie";
+                foreach (var category in mainItem.Categories)
+                {
+
+                    foreach (var spaceItem in category.Spaces)
+                    {
+                        var spaceChartItem = new ChartItemDto
+                        {
+                            Key = spaceItem.Space,
+                            Value = category.TotalArea
+                        };
+                        chartData.chartItems.Add(spaceChartItem);
+                    }
+                    
+                }
+
+
+
+                chartItems.Add(chartData);
+            }
+
+
+
+
+            //Chart Bar Sales Area
+
+
+            var categoriesBarItems = areaTypeGrid.Where(y => y.AreaType == "SalesArea").Select(x => x.Categories);
+
+            foreach (var categories in categoriesBarItems)
+            {
+              
+                foreach (var category in categories)
+                {
+                 
+
+                    var spaceAtricleData = new ChartGraphDto();
+                    spaceAtricleData.ChartTitle = category.Category + " Articles"; 
+                    spaceAtricleData.ChartType = "Bar"; 
+
+
+                    var spacePiecesData = new ChartGraphDto();
+                    spacePiecesData.ChartTitle = category.Category + " Pieces";
+                    spacePiecesData.ChartType = "Bar";
+
+                    foreach (var spaceItem in category.Spaces)
+                    {
+                      
+                       var spaceArtlicleChartItem = new ChartItemDto
+                        {
+                            Key = spaceItem.Space,
+                            Value = spaceItem.Atricles
+                        };
+                        spaceAtricleData.chartItems.Add(spaceArtlicleChartItem);
+
+
+                        var spacePieceChartItem = new ChartItemDto
+                        {
+                            Key = spaceItem.Space,
+                            Value = spaceItem.Pieces
+                        };
+                        spacePiecesData.chartItems.Add(spacePieceChartItem);
+                    }
+
+
+
+                    chartItems.Add(spaceAtricleData);
+                    chartItems.Add(spacePiecesData);
+                }
+
+
+
+                
+            }
+
+
+
+            DraftCategoryChart(chartItems);
+
+
+            var successResponse = new ResultDto<List<ChartGraphDto>>
+            {
+                IsSuccess = true,
+                Data = chartItems
+            };
+
+            return successResponse;
+
+        }
+        catch (Exception ex)
+        {
+            var storeResult = new ResultDto<List<ChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+            return storeResult;
+        }
+
+
+    }
+
+
+
 }

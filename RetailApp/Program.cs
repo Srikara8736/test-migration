@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Retail.Data.Repository;
 using Retail.Services.Customers;
+using Retail.Services.Stores;
 using Retail.Services.UserAccounts;
 using RetailApp.Authentication;
 using RetailApp.Configuration;
@@ -86,6 +87,7 @@ builder.Services.AddScoped<IAuthTokenBuilder, AuthTokenBuilder>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IStoreService, StoreService>();
 
 builder.Services.AddHttpContextAccessor();
 

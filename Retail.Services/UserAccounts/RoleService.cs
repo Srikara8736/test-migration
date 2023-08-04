@@ -239,7 +239,8 @@ public class RoleService : IRoleService
     {
 
         var query = from p in _repositoryContext.Roles
-                    select p;
+                    where p.Name != "Super Admin"
+                    select p ;
 
         if (keyword != null)
         {

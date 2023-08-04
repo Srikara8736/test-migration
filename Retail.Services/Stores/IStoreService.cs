@@ -21,4 +21,8 @@ public interface IStoreService
     /// <param name="ct">cancellation token</param>
     /// <returns>Store List with Pagination</returns>
     Task<PaginationResultDto<PagedList<StoreResponseDto>>> GetAllStores(Guid? customerId = null, string? keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
+
+
+
+    Task<ResultDto<List<AreaTypeGridDto>>> GetGridData(Guid StoreId, CancellationToken ct = default);
 }

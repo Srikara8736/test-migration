@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Retail.Data.Entities.Stores;
 using Retail.Data.Repository;
 using Retail.DTOs;
 using Retail.DTOs.Customers;
+using Retail.DTOs.Roles;
 using Retail.DTOs.Stores;
 using Retail.Services.Common;
+using System.Collections.Generic;
 using System.Net;
 
 namespace Retail.Services.Stores;
@@ -115,4 +118,115 @@ public class StoreService : IStoreService
     }
 
 
+
+    public async Task<ResultDto<List<AreaTypeGridDto>>> GetGridData(Guid StoreId, CancellationToken ct = default)
+    {
+
+        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
+        if (store == null)
+        {
+            var storeResult = new ResultDto<List < AreaTypeGridDto>> ()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return storeResult;
+        }
+
+        try
+        {
+            var query = (from at in _repositoryContext.AreaTypes
+                         join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
+                         join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
+                         join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
+                         where stsp.StoreId == StoreId
+                         select new
+                         {
+                             CategoryId = cat.Id,
+                             CategoryName = cat.Name,
+                             AreaTypeId = at.Id,
+                             AreaTypeName = at.Name,
+                             SpaceName = sp.Name,
+                             SpaceUnit = stsp.Unit,
+                             SpaceAtricles = stsp.Articles,
+                             SpaceArea = stsp.Area,
+                             SpacePieces = stsp.Pieces
+
+                         }).ToList();
+
+
+
+            var areaTypeGrid = new List<AreaTypeGridDto>();
+
+            var areaTypeGroupResult = query.GroupBy(x => x.AreaTypeId).ToList();
+
+            foreach (var item in areaTypeGroupResult)
+            {
+                var areaType = new AreaTypeGridDto();
+
+                var categoryGrid = new List<CategoryGridDto>();
+
+                var categoryGroup = item.GroupBy(x => x.CategoryId).ToList();
+                foreach (var categoryResult in categoryGroup)
+                {
+                    var category = new CategoryGridDto();
+
+                    var spaceGrid = new List<SpaceGridDto>();
+
+                    foreach (var result in categoryResult)
+                    {
+                        areaType.AreaType = result.AreaTypeName.Trim();
+                        areaType.AreaTypeId = result.AreaTypeId;
+
+                        category.CategoryId = result.CategoryId;
+                        category.Category = result.CategoryName.Trim();
+
+                        var space = new SpaceGridDto
+                        {
+                            Space = result.SpaceName.Trim(),
+                            Unit = result.SpaceUnit,
+                            Area = (decimal)result.SpaceArea,
+                            Pieces = (decimal)result.SpacePieces,
+                            Atricles = (decimal)result.SpaceAtricles
+                        };
+                        spaceGrid.Add(space);
+
+                    }
+                    category.Spaces = spaceGrid;
+                    category.TotalArea = spaceGrid.Sum(x => x.Area);
+                    categoryGrid.Add(category);
+
+                };
+
+
+                areaType.Categories = categoryGrid;
+                areaType.TotalArea = categoryGrid.Sum(x => x.TotalArea);
+                areaTypeGrid.Add(areaType);
+            }
+
+
+            var successResponse = new ResultDto<List<AreaTypeGridDto>>
+            {
+                IsSuccess = true,
+                Data = areaTypeGrid
+            };
+
+            return successResponse;
+
+        }
+        catch(Exception ex)
+        {
+            var storeResult = new ResultDto<List<AreaTypeGridDto>>()
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+            return storeResult;
+        }
+        
+
+    }
+
+
+   
 }

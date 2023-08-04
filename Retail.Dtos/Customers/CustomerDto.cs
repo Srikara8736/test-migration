@@ -48,7 +48,7 @@ public class CustomerDto
 
 
   
-    public Guid AddressId { get; set; }
+    public Guid? AddressId { get; set; }
 
     /// <summary>
     /// Gets or sets the reference of Address 

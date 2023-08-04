@@ -5,10 +5,11 @@ using Retail.DTOs.Roles;
 using Retail.Services.Stores;
 using Retail.Services.UserAccounts;
 using RetailApp.Helpers;
+using System.ComponentModel.DataAnnotations;
 
 namespace RetailApp.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class StoreController : BaseController
@@ -47,6 +48,14 @@ public class StoreController : BaseController
     }
 
 
+
+    [HttpGet]
+    [Route("GetGridData")]
+    public async Task<IActionResult> GetGridData([Required]Guid StoreId, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetGridData(StoreId, ct));
+    }
 
 
 

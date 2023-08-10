@@ -54,13 +54,13 @@ public class CustomerService : ICustomerService
     }
 
 
-    public Address InsertCustomerAddress(AddressDto addressDto, CancellationToken ct)
+    public async Task<Address> InsertCustomerAddress(AddressDto addressDto, CancellationToken ct)
     {
         try
         {
             var address = _mapper.Map<Address>(addressDto);
-            _repositoryContext.Addresses.AddAsync(address, ct);
-            _repositoryContext.SaveChangesAsync(ct);
+            await _repositoryContext.Addresses.AddAsync(address, ct);
+            await _repositoryContext.SaveChangesAsync(ct);
             return address;
         }
         catch (Exception ex)
@@ -71,11 +71,11 @@ public class CustomerService : ICustomerService
     }
 
 
-    public Address UpdateCustomerAddress(Guid addressId, AddressDto addressDto, CancellationToken ct)
+    public async Task<Address> UpdateCustomerAddress(Guid addressId, AddressDto addressDto, CancellationToken ct)
     {
         try
         {
-            var address = _repositoryContext.Addresses.Where(x => x.Id == addressId).FirstOrDefault();
+            var address = await _repositoryContext.Addresses.Where(x => x.Id == addressId).FirstOrDefaultAsync();
             if (address == null)
                 return null;
 
@@ -85,7 +85,7 @@ public class CustomerService : ICustomerService
             address.Country = addressDto.Country;
 
 
-            _repositoryContext.SaveChangesAsync(ct);
+            await _repositoryContext.SaveChangesAsync(ct);
             return address;
         }
         catch (Exception ex)
@@ -112,6 +112,7 @@ public class CustomerService : ICustomerService
     {
 
         var query = from p in _repositoryContext.Customers
+                    where p.IsDeleted == false
                     select p;
 
         if (keyword != null)
@@ -280,7 +281,7 @@ public class CustomerService : ICustomerService
             return errorResponse;
         }
 
-        var address = InsertCustomerAddress(customerRequestDto.Address, ct);
+        var address = await InsertCustomerAddress(customerRequestDto.Address, ct);
 
         var customer = _mapper.Map<Customer>(customerRequestDto);
 
@@ -357,7 +358,7 @@ public class CustomerService : ICustomerService
         
         var customerResponse = _mapper.Map<CustomerResponseDto>(result);
 
-        var address = UpdateCustomerAddress(result.AddressId, customerDto.Address, ct);
+        var address = await UpdateCustomerAddress(result.AddressId, customerDto.Address, ct);
         if(address != null)
         {
             var customerAddress = _mapper.Map<AddressDto>(address);

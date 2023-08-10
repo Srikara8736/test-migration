@@ -66,20 +66,45 @@ public class UserService : IUserService
     }
 
 
-    public bool  InsertUserRole(UserRole userRole, CancellationToken ct)
+    public async Task<UserRole>  InsertUserRole(UserRole userRole, CancellationToken ct)
     {
         try
         {
-            _repositoryContext.UserRoles.AddAsync(userRole, ct);
-            _repositoryContext.SaveChangesAsync(ct);
-            return true;
+            await _repositoryContext.UserRoles.AddAsync(userRole, ct);
+            await _repositoryContext.SaveChangesAsync(ct);
+            return userRole;
         }
         catch (Exception ex)
         {
-            return false;
+            return null;
         }
         
     }
+
+
+    public async Task<UserRole> UpdateUserRole(UserRole userRole, CancellationToken ct)
+    {
+        try
+        {
+            var userRoleItem = await _repositoryContext.UserRoles.Where(x => x.UserId == userRole.UserId).FirstOrDefaultAsync();
+            if (userRoleItem == null)
+                return null;
+
+            userRoleItem.RoleId = userRole.RoleId;
+            
+
+
+            await _repositoryContext.SaveChangesAsync(ct);
+            return userRoleItem;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+
+    }
+
+
 
     #endregion
 
@@ -135,8 +160,12 @@ public class UserService : IUserService
 
         var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
         if (userRole != null)
+        {
             userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
-       
+            userResponse.RoleId = userRole.RoleId;
+        }
+
+
 
         if (userResponse.CustomerId != null)
         {
@@ -203,7 +232,11 @@ public class UserService : IUserService
 
         var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == user.Id).FirstOrDefault();
         if (userRole != null)
+        {
             userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
+            userResponse.RoleId = userRole.RoleId;
+
+        }
 
 
 
@@ -280,11 +313,17 @@ public class UserService : IUserService
             RoleId  = userRequestDto.RoleId,
         };
 
-        var  userRoleResult =  InsertUserRole(userRole,ct);
+        var  userRoleResult = await InsertUserRole(userRole,ct);
+      
 
-        var userRoleItem = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
-        if (userRoleItem != null)
-            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRoleItem.RoleId, ct))?.Name ?? string.Empty;
+
+       // var userRoleItem = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
+        if (userRoleResult != null)
+        {
+            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRoleResult.RoleId, ct))?.Name ?? string.Empty;
+            userResponse.RoleId = userRoleResult.RoleId;
+
+        }
 
         if (userResponse.CustomerId != null)
         {
@@ -345,8 +384,11 @@ public class UserService : IUserService
         foreach (var user in usersResponse)
         {
             var userRole = _repositoryContext.UserRoles.Where( x => x.UserId == user.Id).FirstOrDefault();
-            if(userRole != null) 
+            if(userRole != null)
+            {
                 user.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
+                user.RoleId = userRole.RoleId;
+            }
 
             if (user.CustomerId != null)
             {
@@ -403,6 +445,8 @@ public class UserService : IUserService
 
         }
 
+
+
         result.FirstName = userDto.FirstName;
         result.LastName = userDto.LastName;
         result.Email = userDto.Email;
@@ -413,11 +457,25 @@ public class UserService : IUserService
 
         await _repositoryContext.SaveChangesAsync(ct);
 
+        var userRoleUpdate = new UserRole()
+        {
+            UserId = id,
+            RoleId = userDto.RoleId
+        };
+
+        var userRoleItem = await UpdateUserRole(userRoleUpdate, ct);
+
         var userResponse = _mapper.Map<UserResponseDto>(result);
 
-        var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
-        if (userRole != null)
-            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRole.RoleId, ct))?.Name ?? string.Empty;
+
+
+       // var userRole = _repositoryContext.UserRoles.Where(x => x.UserId == userResponse.Id).FirstOrDefault();
+        if (userRoleItem != null)
+        {
+            userResponse.RoleName = (await _repositoryContext.Roles.FirstOrDefaultAsync(x => x.Id == userRoleItem.RoleId, ct))?.Name ?? string.Empty;
+            userResponse.RoleId = userRoleItem.RoleId;
+
+        }
 
         if (userResponse.CustomerId != null)
         {

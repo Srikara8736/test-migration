@@ -15,7 +15,7 @@ public interface IUserService
     /// <param name="userDto">userDto</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns> User Infromation</returns>
-    Task<ResultDto<UserResponseDto>> GetUserAuthByUser(UserDto userDto, CancellationToken ct);
+    Task<ResultDto<UserResponseDto>> GetUserAuthByUser(UserDto userDto, CancellationToken ct = default);
 
 
     /// <summary>

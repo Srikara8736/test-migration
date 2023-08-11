@@ -120,7 +120,7 @@ public class UserService : IUserService
     /// <param name="userName">User Name</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>User Details</returns>
-    public async Task<ResultDto<UserResponseDto>> GetUserAuthByUser(UserDto userDto, CancellationToken ct)
+    public async Task<ResultDto<UserResponseDto>> GetUserAuthByUser(UserDto userDto, CancellationToken ct = default)
     {
         if (userDto == null)
         {

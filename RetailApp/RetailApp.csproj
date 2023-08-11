@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.9" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.15" />
@@ -23,6 +24,10 @@
     <ProjectReference Include="..\Retail.Data\Retail.Data.csproj" />
     <ProjectReference Include="..\Retail.Dtos\Retail.DTOs.csproj" />
     <ProjectReference Include="..\Retail.Services\Retail.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\StoreAssets\StoreFiles\" />
   </ItemGroup>
 
 </Project>

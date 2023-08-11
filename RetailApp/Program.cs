@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Retail.Data.Repository;
+using Retail.Services.Cad;
 using Retail.Services.Customers;
 using Retail.Services.Stores;
 using Retail.Services.UserAccounts;
@@ -88,6 +89,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
+builder.Services.AddScoped<ICadService, CadService>();
 
 builder.Services.AddHttpContextAccessor();
 

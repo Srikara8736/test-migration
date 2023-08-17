@@ -3,10 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.DTOs.Cad;
 using Retail.DTOs.UserAccounts;
+using Retail.DTOs.XML;
 using Retail.Services.Cad;
 using RetailApp.Authentication;
+using RetailApp.Configuration;
 using System.IO.Compression;
 using System.Net;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
@@ -38,6 +42,8 @@ namespace RetailApp.Controllers
 
         #region Utilities
 
+
+
         private async void UploadCadFileAsync(IFormFile source)
         {
             string Filepath = GetFilePath(source.FileName);
@@ -58,7 +64,9 @@ namespace RetailApp.Controllers
                 await source.CopyToAsync(stream);
 
             }
+            
             var result = Path.GetFileNameWithoutExtension(Filepath + "\\" + Filename);
+
             ZipFile.ExtractToDirectory(Filepath + "\\" + Filename, Filepath + "\\" + result);
         }
 
@@ -67,8 +75,37 @@ namespace RetailApp.Controllers
             return this._environment.WebRootPath + "\\StoreAssets\\StoreFiles\\" + fileName;
         }
 
+        private List<string> ManifestReader(string manifestContent, string xPath)
+        {
+            XmlDocument xmlManifest = new XmlDocument();
+            xmlManifest.LoadXml(manifestContent);
+            XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(xmlManifest.NameTable);
+            xmlNamespaceManager.AddNamespace("cad", "urn:ixicadpackage-schema");
+            XmlNodeList xmlNode = xmlManifest.DocumentElement.SelectNodes(xPath, xmlNamespaceManager);
+            return xmlNode.Cast<XmlNode>()
+                           .Select(node => node.InnerText).ToList();
+        }
+
+        private byte[] ZipStreamReader(ZipArchive zip, string fileName)
+        {
+            MemoryStream ms = null;
+            var zipArchiveEntry = zip.GetEntry(fileName);
+            if (zipArchiveEntry != null)
+            {
+                using (var unzippedEntryStream = zipArchiveEntry.Open())
+                {
+                    using (ms = new MemoryStream())
+                    {
+                        unzippedEntryStream.CopyTo(ms);
+                    }
+                }
+            }
+            return ms.ToArray();
+        }
+
 
         #endregion
+
 
 
 
@@ -116,7 +153,7 @@ namespace RetailApp.Controllers
 
         [HttpGet]
         [Route("External/Customers/GetStoresByCustomerNo")]
-        public List<Store> GetStoresByCustomerNo(string customerNo)
+        public List<Retail.Data.Entities.Stores.Store> GetStoresByCustomerNo(string customerNo)
         {
 
             return _cadService.GetStoresByCustomerNo(customerNo);
@@ -125,7 +162,7 @@ namespace RetailApp.Controllers
 
         [HttpPost]
         [Route("Cad/UploadCad")]
-        public object UploadCad([BindRequired] IFormFile cadFile)
+        public async Task<object> UploadCad([BindRequired] IFormFile cadFile)
         {
             if (cadFile.ContentType != "application/x-zip-compressed")
             {        
@@ -134,17 +171,36 @@ namespace RetailApp.Controllers
             }
 
 
-            try
-            {
-                UploadCadFileAsync(cadFile);
+            //try
+            //{
+                Message items = null;
+                string path = this._environment.WebRootPath + "\\StoreAssets\\cadspace.xml";
+
+                XmlSerializer serializer = new XmlSerializer(typeof(Message));
+
+                StreamReader reader = new StreamReader(path);
+                items = (Message)serializer.Deserialize(reader);
+                reader.Close();
+
+
+
+
+
+                var loadXml = await _cadService.LoadXMLData(items);
+
+
+
+
+                //UploadCadFileAsync(cadFile);
 
                 return this.Ok();
-            }
-            catch (Exception ex)
-            {
-             
-                return HttpStatusCode.InternalServerError;
-            }
+
+            //}
+            //catch (Exception ex)
+            //{
+
+            //    return HttpStatusCode.InternalServerError;
+            //}
 
         }
 

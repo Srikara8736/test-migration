@@ -1,15 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Retail.Data.Entities.UserAccount;
 using Retail.DTOs.Cad;
 using Retail.DTOs.UserAccounts;
 using Retail.DTOs.XML;
 using Retail.Services.Cad;
 using RetailApp.Authentication;
 using RetailApp.Configuration;
+using System.Collections;
+using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Reflection.PortableExecutable;
+using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
@@ -44,9 +51,9 @@ namespace RetailApp.Controllers
 
 
 
-        private async void UploadCadFileAsync(IFormFile source)
+        private (string filepath,Stream strem) UploadCadFileAsync(IFormFile source)
         {
-            string Filepath = GetFilePath(source.FileName);
+            string Filepath = GetFilePath();
             string Filename = source.FileName;
 
 
@@ -55,24 +62,28 @@ namespace RetailApp.Controllers
                 System.IO.Directory.CreateDirectory(Filepath);
             }
 
-            if (System.IO.File.Exists(Filepath))
+            if (System.IO.File.Exists(Filepath+ Filename))
             {
-                System.IO.File.Delete(Filepath);
+                System.IO.File.Delete(Filepath+ Filename);
             }
-            using (FileStream stream = System.IO.File.Create(Filepath + "\\" + Filename))
-            {
-                await source.CopyToAsync(stream);
 
-            }
+            FileStream stream = System.IO.File.Create(Filepath + "\\" + Filename);
+           
+                source.CopyToAsync(stream);
             
-            var result = Path.GetFileNameWithoutExtension(Filepath + "\\" + Filename);
+            
+          
+            
+          // var result = Path.GetFileNameWithoutExtension(Filepath + "\\" + Filename);
 
-            ZipFile.ExtractToDirectory(Filepath + "\\" + Filename, Filepath + "\\" + result);
+           // ZipFile.ExtractToDirectory(Filepath + "\\" + Filename, Filepath + "\\" + result);
+
+           return (Filepath, stream);
         }
 
-        private string GetFilePath(string fileName)
+        private string GetFilePath()
         {
-            return this._environment.WebRootPath + "\\StoreAssets\\StoreFiles\\" + fileName;
+            return this._environment.WebRootPath + "\\StoreAssets\\StoreFiles\\";
         }
 
         private List<string> ManifestReader(string manifestContent, string xPath)
@@ -100,7 +111,7 @@ namespace RetailApp.Controllers
                     }
                 }
             }
-            return ms.ToArray();
+            return ms?.ToArray();
         }
 
 
@@ -173,27 +184,67 @@ namespace RetailApp.Controllers
 
             //try
             //{
-                Message items = null;
-                string path = this._environment.WebRootPath + "\\StoreAssets\\cadspace.xml";
-
-                XmlSerializer serializer = new XmlSerializer(typeof(Message));
-
-                StreamReader reader = new StreamReader(path);
-                items = (Message)serializer.Deserialize(reader);
-                reader.Close();
 
 
+                //Message items = null;
+                //string path = this._environment.WebRootPath + "\\StoreAssets\\cadspace.xml";
 
+                //XmlSerializer serializer = new XmlSerializer(typeof(Message));
 
+               // StreamReader reader = new StreamReader(path);
+                //items = (Message)serializer.Deserialize(reader);
+                //reader.Close();
 
-                var loadXml = await _cadService.LoadXMLData(items);
+                //var loadXml = await _cadService.LoadXMLData(items);
 
 
 
 
-                //UploadCadFileAsync(cadFile);
+            var fileStream = UploadCadFileAsync(cadFile);
 
-                return this.Ok();
+            using (var zip = new ZipArchive(fileStream.strem, ZipArchiveMode.Read))
+            {
+                //Fetch Manifest.xml
+                //Extract the Manifest file
+                string manifestContent = Encoding.UTF8.GetString(ZipStreamReader(zip, "Manifest.xml"));
+
+
+                List<string> cadFileNames = null;
+                List<string> cadPDFFileNames = null;
+
+                if (manifestContent != string.Empty)
+                {
+                    string xPath = "//cad:CADXML/@name";
+                    cadFileNames = ManifestReader(manifestContent, xPath);
+
+                    string xpdfPath = "//cad:CADPDF/@name";
+                    cadPDFFileNames = ManifestReader(manifestContent, xpdfPath);
+                }
+
+
+                foreach (string cadFileName in cadFileNames)
+                {
+
+                  
+
+                    byte[] CADContent = ZipStreamReader(zip, cadFileName);
+
+                    XmlSerializer serializer = new XmlSerializer(typeof(Message));
+
+                    Message cadData = (Message)serializer.Deserialize(new MemoryStream(CADContent));
+
+                   if(cadData != null)
+                    {
+                        //var loadXml = await _cadService.LoadXMLData(items);
+                    }
+
+
+                }
+
+            }
+
+
+            return this.Ok();
 
             //}
             //catch (Exception ex)

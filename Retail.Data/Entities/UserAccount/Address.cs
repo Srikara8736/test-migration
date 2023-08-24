@@ -38,4 +38,16 @@ public class Address : BaseEntity
     /// </summary>
     [StringLength(10)]
     public string ZipCode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Latitude
+    /// </summary>
+    [StringLength(50)]
+    public string? Latitude   { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Longitude
+    /// </summary>
+    [StringLength(50)]
+    public string? Longitude { get; set; }
 }

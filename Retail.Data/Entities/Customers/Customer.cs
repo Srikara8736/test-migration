@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Retail.Data.Entities.UserAccount;
+using Retail.Data.Entities.FileSystem;
 
 namespace Retail.Data.Entities.Customers;
 
@@ -70,5 +71,13 @@ public class Customer : BaseEntity
     /// </summary>
     [Required]
     public bool IsDeleted { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the reference of Image entity
+    /// </summary>
+    [ForeignKey(nameof(Image))]
+    public Guid? LogoImageId { get; set; }
+    public virtual Image Image { get; set; }
 
 }

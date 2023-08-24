@@ -116,6 +116,14 @@ public class RepositoryContext : DbContext
            .HasForeignKey(x => x.StoreDataId)
            .OnDelete(DeleteBehavior.ClientSetNull);
 
+
+        builder.Entity<Customer>()
+         .HasOne(x => x.Image)
+         .WithMany()
+         .HasForeignKey(x => x.LogoImageId)
+         .OnDelete(DeleteBehavior.ClientSetNull)
+         .IsRequired(false);
+
         base.OnModelCreating(builder);
     }
 }

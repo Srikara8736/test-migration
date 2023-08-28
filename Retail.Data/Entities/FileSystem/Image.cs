@@ -14,7 +14,7 @@ public class Image : BaseEntity
     /// Gets or sets the File Name
     /// </summary>
     [Required]
-    [StringLength(50)]
+    [StringLength(256)]
     public string FileName { get; set; }
 
 

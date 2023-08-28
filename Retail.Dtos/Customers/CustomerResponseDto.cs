@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Retail.DTOs.Stores;
 
 namespace Retail.DTOs.Customers;
-
-
 
 /// <summary>
 /// Represents a Customer DTO Model
@@ -17,6 +15,11 @@ public class CustomerResponseDto : CustomerDto
     /// <summary>
     /// Gets or sets the ImageUrl
     /// </summary>
-    //public string? ImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Customer Stores
+    /// </summary>
+    public CustomerStoreDto CustomerStores { get; set; }
 
 }

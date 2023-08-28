@@ -1,4 +1,6 @@
-﻿using Retail.DTOs;
+﻿using Retail.Data.Entities.FileSystem;
+using Retail.Data.Entities.Stores;
+using Retail.DTOs;
 using Retail.DTOs.Stores;
 using Retail.Services.Common;
 using System;
@@ -11,6 +13,26 @@ namespace Retail.Services.Stores;
 
 public interface IStoreService
 {
+
+    Task<List<StoreImage>> GetStoreImagesByStoreId(Guid storeId);
+
+    Task<Image> GetImageById(Guid id, CancellationToken ct = default);
+
+    Task<Image> InsertImage(Image image);
+    Task<StoreImage> InsertStoreImage(StoreImage image);
+
+    Task<ResultDto<bool>> UploadStoreImage(string storeId, string imgUrl, string fileType, string fileExtension);
+
+    /// <summary>
+    /// Gets all Stores
+    /// </summary>
+    /// <param name="customerId">customerId</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store List By customer</returns>
+    Task<List<StoreResponseDto>> GetStoresByCustomerId(Guid customerId , CancellationToken ct = default);
+
+
+
     /// <summary>
     /// gets all Stores
     /// </summary>

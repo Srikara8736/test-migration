@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -56,6 +57,10 @@ public class CustomerDto
     public AddressDto Address { get; set; }
 
 
+    public Guid? LogoImageId { get; set; }
+
+    public IFormFile? CustomerLogo { get; set; }
+
 }
 
 public class AddressDto 
@@ -84,4 +89,16 @@ public class AddressDto
     /// </summary>
     [StringLength(10)]
     public string ZipCode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Latitude
+    /// </summary>
+    [StringLength(50)]
+    public string? Latitude { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Longitude
+    /// </summary>
+    [StringLength(50)]
+    public string? Longitude { get; set; }
 }

@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Retail.Data.Entities.FileSystem;
 using Retail.Data.Entities.Stores;
+using Retail.Data.Entities.UserAccount;
 using Retail.Data.Repository;
 using Retail.DTOs;
 using Retail.DTOs.Customers;
@@ -8,6 +11,7 @@ using Retail.DTOs.Roles;
 using Retail.DTOs.Stores;
 using Retail.Services.Common;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 
 namespace Retail.Services.Stores;
@@ -18,16 +22,137 @@ public class StoreService : IStoreService
 
     private readonly RepositoryContext _repositoryContext;
     private readonly IMapper _mapper;
+    private readonly IConfiguration _configuration;
 
     #endregion
 
     #region Ctor
-    public StoreService(RepositoryContext repositoryContext, IMapper mapper)
+    public StoreService(RepositoryContext repositoryContext, IMapper mapper, IConfiguration configuration)
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
+        _configuration = configuration;
     }
     #endregion
+
+    public async Task<List<StoreImage>> GetStoreImagesByStoreId(Guid storeId)
+    {
+        if (storeId == null)
+            return null;
+
+        return await _repositoryContext.StoreImages.Where(x => x.StoreId == storeId).ToListAsync();
+    }
+
+
+    public async Task<Image> GetImageById(Guid id, CancellationToken ct = default)
+    {
+        if (id == null)
+            return null;
+
+        return await _repositoryContext.Images.FirstOrDefaultAsync(x => x.Id == id, cancellationToken: ct);
+    }
+
+    public async Task<Image> InsertImage(Image image)
+    {
+        if (image == null)
+            return null;
+         await _repositoryContext.Images.AddAsync(image);
+        await _repositoryContext.SaveChangesAsync();
+        return image;
+
+    }
+
+    public async Task<StoreImage> InsertStoreImage(StoreImage image)
+    {
+        if (image == null)
+            return null;
+        await _repositoryContext.StoreImages.AddAsync(image);
+        await _repositoryContext.SaveChangesAsync();
+        return image;
+
+
+    }
+
+    /// <summary>
+    /// Gets all Stores
+    /// </summary>
+    /// <param name="customerId">customerId</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store List By customer</returns>
+    public async Task<List<StoreResponseDto>> GetStoresByCustomerId(Guid customerId, CancellationToken ct = default)
+    {
+
+       var stores = await _repositoryContext.Stores.Where(x => x.CustomerId == customerId).ToListAsync();
+
+    
+        if (stores == null)
+        {
+            return null;
+        }
+
+        var storeResponse = _mapper.Map<List<StoreResponseDto>>(stores);
+        var path = _configuration["AssetLocations:StoreImages"];
+
+
+        foreach (var store in storeResponse)
+        {
+            if (store.AddressId != null)
+            {
+
+                var result = _repositoryContext.Addresses.Where(x => x.Id == store.AddressId).FirstOrDefault();
+                if (result != null)
+                {
+                    var customerAddress = _mapper.Map<AddressDto>(result);
+                    store.Address = customerAddress;
+                }
+;
+            }
+
+            if (store.CustomerId != null)
+            {
+
+                var result = _repositoryContext.Customers.Where(x => x.Id == store.CustomerId).FirstOrDefault();
+                if (result != null)
+                {
+                    var customerAddress = _mapper.Map<CustomerDto>(result);
+                    store.customer = customerAddress;
+                }
+;
+            }
+            if (store.StatusId != null)
+            {
+
+                var result = _repositoryContext.CodeMasters.Where(x => x.Id == store.StatusId).FirstOrDefault();
+                if (result != null)
+                {
+
+                    store.StoreStatus = result.Value;
+                }
+;
+            }
+
+            var storeImages = await GetStoreImagesByStoreId(store.Id);
+            foreach(var img in storeImages)
+            {
+                var image = await GetImageById((Guid)img.ImageId);
+                if (image != null)
+                    store.StoreImages.Add( path + image.FileName);
+
+                
+            }
+
+
+
+        }
+
+
+       
+        return storeResponse;
+
+    }
+
+
+
 
     /// <summary>
     /// gets all Stores
@@ -67,9 +192,14 @@ public class StoreService : IStoreService
                 ErrorMessage = StringResources.NoResultsFound,
                 StatusCode = HttpStatusCode.NoContent
             };
+
+            return errorResponse;
         }
 
         var storeResponse = _mapper.Map<PagedList<StoreResponseDto>>(stores);
+
+        var path = _configuration["AssetLocations:StoreImages"];
+
 
         foreach (var store in storeResponse)
         {
@@ -96,8 +226,28 @@ public class StoreService : IStoreService
                 }
 ;
             }
+            if (store.StatusId != null)
+            {
+
+                var result = _repositoryContext.CodeMasters.Where(x => x.Id == store.StatusId).FirstOrDefault();
+                if (result != null)
+                {
+                   
+                    store.StoreStatus = result.Value;
+                }
+;
+            }
 
 
+            var storeImages = await GetStoreImagesByStoreId(store.Id);
+            foreach (var img in storeImages)
+            {
+                var image = await GetImageById((Guid)img.ImageId);
+                if (image != null)
+                    store.StoreImages.Add(path + image.FileName);
+
+
+            }
 
 
         }
@@ -543,5 +693,74 @@ public class StoreService : IStoreService
     }
 
 
+    public async Task<ResultDto<bool>> UploadStoreImage(string storeId, string imgUrl, string fileType, string fileExtension)
+    {
+        if(storeId == null || imgUrl == null)
+        {
+            var customerResult = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest,
+                Data = false
 
+            };          
+
+
+            return customerResult;
+        }
+
+        var imageItem = new Image()
+        {
+            FileName = imgUrl,
+            UploadedOn = DateTime.UtcNow,
+            FileExtension = fileExtension,
+            FileType = fileType,
+            UploadedBy = "Retail"
+
+        };
+
+        var img = await InsertImage(imageItem);
+        if(img == null)
+        {
+            var customerResult = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest,
+                Data = false
+
+            };
+
+            return customerResult;
+        }
+
+        var storeImage = new StoreImage()
+        {
+            ImageId = img.Id,
+            StoreId = Guid.Parse(storeId)
+        };
+
+        var storeResult = await InsertStoreImage(storeImage);
+
+        if (storeResult == null)
+        {
+            var customerResult = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest,
+                Data = false
+
+            };
+        }
+
+        var result = new ResultDto<bool>
+        {
+           IsSuccess = true,
+            StatusCode = HttpStatusCode.OK,
+            Data = true
+
+        };
+
+
+        return result;
+    }
 }

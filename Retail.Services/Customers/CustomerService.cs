@@ -8,6 +8,11 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Retail.Data.Entities.UserAccount;
 using Retail.DTOs.UserAccounts;
+using Retail.Services.Stores;
+using Retail.DTOs.Stores;
+using Microsoft.Extensions.Configuration;
+using Retail.Data.Entities.FileSystem;
+using Retail.DTOs.Cad;
 
 namespace Retail.Services.Customers;
 
@@ -20,16 +25,20 @@ public class CustomerService : ICustomerService
 
     private readonly RepositoryContext _repositoryContext;
     private readonly IMapper _mapper;
+    private readonly IStoreService _storeService;
+    private readonly IConfiguration _configuration;
 
     #endregion
 
 
     #region Ctor
 
-    public CustomerService(RepositoryContext repositoryContext, IMapper mapper)
+    public CustomerService(RepositoryContext repositoryContext, IMapper mapper, IStoreService storeService, IConfiguration configuration)
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
+        _storeService =  storeService;
+        _configuration = configuration;
     }
 
     #endregion
@@ -134,16 +143,75 @@ public class CustomerService : ICustomerService
 
         var customerResponse = _mapper.Map<PagedList<CustomerResponseDto>>(customers);
 
-      
-        foreach( var customer in customerResponse)
+        var path = _configuration["AssetLocations:ClientLogo"];
+
+        foreach ( var customer in customerResponse)
         {
-            var result = _repositoryContext.Addresses.Where( x => x.Id  == customer.AddressId).FirstOrDefault();
-            if(result != null)
+            if (customer.LogoImageId != null)
+            {
+                
+                var image = await _storeService.GetImageById((Guid)customer.LogoImageId);
+                if (image != null)
+                    customer.ImageUrl = path + image.FileName;
+
+            }
+
+            var result = _repositoryContext.Addresses.Where(x => x.Id == customer.AddressId).FirstOrDefault();
+            if (result != null)
             {
                 var customerAddress = _mapper.Map<AddressDto>(result);
                 customer.Address = customerAddress;
             }
-            
+
+
+            var stores = await _storeService.GetStoresByCustomerId(customer.Id);
+
+            if (stores != null)
+            {
+
+
+             
+                var customerStore = new CustomerStoreDto
+                {
+                    NumberOfStore = stores.Count,
+                    Store = stores
+                };
+
+                foreach( var store in stores)
+                {
+                    var areaDetails = await _storeService.GetGridData(store.Id);
+                    if(areaDetails.Data != null)
+                    {
+                        customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
+                        customerStore.TotalSalesArea = customerStore.TotalSalesArea + areaDetails.Data.Where(y => y.AreaType == "SalesArea").Sum(x => x.TotalArea);
+                    }
+
+                }
+
+
+                var storeStatusItems = new List<StoreStatusDto>();
+                foreach (var store in stores.GroupBy(x => x.StoreStatus).Select(group => new {
+                    Status = group.Key,
+                    Count = group.Count()
+                }))
+                {
+                    var storeStatusDto = new StoreStatusDto
+                    {
+                        Status = store.Status,
+                        NumberOfStore = store.Count
+                    };
+
+                    storeStatusItems.Add(storeStatusDto);
+
+                }
+
+                customerStore.StoreStatus = storeStatusItems;
+
+
+                customer.CustomerStores = customerStore;
+
+            }
+
 
 
         }
@@ -191,6 +259,15 @@ public class CustomerService : ICustomerService
 
         var customerResponse = _mapper.Map<CustomerResponseDto>(user);
 
+        if (customerResponse.LogoImageId != null) {
+            var path = _configuration["AssetLocations:ClientLogo"];
+
+            var image = await _storeService.GetImageById((Guid)customerResponse.LogoImageId);
+            if (image != null)
+                customerResponse.ImageUrl = path  + image.FileName;
+
+        }
+
         var result = _repositoryContext.Addresses.Where(x => x.Id == customerResponse.AddressId).FirstOrDefault();
         if (result != null)
         {
@@ -198,6 +275,50 @@ public class CustomerService : ICustomerService
             customerResponse.Address = customerAddress;
         }
 
+
+        var stores = await _storeService.GetStoresByCustomerId(customerResponse.Id);
+
+        if(stores != null)
+        {
+            var customerStore = new CustomerStoreDto
+            {
+                NumberOfStore = stores.Count,
+                Store = stores
+            };
+
+            foreach (var store in stores)
+            {
+                var areaDetails = await _storeService.GetGridData(store.Id);
+                if (areaDetails.Data != null)
+                {
+                    customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
+                    customerStore.TotalSalesArea = customerStore.TotalSalesArea + areaDetails.Data.Where(y => y.AreaType == "SalesArea").Sum(x => x.TotalArea);
+                }
+
+            }
+
+            var storeStatusItems = new List<StoreStatusDto>();
+            foreach (var store in stores.GroupBy(x => x.StoreStatus).Select(group => new {
+                Status = group.Key,
+                Count = group.Count()
+            }))
+            {
+                var storeStatusDto = new StoreStatusDto
+                {
+                    Status = store.Status,
+                    NumberOfStore = store.Count
+                };
+
+                storeStatusItems.Add(storeStatusDto);
+
+            }
+
+            customerStore.StoreStatus = storeStatusItems;
+
+
+            customerResponse.CustomerStores = customerStore;
+
+        }
 
 
         var response = new ResultDto<CustomerResponseDto>
@@ -210,7 +331,7 @@ public class CustomerService : ICustomerService
 
 
 
-    public async Task<ResultDto<CustomerResponseDto>> UploadLogoByCustomerId(Guid id, string ImgUrl, CancellationToken ct)
+    public async Task<ResultDto<CustomerResponseDto>> UploadLogoByCustomerId(Guid id, string imageUrl, string fileType, string fileExtension, CancellationToken ct)
     {
         if (id == null)
         {
@@ -221,6 +342,9 @@ public class CustomerService : ICustomerService
             };
             return customerResult;
         }
+
+      
+
         var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (customer == null)
         {
@@ -232,10 +356,29 @@ public class CustomerService : ICustomerService
             return customerResult;
         }
 
-        //user.ImageUrl = ImgUrl;
+        var imgItem = new Image()
+        {
+            FileName = imageUrl,
+            UploadedOn = DateTime.UtcNow,
+            FileExtension = fileExtension,
+            FileType = fileType,
+            UploadedBy = "Retail"
+
+        };
+
+        var img = await _storeService.InsertImage(imgItem);
+        
+        if(img != null)
+            customer.LogoImageId = img.Id;
+
+
 
         await _repositoryContext.SaveChangesAsync(ct);
         var customerResponse = _mapper.Map<CustomerResponseDto>(customer);
+
+        var customerItem = await GetCustomerById(customerResponse.Id, ct);
+        if (customerItem.Data != null)
+            customerResponse = customerItem.Data;
 
 
         var response = new ResultDto<CustomerResponseDto>
@@ -295,10 +438,9 @@ public class CustomerService : ICustomerService
 
         var customerResponse = _mapper.Map<CustomerResponseDto>(customer);
 
-        
-       var customerAddress = _mapper.Map<AddressDto>(address);
-       customerResponse.Address = customerAddress;
-
+        var customerItem = await GetCustomerById(customerResponse.Id,ct);
+        if (customerItem.Data != null)
+            customerResponse = customerItem.Data;
 
         var resultResponse = new ResultDto<CustomerResponseDto>
         {
@@ -358,13 +500,9 @@ public class CustomerService : ICustomerService
         
         var customerResponse = _mapper.Map<CustomerResponseDto>(result);
 
-        var address = await UpdateCustomerAddress(result.AddressId, customerDto.Address, ct);
-        if(address != null)
-        {
-            var customerAddress = _mapper.Map<AddressDto>(address);
-            customerResponse.Address = customerAddress;
-
-        }
+        var customerItem = await GetCustomerById(customerResponse.Id, ct);
+        if (customerItem.Data != null)
+            customerResponse = customerItem.Data;
 
 
         var successResponse = new ResultDto<CustomerResponseDto>

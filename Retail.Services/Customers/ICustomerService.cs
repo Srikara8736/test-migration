@@ -31,7 +31,7 @@ public interface ICustomerService
     /// <returns> User Infromation</returns>
     Task<ResultDto<CustomerResponseDto>> GetCustomerById(Guid id, CancellationToken ct);
 
-    Task<ResultDto<CustomerResponseDto>> UploadLogoByCustomerId(Guid id, string ImgUrl, CancellationToken ct);
+    Task<ResultDto<CustomerResponseDto>> UploadLogoByCustomerId(Guid id, string ImgUrl,string fileType,string fileExtension, CancellationToken ct);
 
 
     /// <summary>

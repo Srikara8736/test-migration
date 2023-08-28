@@ -33,7 +33,29 @@ public class StoreDto
 
 
     /// <summary>
-    /// Gets or sets the TotalArea
+    /// Gets or sets the AddressId
     /// </summary>
     public Guid AddressId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the StatusId
+    /// </summary>
+    public Guid StatusId { get; set; }
+}
+
+public class CustomerStoreDto
+{
+
+    public int NumberOfStore { get; set; }
+    public decimal TotalStoreArea { get; set; }
+    public decimal TotalSalesArea { get; set; }
+    public List<StoreResponseDto> Store { get; set; } = new();
+    public List<StoreStatusDto> StoreStatus { get; set; } = new();
+
+}
+
+public class StoreStatusDto
+{
+    public string Status { get; set; }
+    public int NumberOfStore { get; set; }    
 }

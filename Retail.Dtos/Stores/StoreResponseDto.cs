@@ -9,6 +9,9 @@ public class StoreResponseDto : StoreDto
     /// </summary>
     public Guid Id { get; set; }
 
+
+    public string StoreStatus { get; set; }
+
     /// <summary>
     /// Gets or sets the Address
     /// </summary>
@@ -19,4 +22,7 @@ public class StoreResponseDto : StoreDto
     /// </summary>
     public AddressDto Address { get; set; }
 
+    public List<string> StoreImages { get; set; } = new();
+
 }
+

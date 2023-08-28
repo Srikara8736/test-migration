@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Retail.Data.Entities.Customers;
 using Retail.DTOs.Customers;
 using Retail.Services.Customers;
+using Retail.Services.Stores;
 using RetailApp.Helpers;
 
 namespace RetailApp.Controllers;
@@ -32,11 +34,11 @@ public class CustomerController : BaseController
 
     #region Utilities
 
-    private async Task<string> UploadImageAsync(IFormFile source, string projectId)
+    private async Task<string> UploadImageAsync(IFormFile source, string customerId)
     {
         // var source = projectModel.Image;
         string Filename = source.FileName;
-        string Filepath = GetFilePath(projectId);
+        string Filepath = GetFilePath(customerId);
 
         if (!System.IO.Directory.Exists(Filepath))
         {
@@ -55,27 +57,23 @@ public class CustomerController : BaseController
 
 
         }
-        return GetImagebyProduct(projectId);
+        return GetImagebyCustomerId(customerId);
     }
 
-    private string GetFilePath(string CustomerCode)
+    private string GetFilePath(string customerId)
     {
-        return this._environment.WebRootPath + "\\ClientAssets\\customerlogo\\" + CustomerCode;
+        return this._environment.WebRootPath + "\\ClientAssets\\CustomerLogo\\" + customerId;
     }
 
-    private string GetImagebyProduct(string customerCode)
+    private string GetImagebyCustomerId(string customerId)
     {
         string ImageUrl = string.Empty;
-        // string HostUrl = "https://localhost:7285/";
-        string Filepath = GetFilePath(customerCode);
+        string Filepath = GetFilePath(customerId);
         string Imagepath = Filepath + "\\image.png";
-        if (!System.IO.File.Exists(Imagepath))
+        if (System.IO.File.Exists(Imagepath))
         {
-            ImageUrl = "/ClientAssets/common/noimage.png";
-        }
-        else
-        {
-            ImageUrl = "/ClientAssets/customerlogo/" + customerCode + "/image.png";
+            ImageUrl = customerId + "/image.png";
+    
         }
         return ImageUrl;
 
@@ -124,10 +122,18 @@ public class CustomerController : BaseController
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Return newly added Customer</returns>
     [HttpPost]
-    public async Task<IActionResult> AddCustomer([FromBody] CustomerDto customerModel, CancellationToken ct = default)
+    public async Task<IActionResult> AddCustomer([FromForm] CustomerDto customerModel, CancellationToken ct = default)
     {
+        var customer = await _customerService.InsertCustomer(customerModel, ct);
 
-        return this.Result(await _customerService.InsertCustomer(customerModel, ct));
+        if (customerModel.CustomerLogo != null & customer.Data != null)
+        {
+            var imgpath = await UploadImageAsync(customerModel.CustomerLogo, customer.Data.Id.ToString());
+
+            if(imgpath != null)
+                customer = await _customerService.UploadLogoByCustomerId(customer.Data.Id, imgpath, customerModel.CustomerLogo.ContentType, customerModel.CustomerLogo.ContentType, ct);
+        }
+        return this.Result(customer);
 
     }
 
@@ -140,8 +146,20 @@ public class CustomerController : BaseController
     /// <returns>Return updated Customer Information</returns>
     [HttpPut]
     [Route("{id}")]
-    public async Task<IActionResult> UpdateCustomer(Guid id, [FromBody] CustomerDto customerModel, CancellationToken ct)
+    public async Task<IActionResult> UpdateCustomer(Guid id, [FromForm] CustomerDto customerModel, CancellationToken ct)
     {
+        if (customerModel.CustomerLogo != null )
+        {
+            var imgpath = await UploadImageAsync(customerModel.CustomerLogo, id.ToString());
+
+            if(customerModel.LogoImageId == null)
+            {
+                if (imgpath != null)
+                    await _customerService.UploadLogoByCustomerId(id, imgpath, customerModel.CustomerLogo.ContentType, customerModel.CustomerLogo.ContentType, ct);
+            }
+
+          
+        }
         return this.Result(await _customerService.UpdateCustomer(id, customerModel, ct));
     }
 
@@ -161,6 +179,7 @@ public class CustomerController : BaseController
         return this.Result(await _customerService.DeleteCustomer(new Guid(id), ct));
 
     }
+
 
 
 

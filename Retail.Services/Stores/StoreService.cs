@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.FileSystem;
 using Retail.Data.Entities.Stores;
 using Retail.Data.Entities.UserAccount;
@@ -13,6 +14,7 @@ using Retail.Services.Common;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+
 
 namespace Retail.Services.Stores;
 
@@ -62,6 +64,21 @@ public class StoreService : IStoreService
 
     }
 
+
+
+    public async Task<bool> DeleteImage(Guid ImageId)
+    {
+        var ImageItem = await _repositoryContext.Images.FirstOrDefaultAsync(x => x.Id == ImageId);
+
+        if (ImageItem == null)
+            return false;
+
+        _repositoryContext.Images.Remove(ImageItem);
+        await _repositoryContext.SaveChangesAsync();
+        return true;
+
+    }
+
     public async Task<StoreImage> InsertStoreImage(StoreImage image)
     {
         if (image == null)
@@ -72,6 +89,20 @@ public class StoreService : IStoreService
 
 
     }
+
+
+    public async Task<CustomerImage> InsertCustomerImage(CustomerImage image)
+    {
+        if (image == null)
+            return null;
+        await _repositoryContext.CustomerImages.AddAsync(image);
+        await _repositoryContext.SaveChangesAsync();
+        return image;
+
+
+    }
+
+
 
     /// <summary>
     /// Gets all Stores
@@ -134,9 +165,23 @@ public class StoreService : IStoreService
             var storeImages = await GetStoreImagesByStoreId(store.Id);
             foreach(var img in storeImages)
             {
+
                 var image = await GetImageById((Guid)img.ImageId);
                 if (image != null)
-                    store.StoreImages.Add( path + image.FileName);
+                {
+                    var storeImageItem = new ImageDto()
+                    {
+                        Id = img.Id,
+                        ImageId = image.Id,
+                        ImageUrl = path + image.FileName
+
+
+                    };                 
+                    
+                    
+                    store.StoreImages.Add(storeImageItem);
+                }
+                   
 
                 
             }
@@ -244,7 +289,18 @@ public class StoreService : IStoreService
             {
                 var image = await GetImageById((Guid)img.ImageId);
                 if (image != null)
-                    store.StoreImages.Add(path + image.FileName);
+                {
+                    var storeImageItem = new ImageDto()
+                    {
+                        Id = img.Id,
+                        ImageId = image.Id,
+                        ImageUrl = path + image.FileName
+
+                    };
+
+
+                    store.StoreImages.Add(storeImageItem);
+                }
 
 
             }
@@ -763,4 +819,38 @@ public class StoreService : IStoreService
 
         return result;
     }
+
+
+
+    public virtual async Task<ResultDto<bool>> DeleteStoreImage(Guid storeId, Guid storeImageId, Guid ImageId, CancellationToken ct = default)
+    {
+        var storeImage = await _repositoryContext.StoreImages.FirstOrDefaultAsync(x => x.Id == storeImageId && x.StoreId == storeId, ct);
+        if (storeImage == null)
+        {
+            var response = new ResultDto<bool>
+            {
+                IsSuccess = false,
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return response;
+
+        }
+
+        _repositoryContext.StoreImages.Remove(storeImage);
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var deleteImage = await DeleteImage(ImageId);
+
+        var successResponse = new ResultDto<bool>
+        {
+            IsSuccess = true,
+            StatusCode = HttpStatusCode.OK
+        };
+        return successResponse;
+
+
+
+    }
+
 }

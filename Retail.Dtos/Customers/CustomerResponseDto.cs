@@ -15,11 +15,15 @@ public class CustomerResponseDto : CustomerDto
     /// <summary>
     /// Gets or sets the ImageUrl
     /// </summary>
-    public string? ImageUrl { get; set; }
+    public string? Logo { get; set; }
 
     /// <summary>
     /// Gets or sets the Customer Stores
     /// </summary>
     public CustomerStoreDto CustomerStores { get; set; }
+
+
+    public List<ImageDto> CustomerImages { get; set; } = new();
+
 
 }

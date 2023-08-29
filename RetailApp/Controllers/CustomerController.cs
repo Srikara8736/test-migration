@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.Data.Entities.Customers;
+using Retail.DTOs;
 using Retail.DTOs.Customers;
 using Retail.Services.Customers;
 using Retail.Services.Stores;
 using RetailApp.Helpers;
+using System.IO;
 
 namespace RetailApp.Controllers;
 
@@ -34,11 +37,11 @@ public class CustomerController : BaseController
 
     #region Utilities
 
-    private async Task<string> UploadImageAsync(IFormFile source, string customerId)
+    private async Task<string> UploadCustomerLogo(IFormFile source, string customerId)
     {
         // var source = projectModel.Image;
         string Filename = source.FileName;
-        string Filepath = GetFilePath(customerId);
+        string Filepath = GetLogoPath(customerId);
 
         if (!System.IO.Directory.Exists(Filepath))
         {
@@ -57,27 +60,77 @@ public class CustomerController : BaseController
 
 
         }
-        return GetImagebyCustomerId(customerId);
+        return GetLogobyCustomerId(customerId);
     }
 
-    private string GetFilePath(string customerId)
-    {
-        return this._environment.WebRootPath + "\\ClientAssets\\CustomerLogo\\" + customerId;
-    }
 
-    private string GetImagebyCustomerId(string customerId)
+
+    private string GetLogobyCustomerId(string customerId)
     {
         string ImageUrl = string.Empty;
-        string Filepath = GetFilePath(customerId);
+        string Filepath = GetLogoPath(customerId);
         string Imagepath = Filepath + "\\image.png";
         if (System.IO.File.Exists(Imagepath))
         {
             ImageUrl = customerId + "/image.png";
-    
+
         }
         return ImageUrl;
 
     }
+
+
+    private string GetLogoPath(string customerId)
+    {
+        return this._environment.WebRootPath + "\\ClientAssets\\CustomerLogo\\" + customerId;
+    }
+
+
+    private async Task<string> UploadImageAsync(IFormFile source, string storeId)
+    {
+        // var source = projectModel.Image;
+        string Filename = source.FileName;
+        string Filepath = GetImagePath(storeId);
+
+        if (!System.IO.Directory.Exists(Filepath))
+        {
+            System.IO.Directory.CreateDirectory(Filepath);
+        }
+
+        string imagepath = Filepath + "\\" + Filename;
+
+        if (System.IO.File.Exists(imagepath))
+        {
+            System.IO.File.Delete(imagepath);
+        }
+        using (FileStream stream = System.IO.File.Create(imagepath))
+        {
+            await source.CopyToAsync(stream);
+
+
+        }
+        return GetImagebyCustomerId(storeId, Filename);
+    }
+    
+
+    private string GetImagePath(string customerId)
+    {
+        return this._environment.WebRootPath + "\\ClientAssets\\CustomerImage\\" + customerId;
+    }
+    private string GetImagebyCustomerId(string customerId, string fileName)
+    {
+        string ImageUrl = string.Empty;
+        string Filepath = GetImagePath(customerId);
+        string Imagepath = Filepath + "\\" + fileName;
+        if (System.IO.File.Exists(Imagepath))
+        {
+            ImageUrl = customerId + "/" + fileName;
+        }
+
+        return ImageUrl;
+
+    }
+
 
     #endregion
 
@@ -128,7 +181,7 @@ public class CustomerController : BaseController
 
         if (customerModel.CustomerLogo != null & customer.Data != null)
         {
-            var imgpath = await UploadImageAsync(customerModel.CustomerLogo, customer.Data.Id.ToString());
+            var imgpath = await UploadCustomerLogo(customerModel.CustomerLogo, customer.Data.Id.ToString());
 
             if(imgpath != null)
                 customer = await _customerService.UploadLogoByCustomerId(customer.Data.Id, imgpath, customerModel.CustomerLogo.ContentType, customerModel.CustomerLogo.ContentType, ct);
@@ -150,7 +203,7 @@ public class CustomerController : BaseController
     {
         if (customerModel.CustomerLogo != null )
         {
-            var imgpath = await UploadImageAsync(customerModel.CustomerLogo, id.ToString());
+            var imgpath = await UploadCustomerLogo(customerModel.CustomerLogo, id.ToString());
 
             if(customerModel.LogoImageId == null)
             {
@@ -181,8 +234,57 @@ public class CustomerController : BaseController
     }
 
 
+    /// <summary>
+    ///Update Customer Images
+    /// </summary>
+    /// <param name="customerId">customerId</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return Customer information</returns>
+    [HttpPut]
+    [Route("UploadCustomerImage/{id}")]
+    public async Task<IActionResult> UploadCustomerImage(string customerId, List<IFormFile> customerImage, CancellationToken ct = default)
+    {
+
+        var result = new ResultDto<bool>();
+
+        foreach (var file in customerImage)
+        {
+            var imgUrl = await UploadImageAsync(file, customerId);
+
+            if (imgUrl != null)
+            {
+                result = await _customerService.UploadCustomerImage(customerId, imgUrl, file.ContentType, file.ContentType);
+            }
+        }
+
+        return this.Result(result);
+    }
+
+    [HttpDelete]
+    [Route("DeleteCustomerImage")]
+    public async Task<IActionResult> DeleteCustomerImage([BindRequired]Guid customerId, [BindRequired] Guid customerImageId,[BindRequired]Guid ImageId ,[BindRequired] string ImgUrl, CancellationToken ct = default)
+    {
+
+        var customerImage = await _customerService.DeleteCustomerImage(customerId, customerImageId, ImageId, ct);
+
+        if (!customerImage.IsSuccess)
+            return this.Result(customerImage);
+
+        string Filepath = GetImagePath(customerId.ToString());
+        var filename = Path.GetFileName(ImgUrl);
+        string imagepath = Filepath + "\\" + filename;
+
+        if (System.IO.File.Exists(imagepath))
+        {
+            System.IO.File.Delete(imagepath);
+        }
+
+
+        return this.Result(customerImage);
+
+    }
 
 
     #endregion
 
-}
+    }

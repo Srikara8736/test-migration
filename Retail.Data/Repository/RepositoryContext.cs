@@ -42,8 +42,9 @@ public class RepositoryContext : DbContext
     public DbSet<StoreImage> StoreImages { get; set; }
     public DbSet<StoreSpace> StoreSpaces { get; set; }
     public DbSet<StoreProject> StoreProjects { get; set; }
-    public DbSet<StoreCategoryAreaTypeGroup> StoreCategoryAreaTypeGroups { get; set; }  
+    public DbSet<StoreCategoryAreaTypeGroup> StoreCategoryAreaTypeGroups { get; set; }
 
+    public DbSet<CustomerImage> CustomerImages { get; set; }
 
 
 

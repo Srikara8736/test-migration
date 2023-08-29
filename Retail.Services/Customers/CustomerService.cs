@@ -13,6 +13,8 @@ using Retail.DTOs.Stores;
 using Microsoft.Extensions.Configuration;
 using Retail.Data.Entities.FileSystem;
 using Retail.DTOs.Cad;
+using Retail.Data.Entities.Stores;
+using System.IO;
 
 namespace Retail.Services.Customers;
 
@@ -110,6 +112,18 @@ public class CustomerService : ICustomerService
 
     #region Methods
 
+
+
+    public async Task<List<CustomerImage>> GetCustomerImagesByCustomerId(Guid customerId)
+    {
+        if (customerId == null)
+            return null;
+
+        return await _repositoryContext.CustomerImages.Where(x => x.CustomerId == customerId).ToListAsync();
+    }
+
+
+
     /// <summary>
     /// gets all Customers
     /// </summary>
@@ -152,7 +166,7 @@ public class CustomerService : ICustomerService
                 
                 var image = await _storeService.GetImageById((Guid)customer.LogoImageId);
                 if (image != null)
-                    customer.ImageUrl = path + image.FileName;
+                    customer.Logo = path + image.FileName;
 
             }
 
@@ -264,7 +278,28 @@ public class CustomerService : ICustomerService
 
             var image = await _storeService.GetImageById((Guid)customerResponse.LogoImageId);
             if (image != null)
-                customerResponse.ImageUrl = path  + image.FileName;
+                customerResponse.Logo = path  + image.FileName;
+
+        }
+
+        var customerImageList = await GetCustomerImagesByCustomerId(customerResponse.Id);
+        var customerImagepath = _configuration["AssetLocations:CustomerImages"];
+
+        foreach (var img in customerImageList)
+        {
+            var image = await _storeService.GetImageById((Guid)img.ImageId);
+            if (image != null)
+            {
+                var storeImageItem = new ImageDto()
+                {
+                    Id = img.Id,
+                    ImageId = image.Id,
+                    ImageUrl = customerImagepath + image.FileName
+                };
+
+
+                customerResponse.CustomerImages.Add(storeImageItem);
+            }
 
         }
 
@@ -522,12 +557,12 @@ public class CustomerService : ICustomerService
     /// <param name="id">Id</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Response Customer Delete Status</returns>
-    public virtual async Task<ResultDto<CustomerResponseDto>> DeleteCustomer(Guid id, CancellationToken ct = default)
+    public virtual async Task<ResultDto<bool>> DeleteCustomer(Guid id, CancellationToken ct = default)
     {
         var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (customer == null)
         {
-            var response = new ResultDto<CustomerResponseDto>
+            var response = new ResultDto<bool>
             {
                 ErrorMessage = StringResources.RecordNotFound,
                 StatusCode = HttpStatusCode.NotFound
@@ -539,7 +574,7 @@ public class CustomerService : ICustomerService
         customer.IsDeleted = true;
         await _repositoryContext.SaveChangesAsync(ct);
 
-        var successResponse = new ResultDto<CustomerResponseDto>
+        var successResponse = new ResultDto<bool>
         {
             IsSuccess = true,
             StatusCode = HttpStatusCode.OK
@@ -549,6 +584,131 @@ public class CustomerService : ICustomerService
 
 
     }
+
+
+
+    public async Task<ResultDto<bool>> UploadCustomerImage(string customerId, string imgUrl, string fileType, string fileExtension)
+    {
+        if (customerId == null || imgUrl == null)
+        {
+            var customerResult = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest,
+                Data = false
+
+            };
+
+
+            return customerResult;
+        }
+
+        var imageItem = new Image()
+        {
+            FileName = imgUrl,
+            UploadedOn = DateTime.UtcNow,
+            FileExtension = fileExtension,
+            FileType = fileType,
+            UploadedBy = "Retail"
+
+        };
+
+        var img = await _storeService.InsertImage(imageItem);
+        if (img == null)
+        {
+            var customerResult = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest,
+                Data = false
+
+            };
+
+            return customerResult;
+        }
+
+        var customerImage = new CustomerImage()
+        {
+            ImageId = img.Id,
+            CustomerId = Guid.Parse(customerId)
+        };
+
+        var storeResult = await _storeService.InsertCustomerImage(customerImage);
+
+        if (storeResult == null)
+        {
+            var customerResult = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest,
+                Data = false
+
+            };
+        }
+
+        var result = new ResultDto<bool>
+        {
+            IsSuccess = true,
+            StatusCode = HttpStatusCode.OK,
+            Data = true
+
+        };
+
+
+        return result;
+    }
+
+
+    /// <summary>
+    /// Delete Customer
+    /// </summary>
+    /// <param name="id">Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Response Customer Delete Status</returns>
+    public virtual async Task<ResultDto<bool>> DeleteCustomerImage(Guid customerId, Guid customerImageId, Guid ImageId, CancellationToken ct = default)
+    {
+        var customerImage = await _repositoryContext.CustomerImages.FirstOrDefaultAsync(x => x.Id == customerImageId && x.CustomerId == customerId, ct);
+        if (customerImage == null)
+        {
+            var response = new ResultDto<bool>
+            {
+                IsSuccess = false,
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return response;
+
+        }
+
+        _repositoryContext.CustomerImages.Remove(customerImage);
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var ImageItem = await _repositoryContext.Images.FirstOrDefaultAsync(x => x.Id == ImageId, ct);
+        if (ImageItem == null)
+        {
+            var response = new ResultDto<bool>
+            {
+                IsSuccess = false,
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return response;
+
+        }
+        _repositoryContext.Images.Remove(ImageItem);
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var successResponse = new ResultDto<bool>
+        {
+            IsSuccess = true,
+            StatusCode = HttpStatusCode.OK
+        };
+        return successResponse;
+
+
+
+    }
+
 
 
     #endregion

@@ -2,6 +2,7 @@
 using Retail.DTOs;
 using Retail.Services.Common;
 using Retail.DTOs.UserAccounts;
+using Retail.Data.Entities.Customers;
 
 namespace Retail.Services.Customers;
 
@@ -11,6 +12,8 @@ namespace Retail.Services.Customers;
 public interface ICustomerService
 {
     #region Methods
+
+    Task<List<CustomerImage>> GetCustomerImagesByCustomerId(Guid customerId);
 
     /// <summary>
     /// gets all Customers
@@ -62,7 +65,12 @@ public interface ICustomerService
     /// <param name="id">Id</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Response Customer Delete Status</returns>
-    Task<ResultDto<CustomerResponseDto>> DeleteCustomer(Guid id, CancellationToken ct = default);
+    Task<ResultDto<bool>> DeleteCustomer(Guid id, CancellationToken ct = default);
+
+
+    Task<ResultDto<bool>> UploadCustomerImage(string customerId, string imgUrl, string fileType, string fileExtension);
+
+    Task<ResultDto<bool>> DeleteCustomerImage(Guid customerId, Guid customerImageId, Guid ImageId, CancellationToken ct = default);
 
     #endregion
 }

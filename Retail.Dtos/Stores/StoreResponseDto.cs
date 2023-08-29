@@ -22,7 +22,14 @@ public class StoreResponseDto : StoreDto
     /// </summary>
     public AddressDto Address { get; set; }
 
-    public List<string> StoreImages { get; set; } = new();
+    public List<ImageDto> StoreImages { get; set; } = new();
 
 }
 
+
+public class ImageDto
+{
+    public Guid Id { get; set; }
+    public Guid ImageId { get; set; }
+    public string ImageUrl { get; set; }
+}

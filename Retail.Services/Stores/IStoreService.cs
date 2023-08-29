@@ -1,13 +1,9 @@
-﻿using Retail.Data.Entities.FileSystem;
+﻿using Retail.Data.Entities.Customers;
+using Retail.Data.Entities.FileSystem;
 using Retail.Data.Entities.Stores;
 using Retail.DTOs;
 using Retail.DTOs.Stores;
 using Retail.Services.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Retail.Services.Stores;
 
@@ -21,7 +17,15 @@ public interface IStoreService
     Task<Image> InsertImage(Image image);
     Task<StoreImage> InsertStoreImage(StoreImage image);
 
+    Task<CustomerImage> InsertCustomerImage(CustomerImage image);
+
+    Task<ResultDto<bool>> DeleteStoreImage(Guid storeId, Guid storeImageId, Guid ImageId, CancellationToken ct = default);
+
+    Task<bool> DeleteImage(Guid ImageId);
+
+
     Task<ResultDto<bool>> UploadStoreImage(string storeId, string imgUrl, string fileType, string fileExtension);
+   
 
     /// <summary>
     /// Gets all Stores

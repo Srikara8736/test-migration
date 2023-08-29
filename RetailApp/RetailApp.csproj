@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\ClientAssets\CustomerImage\" />
     <Folder Include="wwwroot\StoreAssets\StoreFiles\" />
   </ItemGroup>
 

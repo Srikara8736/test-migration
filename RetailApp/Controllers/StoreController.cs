@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.DTOs;
 using Retail.Services.Stores;
 using RetailApp.Helpers;
@@ -130,30 +131,55 @@ public class StoreController : BaseController
     /// <summary>
     ///Update Store Images
     /// </summary>
-    /// <param name="id">id</param>
+    /// <param name="storeId">Store Id</param>
     /// <param name="storeImage">Upload Store Images</param>
     /// <param name="ct">Cancellation Token</param>
-    /// <returns>Return Customer infoormation</returns>
+    /// <returns>Return image upload information</returns>
     [HttpPut]
-    [Route("UploadStoreLogo/{id}")]
-    public async Task<IActionResult> UploadStoreLogos(string id, List<IFormFile> storeImage, CancellationToken ct = default)
+    [Route("UploadStoreImage/{id}")]
+    public async Task<IActionResult> UploadStoreLogos(string storeId, List<IFormFile> storeImage, CancellationToken ct = default)
     {
 
         var result = new ResultDto<bool>();
 
         foreach (var file in storeImage)
         {
-            var imgUrl = await UploadImageAsync(file, id);
+            var imgUrl = await UploadImageAsync(file, storeId);
 
             if (imgUrl != null)
             {
-                result = await _storeService.UploadStoreImage(id, imgUrl, file.ContentType, file.ContentType);
+                result = await _storeService.UploadStoreImage(storeId, imgUrl, file.ContentType, file.ContentType);
             }
         }
         
         return this.Result(result);
     }
 
+
+    [HttpDelete]
+    [Route("DeleteStoreImage")]
+    public async Task<IActionResult> DeleteStoreImage([BindRequired] Guid storeId, [BindRequired] Guid storeImageId, [BindRequired] Guid ImageId, [BindRequired] string ImgUrl, CancellationToken ct = default)
+    {
+
+        var storeImage = await _storeService.DeleteStoreImage(storeId, storeImageId, ImageId, ct);
+
+        if (!storeImage.IsSuccess)
+            return this.Result(storeImage);
+
+        string Filepath = GetFilePath(storeId.ToString());
+        var filename = Path.GetFileName(ImgUrl);
+        string imagepath = Filepath + "\\" + filename;
+
+
+
+        if (System.IO.File.Exists(imagepath))
+        {
+            System.IO.File.Delete(imagepath);
+        }
+
+        return this.Result(storeImage);
+
+    }
 
 
     #endregion

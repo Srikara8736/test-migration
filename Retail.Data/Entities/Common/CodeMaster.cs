@@ -19,10 +19,13 @@ public class CodeMaster : BaseEntity
     /// Gets or sets the Value
     /// </summary>
     [StringLength(256)]
-    public string? Value { get; set; }
+    public string Value { get; set; }
 
     /// <summary>
     /// Gets or sets the Order
     /// </summary>
     public int Order { get; set; }
+
+    [StringLength(256)]
+    public string? Property { get; set; }
 }

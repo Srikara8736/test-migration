@@ -125,6 +125,14 @@ public class RepositoryContext : DbContext
          .OnDelete(DeleteBehavior.ClientSetNull)
          .IsRequired(false);
 
+        builder.Entity<Customer>()
+             .HasOne(x => x.CodeMaster)
+             .WithMany()
+             .HasForeignKey(x => x.BackgroundImageId)
+             .OnDelete(DeleteBehavior.ClientSetNull)
+             .IsRequired(false);
+
+
         base.OnModelCreating(builder);
     }
 }

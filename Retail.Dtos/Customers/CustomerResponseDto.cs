@@ -25,5 +25,10 @@ public class CustomerResponseDto : CustomerDto
 
     public List<ImageDto> CustomerImages { get; set; } = new();
 
+    /// <summary>
+    /// Gets or sets the BackgroundImage
+    /// </summary>
+    public string? BackgroundImage { get; set; }
+
 
 }

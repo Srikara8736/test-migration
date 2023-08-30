@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Retail.Data.Entities.UserAccount;
 using Retail.Data.Entities.FileSystem;
+using Retail.Data.Entities.Common;
 
 namespace Retail.Data.Entities.Customers;
 
@@ -79,5 +80,13 @@ public class Customer : BaseEntity
     [ForeignKey(nameof(Image))]
     public Guid? LogoImageId { get; set; }
     public virtual Image Image { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the reference of Image entity
+    /// </summary>
+    [ForeignKey(nameof(CodeMaster))]
+    public Guid? BackgroundImageId { get; set; }
+    public virtual CodeMaster CodeMaster { get; set; }
 
 }

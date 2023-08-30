@@ -61,6 +61,11 @@ public class CustomerDto
 
     public IFormFile? CustomerLogo { get; set; }
 
+    /// <summary>
+    /// Gets or sets the reference of Image entity
+    /// </summary>
+    public Guid? BackgroundImageId { get; set; }
+
 }
 
 public class AddressDto 

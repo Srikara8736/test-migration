@@ -158,16 +158,28 @@ public class CustomerService : ICustomerService
         var customerResponse = _mapper.Map<PagedList<CustomerResponseDto>>(customers);
 
         var path = _configuration["AssetLocations:ClientLogo"];
+        var backgroundImagepath = _configuration["AssetLocations:BackgroundImages"];
 
         foreach ( var customer in customerResponse)
         {
             if (customer.LogoImageId != null)
-            {
-                
+            {                
                 var image = await _storeService.GetImageById((Guid)customer.LogoImageId);
                 if (image != null)
-                    customer.Logo = path + image.FileName;
-
+                    customer.Logo = backgroundImagepath + image.FileName;
+            }
+                        
+            if (customer.BackgroundImageId != null)
+            {
+                var codeMasterItem = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Id == customer.BackgroundImageId && x.Type == "BackgroundImage");
+                if (codeMasterItem != null)
+                {
+                    customer.BackgroundImage = backgroundImagepath + codeMasterItem.Value;
+                }               
+            }
+            else
+            {
+                customer.Logo = backgroundImagepath + "Flower.png";
             }
 
             var result = _repositoryContext.Addresses.Where(x => x.Id == customer.AddressId).FirstOrDefault();
@@ -181,10 +193,7 @@ public class CustomerService : ICustomerService
             var stores = await _storeService.GetStoresByCustomerId(customer.Id);
 
             if (stores != null)
-            {
-
-
-             
+            {             
                 var customerStore = new CustomerStoreDto
                 {
                     NumberOfStore = stores.Count,
@@ -353,6 +362,21 @@ public class CustomerService : ICustomerService
 
             customerResponse.CustomerStores = customerStore;
 
+        }
+
+        var backgroundImagepath = _configuration["AssetLocations:BackgroundImages"];
+        if (customerResponse.BackgroundImageId != null)
+        {
+            var codeMasterItem =await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Id == customerResponse.BackgroundImageId && x.Type == "BackgroundImage");
+            if (codeMasterItem != null)
+            {
+                customerResponse.BackgroundImage = backgroundImagepath + codeMasterItem.Value;
+            }
+        
+        }
+        else
+        {
+            customerResponse.Logo = backgroundImagepath + "Flower.png";
         }
 
 

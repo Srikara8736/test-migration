@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.Data.Entities.Customers;
+using Retail.Data.Entities.Stores;
 using Retail.DTOs;
 using Retail.DTOs.Customers;
 using Retail.Services.Customers;
@@ -21,15 +22,17 @@ public class CustomerController : BaseController
     #region Fields
 
     private readonly ICustomerService _customerService;
+    private readonly IStoreService _storeService;
     private readonly IWebHostEnvironment _environment;
 
     #endregion
 
     #region Ctor
-    public CustomerController(ICustomerService customerService, IWebHostEnvironment environment)
+    public CustomerController(ICustomerService customerService, IWebHostEnvironment environment, IStoreService storeService)
     {
         _customerService = customerService;
         _environment = environment;
+        _storeService = storeService;
     }
 
     #endregion
@@ -62,9 +65,6 @@ public class CustomerController : BaseController
         }
         return GetLogobyCustomerId(customerId);
     }
-
-
-
     private string GetLogobyCustomerId(string customerId)
     {
         string ImageUrl = string.Empty;
@@ -78,19 +78,21 @@ public class CustomerController : BaseController
         return ImageUrl;
 
     }
-
-
     private string GetLogoPath(string customerId)
     {
         return this._environment.WebRootPath + "\\ClientAssets\\CustomerLogo\\" + customerId;
     }
-
-
-    private async Task<string> UploadImageAsync(IFormFile source, string storeId)
+    private async Task<string> UploadImageAsync(IFormFile source, string id,string type)
     {
         // var source = projectModel.Image;
         string Filename = source.FileName;
-        string Filepath = GetImagePath(storeId);
+        string Filepath = string.Empty;
+
+        if (type.ToLower().Trim() == "customer")
+            Filepath = GetImagePath(id);
+        else
+
+            Filepath = GetStoreImagePath(id);
 
         if (!System.IO.Directory.Exists(Filepath))
         {
@@ -109,22 +111,29 @@ public class CustomerController : BaseController
 
 
         }
-        return GetImagebyCustomerId(storeId, Filename);
-    }
-    
-
+        return GetImagebyId(id, Filename, type);
+    }    
     private string GetImagePath(string customerId)
     {
         return this._environment.WebRootPath + "\\ClientAssets\\CustomerImage\\" + customerId;
     }
-    private string GetImagebyCustomerId(string customerId, string fileName)
+    private string GetStoreImagePath(string storeId)
+    {
+        return this._environment.WebRootPath + "\\StoreAssets\\StoreImages\\" + storeId;
+    }
+    private string GetImagebyId(string id, string fileName,string type)
     {
         string ImageUrl = string.Empty;
-        string Filepath = GetImagePath(customerId);
+        string Filepath = string.Empty;
+        if (type.ToLower().Trim() == "customer")
+             Filepath = GetImagePath(id);
+        else
+
+            Filepath = GetStoreImagePath(id);
         string Imagepath = Filepath + "\\" + fileName;
         if (System.IO.File.Exists(Imagepath))
         {
-            ImageUrl = customerId + "/" + fileName;
+            ImageUrl = id + "/" + fileName;
         }
 
         return ImageUrl;
@@ -235,42 +244,72 @@ public class CustomerController : BaseController
 
 
     /// <summary>
-    ///Update Customer Images
+    ///Upload Multiple Images
     /// </summary>
-    /// <param name="customerId">customerId</param>
+    /// <param name="id">Store Id / Customer Id</param>
+    /// <param name="images">Store Images / Customer images</param>
+    /// <param name="type">Type Should be either Store / Customer </param>
     /// <param name="ct">Cancellation Token</param>
-    /// <returns>Return Customer information</returns>
+    /// <returns>Return Image Uploaded Status</returns>
     [HttpPut]
-    [Route("UploadCustomerImage/{id}")]
-    public async Task<IActionResult> UploadCustomerImage(string customerId, List<IFormFile> customerImage, CancellationToken ct = default)
+    [Route("UploadImages/{id}")]
+    public async Task<IActionResult> UploadImages(string id, List<IFormFile> images, [BindRequired] string type, CancellationToken ct = default)
     {
 
         var result = new ResultDto<bool>();
 
-        foreach (var file in customerImage)
+        foreach (var file in images)
         {
-            var imgUrl = await UploadImageAsync(file, customerId);
+            var imgUrl = await UploadImageAsync(file, id, type);
 
             if (imgUrl != null)
             {
-                result = await _customerService.UploadCustomerImage(customerId, imgUrl, file.ContentType, file.ContentType);
+                if (type.ToLower().Trim() == "customer")
+                    result = await _customerService.UploadCustomerImage(id, imgUrl, file.ContentType, file.ContentType);
+                else
+                    result = await _storeService.UploadStoreImage(id, imgUrl, file.ContentType, file.ContentType);
+
+
             }
         }
 
         return this.Result(result);
     }
 
+    /// <summary>
+    ///Delete a Image
+    /// </summary>
+    /// <param name="id">Store Id / Customer Id</param>
+    /// <param name="ImageMidId">Store Image Id / Customer Image  Id</param>
+    /// <param name="ImageId">Image Id</param>
+    /// <param name="ImgUrl">Image Url</param>
+    /// <param name="type">Should be either Store / Customer</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return Image deleted Status</returns>
+
     [HttpDelete]
-    [Route("DeleteCustomerImage")]
-    public async Task<IActionResult> DeleteCustomerImage([BindRequired]Guid customerId, [BindRequired] Guid customerImageId,[BindRequired]Guid ImageId ,[BindRequired] string ImgUrl, CancellationToken ct = default)
+    [Route("DeleteImage")]
+    public async Task<IActionResult> DeleteImage([BindRequired]Guid id, [BindRequired] Guid ImageMidId,[BindRequired]Guid ImageId ,[BindRequired] string ImgUrl, [BindRequired]string type, CancellationToken ct = default)
     {
 
-        var customerImage = await _customerService.DeleteCustomerImage(customerId, customerImageId, ImageId, ct);
+        var deleteImage = new ResultDto<bool>();
+        if (type.ToLower().Trim() == "customer")
+            deleteImage = await _customerService.DeleteCustomerImage(id, ImageMidId, ImageId, ct);
+        else
+            deleteImage = await _storeService.DeleteStoreImage(id, ImageMidId, ImageId, ct);
 
-        if (!customerImage.IsSuccess)
-            return this.Result(customerImage);
+        if (!deleteImage.IsSuccess)
+            return this.Result(deleteImage);
 
-        string Filepath = GetImagePath(customerId.ToString());
+        string Filepath = string.Empty;
+
+        if (type.ToLower().Trim() == "customer")
+            Filepath = GetImagePath(id.ToString());
+        else
+
+            Filepath = GetStoreImagePath(id.ToString());
+
+
         var filename = Path.GetFileName(ImgUrl);
         string imagepath = Filepath + "\\" + filename;
 
@@ -280,7 +319,7 @@ public class CustomerController : BaseController
         }
 
 
-        return this.Result(customerImage);
+        return this.Result(deleteImage);
 
     }
 

@@ -6,6 +6,7 @@ using Retail.DTOs;
 using Retail.DTOs.Customers;
 using Retail.DTOs.UserAccounts;
 using Retail.Services.Common;
+using Retail.Services.Customers;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,14 +22,16 @@ public class UserService : IUserService
 
     private readonly RepositoryContext _repositoryContext;
     private readonly IMapper _mapper;
+    private readonly ICustomerService _customerService;
 
     #endregion
 
     #region Ctor
-    public UserService(RepositoryContext repositoryContext, IMapper mapper)
+    public UserService(RepositoryContext repositoryContext, IMapper mapper, ICustomerService customerService)
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
+        _customerService = customerService;
     }
     #endregion
 
@@ -169,20 +172,9 @@ public class UserService : IUserService
 
         if (userResponse.CustomerId != null)
         {
-            var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == userResponse.CustomerId, ct);
-
-            var customerInfo = _mapper.Map<CustomerResponseDto>(customer);
-
-
-            var result = _repositoryContext.Addresses.Where(x => x.Id == customerInfo.AddressId).FirstOrDefault();
-            if (result != null)
-            {
-                var customerAddress = _mapper.Map<AddressDto>(result);
-                customerInfo.Address = customerAddress;
-            }
-
-
-            userResponse.Customer = customerInfo;
+            //var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == userResponse.CustomerId, ct);
+            var customer = await _customerService.GetCustomerById((Guid)userResponse.CustomerId,ct);
+            userResponse.Customer = customer.Data;
 
         }
 
@@ -242,10 +234,8 @@ public class UserService : IUserService
 
         if (userResponse.CustomerId != null)
         {
-            var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == userResponse.CustomerId, ct);
-
-            var customerInfo = _mapper.Map<CustomerResponseDto>(customer);
-            userResponse.Customer = customerInfo;
+            var customer = await _customerService.GetCustomerById((Guid)userResponse.CustomerId, ct);
+            userResponse.Customer = customer.Data;
 
         }
 
@@ -327,10 +317,8 @@ public class UserService : IUserService
 
         if (userResponse.CustomerId != null)
         {
-            var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == userResponse.CustomerId, ct);
-
-            var customerInfo = _mapper.Map<CustomerResponseDto>(customer);
-            userResponse.Customer = customerInfo;
+            var customer = await _customerService.GetCustomerById((Guid)userResponse.CustomerId, ct);
+            userResponse.Customer = customer.Data;
 
         }
 
@@ -392,10 +380,8 @@ public class UserService : IUserService
 
             if (user.CustomerId != null)
             {
-                var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == user.CustomerId, ct);
-
-                var customerInfo = _mapper.Map<CustomerResponseDto>(customer);
-                user.Customer = customerInfo;
+                var customer = await _customerService.GetCustomerById((Guid)user.CustomerId, ct);
+                user.Customer = customer.Data;
 
             }
         }
@@ -479,10 +465,8 @@ public class UserService : IUserService
 
         if (userResponse.CustomerId != null)
         {
-            var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == userResponse.CustomerId, ct);
-
-            var customerInfo = _mapper.Map<CustomerResponseDto>(customer);
-            userResponse.Customer = customerInfo;
+            var customer = await _customerService.GetCustomerById((Guid)userResponse.CustomerId, ct);
+            userResponse.Customer = customer.Data;
 
         }
 

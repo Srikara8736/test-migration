@@ -15,6 +15,7 @@ using Retail.Data.Entities.FileSystem;
 using Retail.DTOs.Cad;
 using Retail.Data.Entities.Stores;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Retail.Services.Customers;
 
@@ -211,22 +212,50 @@ public class CustomerService : ICustomerService
 
                 }
 
+                var storeStatus = _repositoryContext.CodeMasters.Where(x => x.Type.ToLower().Trim() == "storestatus").ToList();
 
                 var storeStatusItems = new List<StoreStatusDto>();
+
                 foreach (var store in stores.GroupBy(x => x.StoreStatus).Select(group => new {
                     Status = group.Key,
                     Count = group.Count()
                 }))
                 {
+
                     var storeStatusDto = new StoreStatusDto
                     {
                         Status = store.Status,
                         NumberOfStore = store.Count
                     };
 
+
+                    var storeStatusItem = storeStatus.Where(x => x.Value.ToLower().Trim() == store.Status.ToLower().Trim()).FirstOrDefault();
+                    if (storeStatusItem != null)
+                    {
+                        storeStatusDto.Property = storeStatusItem.Property;
+                        storeStatus.Remove(storeStatusItem);
+                    }
+                   
+                           
+                    
+
                     storeStatusItems.Add(storeStatusDto);
 
                 }
+
+                foreach(var item in storeStatus)
+                {
+                    var storeStatusDto = new StoreStatusDto
+                    {
+                        Status = item.Value,
+                        NumberOfStore = 0,
+                        Property = item.Property
+                    };
+
+                    storeStatusItems.Add(storeStatusDto);
+                }
+
+               
 
                 customerStore.StoreStatus = storeStatusItems;
 
@@ -321,8 +350,9 @@ public class CustomerService : ICustomerService
 
 
         var stores = await _storeService.GetStoresByCustomerId(customerResponse.Id);
+        var storeStatus = _repositoryContext.CodeMasters.Where(x => x.Type.ToLower().Trim() == "storestatus").ToList();
 
-        if(stores != null)
+        if (stores != null)
         {
             var customerStore = new CustomerStoreDto
             {
@@ -342,6 +372,7 @@ public class CustomerService : ICustomerService
             }
 
             var storeStatusItems = new List<StoreStatusDto>();
+
             foreach (var store in stores.GroupBy(x => x.StoreStatus).Select(group => new {
                 Status = group.Key,
                 Count = group.Count()
@@ -353,9 +384,29 @@ public class CustomerService : ICustomerService
                     NumberOfStore = store.Count
                 };
 
+                var storeStatusItem = storeStatus.Where(x => x.Value.ToLower().Trim() == store.Status.ToLower().Trim()).FirstOrDefault();
+                if (storeStatusItem != null)
+                {
+                    storeStatusDto.Property = storeStatusItem.Property;
+                    storeStatus.Remove(storeStatusItem);
+                }
+
                 storeStatusItems.Add(storeStatusDto);
 
             }
+
+            foreach (var item in storeStatus)
+            {
+                var storeStatusDto = new StoreStatusDto
+                {
+                    Status = item.Value,
+                    NumberOfStore = 0,
+                    Property = item.Property
+                };
+
+                storeStatusItems.Add(storeStatusDto);
+            }
+
 
             customerStore.StoreStatus = storeStatusItems;
 

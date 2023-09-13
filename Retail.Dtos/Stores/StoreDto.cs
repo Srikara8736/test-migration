@@ -58,4 +58,5 @@ public class StoreStatusDto
 {
     public string Status { get; set; }
     public int NumberOfStore { get; set; }    
+    public string? Property { get; set; }    
 }

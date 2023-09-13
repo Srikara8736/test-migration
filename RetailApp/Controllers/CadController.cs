@@ -229,9 +229,9 @@ namespace RetailApp.Controllers
 
                     byte[] CADContent = ZipStreamReader(zip, cadFileName);
 
-                    XmlSerializer serializer = new XmlSerializer(typeof(Message));
+                    XmlSerializer serializer = new XmlSerializer(typeof(CADData));
 
-                    Message cadData = (Message)serializer.Deserialize(new MemoryStream(CADContent));
+                    CADData cadData = (CADData)serializer.Deserialize(new MemoryStream(CADContent));
 
                    if(cadData != null)
                     {

@@ -5,6 +5,7 @@ using Retail.Data.Repository;
 using Retail.DTOs.Cad;
 using Retail.DTOs.XML;
 using System.ComponentModel;
+using System.Numerics;
 
 namespace Retail.Services.Cad;
 
@@ -514,6 +515,82 @@ public class CadService : ICadService
 
     }
 
+
+
+    #endregion
+
+
+    #region Drawing List
+
+    public async Task<Retail.Data.Entities.Stores.DrawingList> InsertDrawingData(Guid storeId, MessageData messageData)
+    {
+        var drawingListItem = new Retail.Data.Entities.Stores.DrawingList();
+                
+        drawingListItem.StoreId = storeId;
+
+        if(messageData.Properties != null) {
+
+            var propertyName = messageData.Properties.Where(x => x.PropertyName.ToLower() == "name").FirstOrDefault();
+            if (propertyName != null)
+            {
+                drawingListItem.Name = propertyName.PropertyValue;
+            }
+
+            var propertyId = messageData.Properties.Where(x => x.PropertyName.ToLower() == "id").FirstOrDefault();
+            if (propertyId != null)
+            {
+                drawingListItem.DrawingListId = propertyId.PropertyValue;
+            }
+
+            var startDateProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "startdate").FirstOrDefault();
+            if(startDateProperty != null)
+            {
+                drawingListItem.StartDate =DateTime.Parse(startDateProperty.PropertyValue);
+            }
+
+            var dateProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "date").FirstOrDefault();
+            if (dateProperty != null)
+            {
+                drawingListItem.StartDate = DateTime.Parse(dateProperty.PropertyValue);
+            }
+
+
+            var revProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "rev").FirstOrDefault();
+            if (revProperty != null)
+            {
+                drawingListItem.Rev = revProperty.PropertyValue;
+            }
+
+            var noProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "no").FirstOrDefault();
+            if (noProperty != null)
+            {
+                drawingListItem.No = Int32.Parse(noProperty.PropertyValue);
+            }
+
+
+            var noteProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "note").FirstOrDefault();
+            if (noteProperty != null)
+            {
+                drawingListItem.Note = noteProperty.PropertyValue;
+            }
+
+            var signProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "sign").FirstOrDefault();
+            if (signProperty != null)
+            {
+                drawingListItem.Sign = signProperty.PropertyValue;
+            }
+
+        }
+
+
+
+        await _repositoryContext.DrawingLists.AddAsync(drawingListItem);
+        await _repositoryContext.SaveChangesAsync();
+
+     
+        return drawingListItem;
+
+    }
 
 
     #endregion

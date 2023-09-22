@@ -75,7 +75,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = RetailApp.Configuration.ConfigurationManager.AppSetting["JWT:ValidIssuer"],
         ValidAudience = RetailApp.Configuration.ConfigurationManager.AppSetting["JWT:ValidAudience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(RetailApp.Configuration.ConfigurationManager.AppSetting["JWT:Secret"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(RetailApp.Configuration.ConfigurationManager.AppSetting["JWT:Secret"])),
+        ClockSkew = TimeSpan.Zero
     };
 });
 

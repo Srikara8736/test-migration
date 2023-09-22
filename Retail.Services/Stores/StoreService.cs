@@ -493,7 +493,7 @@ public class StoreService : IStoreService
             var chartItem = new ChartItemDto
             {
                 Key = item.categoryName,
-                Value = (decimal)item.article
+                Value = Math.Round((decimal)item.article,0)
             };
             DraftchartData.chartItems.Add(chartItem);
         }
@@ -613,7 +613,7 @@ public class StoreService : IStoreService
                 var chartItem = new ChartItemDto
                 {
                     Key = areaType.AreaType,
-                    Value = areaType.TotalArea
+                    Value = Math.Round(areaType.TotalArea,0)
                 };
                 areachartData.chartItems.Add(chartItem);
             }
@@ -640,7 +640,7 @@ public class StoreService : IStoreService
                     var chartItem = new ChartItemDto
                     {
                         Key = category.Category,
-                        Value = category.TotalArea
+                        Value = Math.Round( category.TotalArea,0)
                     };
 
                     chartData.chartItems.Add(chartItem);
@@ -656,7 +656,7 @@ public class StoreService : IStoreService
                         var spaceChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = spaceItem.Area
+                            Value = Math.Round( spaceItem.Area,0)
                         };
                         spaceData.chartItems.Add(spaceChartItem);
                     }
@@ -690,7 +690,7 @@ public class StoreService : IStoreService
                         var spaceChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = category.TotalArea
+                            Value = Math.Round( category.TotalArea,0)
                         };
                         chartData.chartItems.Add(spaceChartItem);
                     }
@@ -734,7 +734,7 @@ public class StoreService : IStoreService
                        var spaceArtlicleChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = spaceItem.Atricles
+                            Value = Math.Round( spaceItem.Atricles,0)
                         };
                         spaceAtricleData.chartItems.Add(spaceArtlicleChartItem);
 
@@ -742,7 +742,7 @@ public class StoreService : IStoreService
                         var spacePieceChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = spaceItem.Pieces
+                            Value = Math.Round( spaceItem.Pieces,0)
                         };
                         spacePiecesData.chartItems.Add(spacePieceChartItem);
                     }
@@ -889,5 +889,52 @@ public class StoreService : IStoreService
 
 
     }
+
+
+    /// <summary>
+    /// gets all Drawing Grid Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    public async Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, CancellationToken ct = default)
+    {
+
+        var storeDrawingList = await _repositoryContext.DrawingLists.Where(x => x.StoreId == StoreId).ToListAsync();
+
+        if (storeDrawingList.Count <= 0)
+        {
+            var storeResult = new ResultDto<List<DrawingListResponseDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return storeResult;
+        }
+
+        var storeDrawingResponse = _mapper.Map<List<DrawingListResponseDto>>(storeDrawingList);
+
+
+        foreach (var store in storeDrawingResponse)
+        {
+            if (store.StatusId != null)
+            {
+
+                var result = _repositoryContext.CodeMasters.Where(x => x.Id == store.StatusId).FirstOrDefault();
+                if (result != null)
+                    store.StoreStatus = result.Value;
+            }
+
+        }
+
+        var response = new ResultDto<List<DrawingListResponseDto>>()
+        {
+            IsSuccess = true,
+            Data = storeDrawingResponse
+        };
+        return response;
+
+    }
+
 
 }

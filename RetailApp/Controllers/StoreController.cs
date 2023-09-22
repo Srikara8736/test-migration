@@ -78,6 +78,20 @@ public class StoreController : BaseController
     }
 
 
+    /// <summary>
+    /// Gets Drawing Grid Data of Store
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    [HttpGet]
+    [Route("GetDrawingGridData")]
+    public async Task<IActionResult> GetDrawingGridData([Required] Guid StoreId, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetDrawingGridData(StoreId, ct));
+    }
+
 
     #endregion
 

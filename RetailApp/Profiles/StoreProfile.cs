@@ -12,5 +12,8 @@ public class StoreProfile : Profile
     {
         CreateMap<Store, StoreDto>().ReverseMap();
         CreateMap<Store, StoreResponseDto>().ReverseMap();
+
+        CreateMap<DrawingList, DrawingListDto>().ReverseMap();
+        CreateMap<DrawingList, DrawingListResponseDto>().ReverseMap();
     }
 }

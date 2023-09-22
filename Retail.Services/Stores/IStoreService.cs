@@ -64,4 +64,13 @@ public interface IStoreService
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Chart Data</returns>
     Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, CancellationToken ct = default);
+
+
+    /// <summary>
+    /// gets all Drawing Grid Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, CancellationToken ct = default);
 }

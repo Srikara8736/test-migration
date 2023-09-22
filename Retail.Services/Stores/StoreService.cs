@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Retail.Data.Entities.Customers;
@@ -10,6 +11,7 @@ using Retail.DTOs;
 using Retail.DTOs.Customers;
 using Retail.DTOs.Roles;
 using Retail.DTOs.Stores;
+using Retail.DTOs.XML;
 using Retail.Services.Common;
 using System.Collections.Generic;
 using System.IO;
@@ -25,15 +27,18 @@ public class StoreService : IStoreService
     private readonly RepositoryContext _repositoryContext;
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
+
 
     #endregion
 
     #region Ctor
-    public StoreService(RepositoryContext repositoryContext, IMapper mapper, IConfiguration configuration)
+    public StoreService(RepositoryContext repositoryContext, IMapper mapper, IConfiguration configuration, IWebHostEnvironment environment)
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
         _configuration = configuration;
+        _environment = environment;
     }
     #endregion
 
@@ -46,7 +51,7 @@ public class StoreService : IStoreService
     }
 
 
-    public async Task<Image> GetImageById(Guid id, CancellationToken ct = default)
+    public async Task<Data.Entities.FileSystem.Image> GetImageById(Guid id, CancellationToken ct = default)
     {
         if (id == null)
             return null;
@@ -54,7 +59,7 @@ public class StoreService : IStoreService
         return await _repositoryContext.Images.FirstOrDefaultAsync(x => x.Id == id, cancellationToken: ct);
     }
 
-    public async Task<Image> InsertImage(Image image)
+    public async Task<Data.Entities.FileSystem.Image> InsertImage(Data.Entities.FileSystem.Image image)
     {
         if (image == null)
             return null;
@@ -169,16 +174,29 @@ public class StoreService : IStoreService
                 var image = await GetImageById((Guid)img.ImageId);
                 if (image != null)
                 {
+
+                   
                     var storeImageItem = new ImageDto()
                     {
                         Id = img.Id,
                         ImageId = image.Id,
                         ImageUrl = path + image.FileName
 
+                    };
+                   
+                    //string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+                    //string filePath = Path.GetDirectoryName(image.FileName);
 
-                    };                 
-                    
-                    
+
+
+                    //DirectoryInfo dir = new DirectoryInfo(_environment.WebRootPath + path+filePath);
+                    //FileInfo[] files = dir.GetFiles("*", SearchOption.TopDirectoryOnly);
+                    //foreach (var item in files)
+                    //{
+                    //    // do something here
+                    //}
+
+
                     store.StoreImages.Add(storeImageItem);
                 }
                    
@@ -412,8 +430,20 @@ public class StoreService : IStoreService
 
                 areaType.Categories = categoryGrid;
                 areaType.TotalArea = categoryGrid.Sum(x => x.TotalArea);
+                areaType.TotalAreaPercentage = 100;
                 areaTypeGrid.Add(areaType);
             }
+
+            foreach(var areatype in areaTypeGrid)
+            {
+                foreach(var category in areatype.Categories)
+                {
+                    category.TotalAreaPercentage = Math.Round((category.TotalArea / areatype.TotalArea) * 100, 0); 
+                }
+
+            }
+
+
 
 
             var successResponse = new ResultDto<List<ChartGridDto>>
@@ -454,6 +484,7 @@ public class StoreService : IStoreService
 
         var DraftchartData = new ChartGraphDto();
         DraftchartData.ChartTitle = "Draft Area";
+        DraftchartData.ChartCategory = "Article";
         DraftchartData.ChartType = "Pie";
 
 
@@ -574,6 +605,7 @@ public class StoreService : IStoreService
 
             var areachartData = new ChartGraphDto();
             areachartData.ChartTitle = "Total Area";
+            areachartData.ChartCategory = "Space";
             areachartData.ChartType = "Pie";
 
             foreach (var areaType in areaTypeGrid)
@@ -601,6 +633,7 @@ public class StoreService : IStoreService
             {
                 var chartData = new ChartGraphDto();
                 chartData.ChartTitle = "Sales Area";
+                chartData.ChartCategory = "Space";
                 chartData.ChartType = "Pie";
                 foreach (var category in categories)
                 {
@@ -614,6 +647,7 @@ public class StoreService : IStoreService
 
                     var spaceData = new ChartGraphDto();
                     spaceData.ChartTitle = category.Category;
+                    spaceData.ChartCategory = "Space";
                     spaceData.ChartType = "Pie";
 
 
@@ -646,6 +680,7 @@ public class StoreService : IStoreService
             {
                 var chartData = new ChartGraphDto();
                 chartData.ChartTitle = mainItem.AreaType;
+                chartData.ChartCategory = "Space";
                 chartData.ChartType = "Pie";
                 foreach (var category in mainItem.Categories)
                 {
@@ -684,11 +719,13 @@ public class StoreService : IStoreService
 
                     var spaceAtricleData = new ChartGraphDto();
                     spaceAtricleData.ChartTitle = category.Category + " Articles"; 
+                    spaceAtricleData.ChartCategory = "Article"; 
                     spaceAtricleData.ChartType = "Bar"; 
 
 
                     var spacePiecesData = new ChartGraphDto();
                     spacePiecesData.ChartTitle = category.Category + " Pieces";
+                    spacePiecesData.ChartCategory = "Article";
                     spacePiecesData.ChartType = "Bar";
 
                     foreach (var spaceItem in category.Spaces)
@@ -765,7 +802,7 @@ public class StoreService : IStoreService
             return customerResult;
         }
 
-        var imageItem = new Image()
+        var imageItem = new Data.Entities.FileSystem.Image()
         {
             FileName = imgUrl,
             UploadedOn = DateTime.UtcNow,

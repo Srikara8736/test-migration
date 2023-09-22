@@ -16,6 +16,7 @@ using Retail.DTOs.Cad;
 using Retail.Data.Entities.Stores;
 using System.IO;
 using System.Collections.Generic;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace Retail.Services.Customers;
 
@@ -113,6 +114,45 @@ public class CustomerService : ICustomerService
 
     #region Methods
 
+    public async Task<Stream> ResizeImage(Stream imageStream, int width, int height)
+
+    {
+
+        try
+
+        {
+
+
+
+            var ms = new MemoryStream();
+
+            SixLabors.ImageSharp.Image image = await SixLabors.ImageSharp.Image.LoadAsync(imageStream);
+
+            image.Mutate(x => x.Resize(width, height));
+
+            await image.SaveAsJpegAsync(ms, new JpegEncoder { Quality = 90 });
+
+            ms.Seek(0, SeekOrigin.Begin);
+
+            image.Dispose();
+
+            imageStream.Seek(0, SeekOrigin.Begin);
+
+            return ms;
+
+        }
+
+        catch (Exception ex)
+
+        {
+
+            return null;
+
+            // throw new Exception($"Image optimizatioin failed ");
+
+        }
+
+    }
 
 
     public async Task<List<CustomerImage>> GetCustomerImagesByCustomerId(Guid customerId)
@@ -466,7 +506,7 @@ public class CustomerService : ICustomerService
             return customerResult;
         }
 
-        var imgItem = new Image()
+        var imgItem = new Data.Entities.FileSystem.Image()
         {
             FileName = imageUrl,
             UploadedOn = DateTime.UtcNow,
@@ -678,7 +718,7 @@ public class CustomerService : ICustomerService
             return customerResult;
         }
 
-        var imageItem = new Image()
+        var imageItem = new Data.Entities.FileSystem.Image()
         {
             FileName = imgUrl,
             UploadedOn = DateTime.UtcNow,

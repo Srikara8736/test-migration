@@ -12,9 +12,9 @@ public interface IStoreService
 
     Task<List<StoreImage>> GetStoreImagesByStoreId(Guid storeId);
 
-    Task<Image> GetImageById(Guid id, CancellationToken ct = default);
+    Task<Data.Entities.FileSystem.Image> GetImageById(Guid id, CancellationToken ct = default);
 
-    Task<Image> InsertImage(Image image);
+    Task<Data.Entities.FileSystem.Image> InsertImage(Data.Entities.FileSystem.Image image);
     Task<StoreImage> InsertStoreImage(StoreImage image);
 
     Task<CustomerImage> InsertCustomerImage(CustomerImage image);

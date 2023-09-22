@@ -133,6 +133,12 @@ public class RepositoryContext : DbContext
              .OnDelete(DeleteBehavior.ClientSetNull)
              .IsRequired(false);
 
+        builder.Entity<DrawingList>()
+        .HasOne(x => x.Store)
+        .WithMany()
+        .HasForeignKey(x => x.StoreId)
+        .OnDelete(DeleteBehavior.ClientSetNull);
+
 
         base.OnModelCreating(builder);
     }

@@ -13,6 +13,7 @@ public interface ICustomerService
 {
     #region Methods
 
+    Task<Stream> ResizeImage(Stream imageStream, int width, int height);
     Task<List<CustomerImage>> GetCustomerImagesByCustomerId(Guid customerId);
 
     /// <summary>

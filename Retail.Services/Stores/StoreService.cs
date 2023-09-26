@@ -16,6 +16,7 @@ using Retail.Services.Common;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Security.AccessControl;
 
 
 namespace Retail.Services.Stores;
@@ -478,7 +479,8 @@ public class StoreService : IStoreService
                      select new
                      {
                          categoryName = cat.Name.Trim(),
-                         article = stsp.Articles
+                         article = stsp.Articles,
+                         unit = stsp.Unit,
 
                      });
 
@@ -487,13 +489,16 @@ public class StoreService : IStoreService
         DraftchartData.ChartCategory = "Article";
         DraftchartData.ChartType = "Pie";
 
-
+        var totalArea = query.Sum(x => x.article);
         foreach (var item in query)
         {
             var chartItem = new ChartItemDto
             {
                 Key = item.categoryName,
-                Value = Math.Round((decimal)item.article,0)
+                Value = (decimal)item.article,
+                TotalPercentage =  Math.Round((decimal)(item.article / totalArea * 100), 0),
+                Unit = item.unit,
+
             };
             DraftchartData.chartItems.Add(chartItem);
         }
@@ -591,11 +596,19 @@ public class StoreService : IStoreService
 
                 areaType.Categories = categoryGrid;
                 areaType.TotalArea = categoryGrid.Sum(x => x.TotalArea);
+                areaType.TotalAreaPercentage = 100;
                 areaTypeGrid.Add(areaType);
             }
 
 
+            foreach (var areatype in areaTypeGrid)
+            {
+                foreach (var category in areatype.Categories)
+                {
+                    category.TotalAreaPercentage = Math.Round((category.TotalArea / areatype.TotalArea) * 100, 0);
+                }
 
+            }
 
 
             var chartItems = new List<ChartGraphDto>();
@@ -608,12 +621,18 @@ public class StoreService : IStoreService
             areachartData.ChartCategory = "Space";
             areachartData.ChartType = "Pie";
 
+            var totalArea = areaTypeGrid.Sum(x => x.TotalArea);
+
             foreach (var areaType in areaTypeGrid)
             {
                 var chartItem = new ChartItemDto
                 {
                     Key = areaType.AreaType,
-                    Value = Math.Round(areaType.TotalArea,0)
+                    Value = areaType.TotalArea,
+                    TotalPercentage = Math.Round((areaType.TotalArea / totalArea) * 100, 0),
+                    Unit = "m2"
+                    
+                   
                 };
                 areachartData.chartItems.Add(chartItem);
             }
@@ -628,9 +647,13 @@ public class StoreService : IStoreService
 
 
             var categoriesItems = areaTypeGrid.Where( y => y.AreaType == "SalesArea").Select(x => x.Categories);
+           
 
             foreach (var categories in categoriesItems)
             {
+                var totalAreacategoriesItem = categories.Sum(x => x.TotalArea);
+
+
                 var chartData = new ChartGraphDto();
                 chartData.ChartTitle = "Sales Area";
                 chartData.ChartCategory = "Space";
@@ -640,7 +663,9 @@ public class StoreService : IStoreService
                     var chartItem = new ChartItemDto
                     {
                         Key = category.Category,
-                        Value = Math.Round( category.TotalArea,0)
+                        Value =category.TotalArea,
+                        TotalPercentage = Math.Round((category.TotalArea / totalAreacategoriesItem) * 100, 0),
+                        Unit = "m2"
                     };
 
                     chartData.chartItems.Add(chartItem);
@@ -650,13 +675,17 @@ public class StoreService : IStoreService
                     spaceData.ChartCategory = "Space";
                     spaceData.ChartType = "Pie";
 
+                    var totalspaceArea = category.Spaces.Sum(x => x.Area);
+
 
                     foreach (var spaceItem in category.Spaces)
                     {
                         var spaceChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = Math.Round( spaceItem.Area,0)
+                            Value = spaceItem.Area,
+                            TotalPercentage = Math.Round((spaceItem.Area / totalspaceArea) * 100, 0),
+                            Unit = spaceItem.Unit
                         };
                         spaceData.chartItems.Add(spaceChartItem);
                     }
@@ -676,21 +705,30 @@ public class StoreService : IStoreService
 
             var mainAreaItems = areaTypeGrid.Where(y => y.AreaType != "SalesArea");
 
+           
+
             foreach (var mainItem in mainAreaItems)
             {
+              
+
                 var chartData = new ChartGraphDto();
                 chartData.ChartTitle = mainItem.AreaType;
                 chartData.ChartCategory = "Space";
                 chartData.ChartType = "Pie";
+
+          
                 foreach (var category in mainItem.Categories)
                 {
+                    var totalspaceArea = category.Spaces.Sum(x => x.Area);
 
                     foreach (var spaceItem in category.Spaces)
                     {
                         var spaceChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = Math.Round( category.TotalArea,0)
+                            Value = spaceItem.Area,
+                            TotalPercentage = Math.Round((spaceItem.Area / totalspaceArea) * 100, 0),
+                            Unit = spaceItem.Unit
                         };
                         chartData.chartItems.Add(spaceChartItem);
                     }
@@ -734,7 +772,8 @@ public class StoreService : IStoreService
                        var spaceArtlicleChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = Math.Round( spaceItem.Atricles,0)
+                            Value = Math.Round( spaceItem.Atricles,0),
+                            Unit = spaceItem.Unit
                         };
                         spaceAtricleData.chartItems.Add(spaceArtlicleChartItem);
 
@@ -742,7 +781,8 @@ public class StoreService : IStoreService
                         var spacePieceChartItem = new ChartItemDto
                         {
                             Key = spaceItem.Space,
-                            Value = Math.Round( spaceItem.Pieces,0)
+                            Value = Math.Round( spaceItem.Pieces,0),
+                            Unit = spaceItem.Unit
                         };
                         spacePiecesData.chartItems.Add(spacePieceChartItem);
                     }

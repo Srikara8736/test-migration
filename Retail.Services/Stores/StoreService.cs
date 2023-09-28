@@ -1207,4 +1207,105 @@ public class StoreService : IStoreService
         return successResponse;
 
     }
+
+
+    /// <summary>
+    /// Get Store By Id
+    /// </summary>
+    /// <param name="storeId">customerId</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store List with Pagination</returns>
+    public async Task<ResultDto<StoreResponseDto>> GetStoresById(Guid storeId, CancellationToken ct = default)
+    {
+
+        var storeItem = await _repositoryContext.Stores.Where(x => x.Id == storeId).FirstOrDefaultAsync();
+
+        if (storeItem == null)
+        {
+            var errorResponse = new ResultDto<StoreResponseDto>
+            {
+                IsSuccess = false,
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NoContent
+            };
+
+            return errorResponse;
+        }
+
+
+
+
+        var store = _mapper.Map<StoreResponseDto>(storeItem);
+
+        var path = _configuration["AssetLocations:StoreImages"];
+
+
+
+        if (store.AddressId != null)
+        {
+
+            var result = _repositoryContext.Addresses.Where(x => x.Id == store.AddressId).FirstOrDefault();
+            if (result != null)
+            {
+                var customerAddress = _mapper.Map<AddressDto>(result);
+                store.Address = customerAddress;
+            }
+
+        }
+
+        if (store.CustomerId != null)
+        {
+
+            var result = _repositoryContext.Customers.Where(x => x.Id == store.CustomerId).FirstOrDefault();
+            if (result != null)
+            {
+                var customerAddress = _mapper.Map<CustomerDto>(result);
+                store.customer = customerAddress;
+            }
+    ;
+        }
+
+        if (store.StatusId != null)
+        {
+
+            var result = _repositoryContext.CodeMasters.Where(x => x.Id == store.StatusId).FirstOrDefault();
+            if (result != null)
+            {
+
+                store.StoreStatus = result.Value;
+            }
+    ;
+        }
+
+
+        var storeImages = await GetStoreImagesByStoreId(store.Id);
+
+        foreach (var img in storeImages)
+        {
+            var image = await GetImageById((Guid)img.ImageId);
+            if (image != null)
+            {
+                var storeImageItem = new ImageDto()
+                {
+                    Id = img.Id,
+                    ImageId = image.Id,
+                    ImageUrl = path + image.FileName
+
+                };
+                store.StoreImages.Add(storeImageItem);
+            }
+
+
+        }
+
+
+        var response = new ResultDto<StoreResponseDto>
+        {
+            IsSuccess = true,
+            Data = store,
+        };
+        return response;
+
+    }
+
 }

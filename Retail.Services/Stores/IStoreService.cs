@@ -41,6 +41,42 @@ public interface IStoreService
 
 
     /// <summary>
+    /// Get Store By Id
+    /// </summary>
+    /// <param name="storeId">customerId</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store List with Pagination</returns>
+    Task<ResultDto<StoreResponseDto>> GetStoresById(Guid storeId, CancellationToken ct = default);
+
+
+    /// <summary>
+    /// Insert Store 
+    /// </summary>
+    /// <param name="storeDto">store</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    Task<ResultDto<StoreResponseDto>> InsertStore(StoreDto storeDto, CancellationToken ct = default);
+
+    /// <summary>
+    /// Updates Store
+    /// </summary>
+    /// <param name="id">Store Id</param>
+    /// <param name="storeDto">Store</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    Task<ResultDto<StoreResponseDto>> UpdateStore(string storeId, StoreDto storeDto, CancellationToken ct = default);
+
+
+    /// <summary>
+    /// Delete Role
+    /// </summary>
+    /// <param name="id">Store Id</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    Task<ResultDto<bool>> DeleteStore(string id, CancellationToken ct = default);
+
+
+    /// <summary>
     /// Gets all Stores
     /// </summary>
     /// <param name="customerId">customerId</param>

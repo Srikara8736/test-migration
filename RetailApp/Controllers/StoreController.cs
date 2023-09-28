@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Retail.DTOs.Roles;
+using Retail.DTOs.Stores;
 using Retail.Services.Stores;
 using RetailApp.Helpers;
 using System.ComponentModel.DataAnnotations;
@@ -46,6 +48,49 @@ public class StoreController : BaseController
     {
 
         return this.Result(await _storeService.GetAllStores(param.CustomerId,param.Keyword, param.PageIndex, param.PageSize, ct));
+    }
+
+
+    /// <summary>
+    ///Add a new Store item
+    /// </summary>
+    /// <param name="storeModel">Store Model</param>
+    /// <returns>Return newly added Store</returns>
+    [HttpPost]
+    public async Task<IActionResult> AddStore([FromBody] StoreDto storeModel, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.InsertStore(storeModel, ct));
+
+    }
+
+    /// <summary>
+    /// Update a Store Details
+    /// </summary>
+    /// <param name="id">Store Id</param>
+    /// <param name="storeModel">Store Model</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return updated Store Information</returns>
+    [HttpPut]
+    [Route("{id}")]
+    public async Task<IActionResult> UpdateRole(string id, [FromBody] StoreDto storeModel, CancellationToken ct)
+    {
+        return this.Result(await _storeService.UpdateStore (id, storeModel, ct));
+    }
+
+
+    /// <summary>
+    /// Delete a Store item
+    /// </summary>
+    /// <param name="id">id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return Deleted Status</returns>
+    [HttpDelete]
+    [Route("{id}")]
+    public async Task<IActionResult> DeleteRole(string id, CancellationToken ct)
+    {
+        return this.Result(await _storeService.DeleteStore(id, ct));
+
     }
 
 

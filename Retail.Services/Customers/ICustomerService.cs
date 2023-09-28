@@ -3,6 +3,7 @@ using Retail.DTOs;
 using Retail.Services.Common;
 using Retail.DTOs.UserAccounts;
 using Retail.Data.Entities.Customers;
+using Retail.Data.Entities.UserAccount;
 
 namespace Retail.Services.Customers;
 
@@ -14,6 +15,14 @@ public interface ICustomerService
     #region Methods
 
     Task<Stream> ResizeImage(Stream imageStream, int width, int height);
+
+
+
+    /// <summary>
+    /// gets all Customer Images
+    /// </summary>
+    /// <param name="customerId">Customer Id</param>
+    /// <returns>Customer Image</returns>
     Task<List<CustomerImage>> GetCustomerImagesByCustomerId(Guid customerId);
 
     /// <summary>
@@ -69,9 +78,27 @@ public interface ICustomerService
     Task<ResultDto<bool>> DeleteCustomer(Guid id, CancellationToken ct = default);
 
 
+    /// <summary>
+    /// Upload Customer Image
+    /// </summary>
+    /// <param name="id">customer Id</param>
+    /// <param name="imgUrl">imgUrl</param>
+    /// <param name="fileType">File Type</param>
+    /// <param name="fileExtension">File Extension</param>
+    /// <returns>Upload Customer Image</returns>
     Task<ResultDto<bool>> UploadCustomerImage(string customerId, string imgUrl, string fileType, string fileExtension);
 
+
+    /// <summary>
+    /// Delete Customer Image
+    /// </summary>
+    /// <param name="id">customer Id</param>
+    /// <param name="customerImageId">customer Image Id</param>
+    /// <param name="ImageId">Image Id</param>
+    /// <returns>Delete Customer Image</returns>
     Task<ResultDto<bool>> DeleteCustomerImage(Guid customerId, Guid customerImageId, Guid ImageId, CancellationToken ct = default);
+
+  
 
     #endregion
 }

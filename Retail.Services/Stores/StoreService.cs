@@ -43,6 +43,8 @@ public class StoreService : IStoreService
     }
     #endregion
 
+    #region Utilities
+
     public async Task<List<StoreImage>> GetStoreImagesByStoreId(Guid storeId)
     {
         if (storeId == null)
@@ -108,6 +110,88 @@ public class StoreService : IStoreService
 
     }
 
+
+    /// <summary>
+    /// Delete Customer Image
+    /// </summary>
+    /// <param name="addressDto">Address</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>Delete Customer Image</returns>
+    public async Task<Address> InsertCustomerAddress(AddressDto addressDto, CancellationToken ct)
+    {
+        try
+        {
+            var address = _mapper.Map<Address>(addressDto);
+            await _repositoryContext.Addresses.AddAsync(address, ct);
+            await _repositoryContext.SaveChangesAsync(ct);
+            return address;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+
+    }
+
+    /// <summary>
+    /// Update Customer Address
+    /// </summary>
+    /// <param name="addressId">addressId</param>
+    /// <param name="addressDto">Address</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>Update Customer Image</returns>
+    public async Task<Address> UpdateCustomerAddress(Guid addressId, AddressDto addressDto, CancellationToken ct)
+    {
+        try
+        {
+            var address = await _repositoryContext.Addresses.Where(x => x.Id == addressId).FirstOrDefaultAsync();
+            if (address == null)
+                return null;
+
+            address.City = addressDto.City;
+            address.Street = addressDto.Street;
+            address.ZipCode = addressDto.ZipCode;
+            address.Country = addressDto.Country;
+
+
+            await _repositoryContext.SaveChangesAsync(ct);
+            return address;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+
+    }
+
+    /// <summary>
+    /// Delete Customer Address
+    /// </summary>
+    /// <param name="addressId">addressId</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>Delete Customer Address</returns>
+    public async Task<bool> DeleteAddress(Guid addressId, CancellationToken ct)
+    {
+        try
+        {
+            var address = await _repositoryContext.Addresses.Where(x => x.Id == addressId).FirstOrDefaultAsync();
+            if (address == null)
+                return false;
+
+            _repositoryContext.Addresses.Remove(address);
+            await _repositoryContext.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return true;
+        }
+
+    }
+
+
+
+    #endregion
 
 
     /// <summary>
@@ -983,4 +1067,144 @@ public class StoreService : IStoreService
     }
 
 
+
+    /// <summary>
+    /// Inserts Store 
+    /// </summary>
+    /// <param name="storeDto">store</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    public async Task<ResultDto<StoreResponseDto>> InsertStore(StoreDto storeDto, CancellationToken ct = default)
+    {
+        if (storeDto == null)
+        {
+            var errorResponse = new ResultDto<StoreResponseDto>
+            {
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return errorResponse;
+        }
+
+
+        var address = await InsertCustomerAddress(storeDto.Address, ct);
+
+        if (address == null)
+            storeDto.AddressId = address.Id;
+
+        var store = _mapper.Map<Store>(storeDto);
+
+        await _repositoryContext.Stores.AddAsync(store, ct);
+        await _repositoryContext.SaveChangesAsync(ct);
+
+
+        var storeResponse = _mapper.Map<StoreResponseDto>(store);
+
+
+        var result = new ResultDto<StoreResponseDto>
+        {
+            Data = storeResponse,
+            IsSuccess = true
+        };
+
+        return result;
+
+    }
+
+
+    /// <summary>
+    /// Updates Store
+    /// </summary>
+    /// <param name="id">Store Id</param>
+    /// <param name="storeDto">Store</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    public async Task<ResultDto<StoreResponseDto>> UpdateStore(string storeId, StoreDto storeDto, CancellationToken ct = default)
+    {
+
+        if (storeDto == null)
+        {
+            var errorResponse = new ResultDto<StoreResponseDto>
+            {
+                ErrorMessage = StringResources.BadRequest,
+                StatusCode = HttpStatusCode.BadRequest
+            };
+            return errorResponse;
+        }
+
+        var result = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == new Guid(storeId), ct);
+
+
+        if (result == null)
+        {
+            var errorResponse = new ResultDto<StoreResponseDto>
+            {
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return errorResponse;
+        }
+
+
+        result.Name = storeDto.Name;
+        result.TotalArea = storeDto.TotalArea;
+        result.StoreNumber = storeDto.StoreNumber;
+        result.StatusId = storeDto.StatusId;
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var address = await UpdateCustomerAddress(storeDto.AddressId, storeDto.Address, ct);
+
+        var storeResponse = _mapper.Map<StoreResponseDto>(result);
+
+
+
+        var storeResult = new ResultDto<StoreResponseDto>
+        {
+            Data = storeResponse,
+            IsSuccess = true
+        };
+        return storeResult;
+
+    }
+
+
+
+    /// <summary>
+    /// Delete Role
+    /// </summary>
+    /// <param name="id">Store Id</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    public async Task<ResultDto<bool>> DeleteStore(string id, CancellationToken ct = default)
+    {
+
+        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == new Guid(id), ct);
+
+        if (store == null)
+        {
+            var response = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.RecordNotFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return response;
+
+        }
+        var addressId = store.AddressId;
+
+        _repositoryContext.Stores.Remove(store);
+
+        await _repositoryContext.SaveChangesAsync(ct);
+
+       await DeleteAddress(addressId, ct);
+
+        var successResponse = new ResultDto<bool>
+        {
+            IsSuccess = true,
+            Data = true
+        };
+
+        return successResponse;
+
+    }
 }

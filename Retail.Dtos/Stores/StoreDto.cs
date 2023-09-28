@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Retail.DTOs.Customers;
 
 namespace Retail.DTOs.Stores;
 
@@ -36,6 +37,11 @@ public class StoreDto
     /// Gets or sets the AddressId
     /// </summary>
     public Guid AddressId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Address
+    /// </summary>
+    public AddressDto Address { get; set; }
 
     /// <summary>
     /// Gets or sets the StatusId

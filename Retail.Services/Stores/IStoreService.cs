@@ -1,7 +1,9 @@
 ﻿using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.FileSystem;
 using Retail.Data.Entities.Stores;
+using Retail.Data.Entities.UserAccount;
 using Retail.DTOs;
+using Retail.DTOs.Customers;
 using Retail.DTOs.Stores;
 using Retail.Services.Common;
 
@@ -25,7 +27,18 @@ public interface IStoreService
 
 
     Task<ResultDto<bool>> UploadStoreImage(string storeId, string imgUrl, string fileType, string fileExtension);
-   
+
+    #region Address
+
+    Task<Address> InsertCustomerAddress(AddressDto addressDto, CancellationToken ct);
+
+    Task<Address> UpdateCustomerAddress(Guid addressId, AddressDto addressDto, CancellationToken ct);
+
+    Task<bool> DeleteAddress(Guid addressId, CancellationToken ct);
+
+    #endregion
+
+
 
     /// <summary>
     /// Gets all Stores

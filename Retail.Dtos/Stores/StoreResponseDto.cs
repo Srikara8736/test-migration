@@ -17,10 +17,7 @@ public class StoreResponseDto : StoreDto
     /// </summary>
     public CustomerDto customer { get; set; }
 
-    /// <summary>
-    /// Gets or sets the Address
-    /// </summary>
-    public AddressDto Address { get; set; }
+
 
     public List<ImageDto> StoreImages { get; set; } = new();
 

@@ -17,6 +17,7 @@ using Retail.Data.Entities.Stores;
 using System.IO;
 using System.Collections.Generic;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using System.Data;
 
 namespace Retail.Services.Customers;
 
@@ -41,7 +42,7 @@ public class CustomerService : ICustomerService
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
-        _storeService =  storeService;
+        _storeService = storeService;
         _configuration = configuration;
     }
 
@@ -67,49 +68,6 @@ public class CustomerService : ICustomerService
     }
 
 
-    public async Task<Address> InsertCustomerAddress(AddressDto addressDto, CancellationToken ct)
-    {
-        try
-        {
-            var address = _mapper.Map<Address>(addressDto);
-            await _repositoryContext.Addresses.AddAsync(address, ct);
-            await _repositoryContext.SaveChangesAsync(ct);
-            return address;
-        }
-        catch (Exception ex)
-        {
-            return null;
-        }
-
-    }
-
-
-    public async Task<Address> UpdateCustomerAddress(Guid addressId, AddressDto addressDto, CancellationToken ct)
-    {
-        try
-        {
-            var address = await _repositoryContext.Addresses.Where(x => x.Id == addressId).FirstOrDefaultAsync();
-            if (address == null)
-                return null;
-
-            address.City = addressDto.City;
-            address.Street = addressDto.Street;
-            address.ZipCode = addressDto.ZipCode;
-            address.Country = addressDto.Country;
-
-
-            await _repositoryContext.SaveChangesAsync(ct);
-            return address;
-        }
-        catch (Exception ex)
-        {
-            return null;
-        }
-
-    }
-
-
-
     #endregion
 
     #region Methods
@@ -121,8 +79,6 @@ public class CustomerService : ICustomerService
         try
 
         {
-
-
 
             var ms = new MemoryStream();
 
@@ -155,6 +111,11 @@ public class CustomerService : ICustomerService
     }
 
 
+    /// <summary>
+    /// gets all Customer Images
+    /// </summary>
+    /// <param name="customerId">Customer Id</param>
+    /// <returns>Customer Image</returns>
     public async Task<List<CustomerImage>> GetCustomerImagesByCustomerId(Guid customerId)
     {
         if (customerId == null)
@@ -201,22 +162,22 @@ public class CustomerService : ICustomerService
         var path = _configuration["AssetLocations:ClientLogo"];
         var backgroundImagepath = _configuration["AssetLocations:BackgroundImages"];
 
-        foreach ( var customer in customerResponse)
+        foreach (var customer in customerResponse)
         {
             if (customer.LogoImageId != null)
-            {                
+            {
                 var image = await _storeService.GetImageById((Guid)customer.LogoImageId);
                 if (image != null)
                     customer.Logo = backgroundImagepath + image.FileName;
             }
-                        
+
             if (customer.BackgroundImageId != null)
             {
                 var codeMasterItem = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Id == customer.BackgroundImageId && x.Type == "BackgroundImage");
                 if (codeMasterItem != null)
                 {
                     customer.BackgroundImage = backgroundImagepath + codeMasterItem.Value;
-                }               
+                }
             }
             else
             {
@@ -234,17 +195,17 @@ public class CustomerService : ICustomerService
             var stores = await _storeService.GetStoresByCustomerId(customer.Id);
 
             if (stores != null)
-            {             
+            {
                 var customerStore = new CustomerStoreDto
                 {
                     NumberOfStore = stores.Count,
                     Store = stores
                 };
 
-                foreach( var store in stores)
+                foreach (var store in stores)
                 {
                     var areaDetails = await _storeService.GetGridData(store.Id);
-                    if(areaDetails.Data != null)
+                    if (areaDetails.Data != null)
                     {
                         customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
                         customerStore.TotalSalesArea = customerStore.TotalSalesArea + areaDetails.Data.Where(y => y.AreaType == "SalesArea").Sum(x => x.TotalArea);
@@ -275,15 +236,15 @@ public class CustomerService : ICustomerService
                         storeStatusDto.Property = storeStatusItem.Property;
                         storeStatus.Remove(storeStatusItem);
                     }
-                   
-                           
-                    
+
+
+
 
                     storeStatusItems.Add(storeStatusDto);
 
                 }
 
-                foreach(var item in storeStatus)
+                foreach (var item in storeStatus)
                 {
                     var storeStatusDto = new StoreStatusDto
                     {
@@ -295,7 +256,7 @@ public class CustomerService : ICustomerService
                     storeStatusItems.Add(storeStatusDto);
                 }
 
-               
+
 
                 customerStore.StoreStatus = storeStatusItems;
 
@@ -351,12 +312,13 @@ public class CustomerService : ICustomerService
 
         var customerResponse = _mapper.Map<CustomerResponseDto>(user);
 
-        if (customerResponse.LogoImageId != null) {
+        if (customerResponse.LogoImageId != null)
+        {
             var path = _configuration["AssetLocations:ClientLogo"];
 
             var image = await _storeService.GetImageById((Guid)customerResponse.LogoImageId);
             if (image != null)
-                customerResponse.Logo = path  + image.FileName;
+                customerResponse.Logo = path + image.FileName;
 
         }
 
@@ -458,12 +420,12 @@ public class CustomerService : ICustomerService
         var backgroundImagepath = _configuration["AssetLocations:BackgroundImages"];
         if (customerResponse.BackgroundImageId != null)
         {
-            var codeMasterItem =await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Id == customerResponse.BackgroundImageId && x.Type == "BackgroundImage");
+            var codeMasterItem = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Id == customerResponse.BackgroundImageId && x.Type == "BackgroundImage");
             if (codeMasterItem != null)
             {
                 customerResponse.BackgroundImage = backgroundImagepath + codeMasterItem.Value;
             }
-        
+
         }
         else
         {
@@ -493,7 +455,7 @@ public class CustomerService : ICustomerService
             return customerResult;
         }
 
-      
+
 
         var customer = await _repositoryContext.Customers.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (customer == null)
@@ -517,8 +479,8 @@ public class CustomerService : ICustomerService
         };
 
         var img = await _storeService.InsertImage(imgItem);
-        
-        if(img != null)
+
+        if (img != null)
             customer.LogoImageId = img.Id;
 
 
@@ -574,7 +536,7 @@ public class CustomerService : ICustomerService
             return errorResponse;
         }
 
-        var address = await InsertCustomerAddress(customerRequestDto.Address, ct);
+        var address = await _storeService.InsertCustomerAddress(customerRequestDto.Address, ct);
 
         var customer = _mapper.Map<Customer>(customerRequestDto);
 
@@ -582,13 +544,13 @@ public class CustomerService : ICustomerService
         customer.CreatedBy = customerRequestDto.CreatedBy;
 
         customer.CreatedOn = DateTime.UtcNow;
-     
+
         await _repositoryContext.Customers.AddAsync(customer, ct);
         await _repositoryContext.SaveChangesAsync(ct);
 
         var customerResponse = _mapper.Map<CustomerResponseDto>(customer);
 
-        var customerItem = await GetCustomerById(customerResponse.Id,ct);
+        var customerItem = await GetCustomerById(customerResponse.Id, ct);
         if (customerItem.Data != null)
             customerResponse = customerItem.Data;
 
@@ -638,16 +600,16 @@ public class CustomerService : ICustomerService
 
         }
 
-       
+
         result.Name = customerDto.Name;
         result.PhoneNumber = customerDto.PhoneNumber;
         result.Email = customerDto.Email;
 
         result.UpdatedOn = DateTime.UtcNow;
         result.UpdatedBy = customerDto.UpdatedBy;
-       
+
         await _repositoryContext.SaveChangesAsync(ct);
-        
+
         var customerResponse = _mapper.Map<CustomerResponseDto>(result);
 
         var customerItem = await GetCustomerById(customerResponse.Id, ct);
@@ -701,7 +663,14 @@ public class CustomerService : ICustomerService
     }
 
 
-
+    /// <summary>
+    /// Upload Customer Image
+    /// </summary>
+    /// <param name="id">customer Id</param>
+    /// <param name="imgUrl">imgUrl</param>
+    /// <param name="fileType">File Type</param>
+    /// <param name="fileExtension">File Extension</param>
+    /// <returns>Upload Customer Image</returns>
     public async Task<ResultDto<bool>> UploadCustomerImage(string customerId, string imgUrl, string fileType, string fileExtension)
     {
         if (customerId == null || imgUrl == null)

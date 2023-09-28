@@ -470,11 +470,11 @@ public class StoreService : IStoreService
     }
 
 
-    public void DraftCategoryChart(List<ChartGraphDto> charts)
+    public void DraftCategoryChart(List<ChartGraphDto> charts, Guid storeId)
     {
         var query = (from cat in _repositoryContext.Categories
                      join stsp in _repositoryContext.StoreSpaces on cat.Id equals stsp.CategoryId
-                     where cat.AreaTypeId == null
+                     where cat.AreaTypeId == null && stsp.StoreId == storeId
                      orderby cat.CadServiceNumber
                      select new
                      {
@@ -492,6 +492,8 @@ public class StoreService : IStoreService
         var totalArea = query.Sum(x => x.article);
         foreach (var item in query)
         {
+           
+
             var chartItem = new ChartItemDto
             {
                 Key = item.categoryName,
@@ -502,7 +504,9 @@ public class StoreService : IStoreService
             };
             DraftchartData.chartItems.Add(chartItem);
         }
-        charts.Add(DraftchartData);
+
+        if(DraftchartData.chartItems.Count > 0)
+            charts.Add(DraftchartData);
 
     }
 
@@ -625,6 +629,8 @@ public class StoreService : IStoreService
 
             foreach (var areaType in areaTypeGrid)
             {
+              
+
                 var chartItem = new ChartItemDto
                 {
                     Key = areaType.AreaType,
@@ -637,7 +643,8 @@ public class StoreService : IStoreService
                 areachartData.chartItems.Add(chartItem);
             }
 
-            chartItems.Add(areachartData);
+            if(areachartData.chartItems.Count > 0)
+                chartItems.Add(areachartData);
 
 
 
@@ -798,9 +805,8 @@ public class StoreService : IStoreService
                 
             }
 
-
-
-            DraftCategoryChart(chartItems);
+            
+            DraftCategoryChart(chartItems, StoreId);
 
 
             var successResponse = new ResultDto<List<ChartGraphDto>>

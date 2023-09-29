@@ -152,6 +152,8 @@ public class StoreService : IStoreService
             address.Street = addressDto.Street;
             address.ZipCode = addressDto.ZipCode;
             address.Country = addressDto.Country;
+            address.Latitude = addressDto.Latitude;
+            address.Longitude = addressDto.Longitude;
 
 
             await _repositoryContext.SaveChangesAsync(ct);
@@ -1087,23 +1089,18 @@ public class StoreService : IStoreService
         }
 
 
-        var address = await InsertCustomerAddress(storeDto.Address, ct);
-
-        if (address == null)
-            storeDto.AddressId = address.Id;
-
         var store = _mapper.Map<Store>(storeDto);
 
         await _repositoryContext.Stores.AddAsync(store, ct);
         await _repositoryContext.SaveChangesAsync(ct);
 
 
-        var storeResponse = _mapper.Map<StoreResponseDto>(store);
+        var storeResponse = await GetStoreById(store.Id,ct);
 
 
         var result = new ResultDto<StoreResponseDto>
         {
-            Data = storeResponse,
+            Data = storeResponse.Data,
             IsSuccess = true
         };
 
@@ -1152,15 +1149,15 @@ public class StoreService : IStoreService
         result.StatusId = storeDto.StatusId;
         await _repositoryContext.SaveChangesAsync(ct);
 
-        var address = await UpdateCustomerAddress(storeDto.AddressId, storeDto.Address, ct);
+        var address = await UpdateCustomerAddress((Guid)storeDto.AddressId, storeDto.Address, ct);
 
-        var storeResponse = _mapper.Map<StoreResponseDto>(result);
+       
 
-
+        var storeResponse = await GetStoreById(new Guid(storeId), ct);
 
         var storeResult = new ResultDto<StoreResponseDto>
         {
-            Data = storeResponse,
+            Data = storeResponse.Data,
             IsSuccess = true
         };
         return storeResult;
@@ -1215,7 +1212,7 @@ public class StoreService : IStoreService
     /// <param name="storeId">customerId</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store List with Pagination</returns>
-    public async Task<ResultDto<StoreResponseDto>> GetStoresById(Guid storeId, CancellationToken ct = default)
+    public async Task<ResultDto<StoreResponseDto>> GetStoreById(Guid storeId, CancellationToken ct = default)
     {
 
         var storeItem = await _repositoryContext.Stores.Where(x => x.Id == storeId).FirstOrDefaultAsync();
@@ -1259,8 +1256,8 @@ public class StoreService : IStoreService
             var result = _repositoryContext.Customers.Where(x => x.Id == store.CustomerId).FirstOrDefault();
             if (result != null)
             {
-                var customerAddress = _mapper.Map<CustomerDto>(result);
-                store.customer = customerAddress;
+                var customer = _mapper.Map<CustomerDto>(result);
+                store.customer = customer;
             }
     ;
         }

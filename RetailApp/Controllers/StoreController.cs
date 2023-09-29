@@ -52,6 +52,21 @@ public class StoreController : BaseController
 
 
     /// <summary>
+    ///Get a Store details by Identifier
+    /// </summary>
+    /// <param name="id">Identifier</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return Store Response</returns>
+    [HttpGet]
+    [Route("{id}")]
+    public async Task<IActionResult> GetStoreById(Guid id, CancellationToken ct)
+    {
+
+        return this.Result(await _storeService.GetStoreById(id, ct));
+
+    }
+
+    /// <summary>
     ///Add a new Store item
     /// </summary>
     /// <param name="storeModel">Store Model</param>
@@ -73,9 +88,9 @@ public class StoreController : BaseController
     /// <returns>Return updated Store Information</returns>
     [HttpPut]
     [Route("{id}")]
-    public async Task<IActionResult> UpdateRole(string id, [FromBody] StoreDto storeModel, CancellationToken ct)
+    public async Task<IActionResult> UpdateStore(string id, [FromBody] StoreDto storeModel, CancellationToken ct)
     {
-        return this.Result(await _storeService.UpdateStore (id, storeModel, ct));
+        return this.Result(await _storeService.UpdateStore(id, storeModel, ct));
     }
 
 
@@ -87,7 +102,7 @@ public class StoreController : BaseController
     /// <returns>Return Deleted Status</returns>
     [HttpDelete]
     [Route("{id}")]
-    public async Task<IActionResult> DeleteRole(string id, CancellationToken ct)
+    public async Task<IActionResult> DeleteStore(string id, CancellationToken ct)
     {
         return this.Result(await _storeService.DeleteStore(id, ct));
 

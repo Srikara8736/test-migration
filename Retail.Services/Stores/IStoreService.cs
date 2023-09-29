@@ -46,7 +46,7 @@ public interface IStoreService
     /// <param name="storeId">customerId</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store List with Pagination</returns>
-    Task<ResultDto<StoreResponseDto>> GetStoresById(Guid storeId, CancellationToken ct = default);
+    Task<ResultDto<StoreResponseDto>> GetStoreById(Guid storeId, CancellationToken ct = default);
 
 
     /// <summary>

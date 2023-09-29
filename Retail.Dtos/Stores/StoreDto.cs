@@ -24,7 +24,6 @@ public class StoreDto
     /// <summary>
     /// Gets or sets the TotalArea
     /// </summary>
-    [Column(TypeName = "decimal(18,2)")]
     public decimal? TotalArea { get; set; }
 
     /// <summary>
@@ -36,7 +35,7 @@ public class StoreDto
     /// <summary>
     /// Gets or sets the AddressId
     /// </summary>
-    public Guid AddressId { get; set; }
+    public Guid? AddressId { get; set; }
 
     /// <summary>
     /// Gets or sets the Address

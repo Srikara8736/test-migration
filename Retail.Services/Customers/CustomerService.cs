@@ -72,40 +72,23 @@ public class CustomerService : ICustomerService
 
     #region Methods
 
-    public async Task<Stream> ResizeImage(Stream imageStream, int width, int height)
-
+    public async Task<bool> ResizeImage(Stream imageStream, int width, int height, string outPath)
     {
-
         try
-
         {
 
-            var ms = new MemoryStream();
+            using (SixLabors.ImageSharp.Image imageItem = SixLabors.ImageSharp.Image.Load(imageStream))
+            {               
+                imageItem.Mutate(x => x.Resize(width, height));
 
-            SixLabors.ImageSharp.Image image = await SixLabors.ImageSharp.Image.LoadAsync(imageStream);
+                imageItem.Save(outPath);
+            }
 
-            image.Mutate(x => x.Resize(width, height));
-
-            await image.SaveAsJpegAsync(ms, new JpegEncoder { Quality = 90 });
-
-            ms.Seek(0, SeekOrigin.Begin);
-
-            image.Dispose();
-
-            imageStream.Seek(0, SeekOrigin.Begin);
-
-            return ms;
-
+            return true;
         }
-
         catch (Exception ex)
-
         {
-
-            return null;
-
-            // throw new Exception($"Image optimizatioin failed ");
-
+            return false;
         }
 
     }

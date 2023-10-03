@@ -24,7 +24,7 @@ namespace RetailApp.Controllers
     //[Authorize]
     [Route("api/")]
     [ApiController]
-    public class CadController : ControllerBase
+    public class CadController : BaseController
     {
         #region Fields
 
@@ -256,6 +256,20 @@ namespace RetailApp.Controllers
         }
 
 
+        /// <summary>
+        ///Get a cad uploaded hitory by store Identifier
+        /// </summary>
+        /// <param name="id">Identifier</param>
+        /// <param name="ct">Cancellation Token</param>
+        /// <returns>Return Role Response</returns>
+        [HttpGet]
+        [Route("CadHistory/{id}")]
+        public async Task<IActionResult> GetRoleById(Guid id, CancellationToken ct)
+        {
+
+            return this.Result(await _cadService.GetCadUploadHistoryByStore(id, ct));
+
+        }
 
     }
 }

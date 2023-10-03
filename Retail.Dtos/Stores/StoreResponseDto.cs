@@ -29,4 +29,8 @@ public class ImageDto
     public Guid Id { get; set; }
     public Guid ImageId { get; set; }
     public string ImageUrl { get; set; }
+
+    public List<string> ThumnailUrls { get; set; } = new();
 }
+
+

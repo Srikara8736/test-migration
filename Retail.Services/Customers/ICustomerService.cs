@@ -14,7 +14,7 @@ public interface ICustomerService
 {
     #region Methods
 
-    Task<Stream> ResizeImage(Stream imageStream, int width, int height);
+    Task<bool> ResizeImage(Stream imageStream, int width, int height, string outPath);
 
 
 

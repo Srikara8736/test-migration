@@ -57,12 +57,8 @@ public class CustomerController : BaseController
         {
             System.IO.File.Delete(imagepath);
         }
-        using (FileStream stream = System.IO.File.Create(imagepath))
-        {
-            await source.CopyToAsync(stream);
 
-
-        }
+        var result = await _customerService.ResizeImage(source.OpenReadStream(), 150, 150, imagepath);        
         return GetLogobyCustomerId(customerId);
     }
     private string GetLogobyCustomerId(string customerId)
@@ -108,9 +104,16 @@ public class CustomerController : BaseController
         using (FileStream stream = System.IO.File.Create(imagepath))
         {
             await source.CopyToAsync(stream);
-
-
         }
+
+        var mainFileName = Path.GetFileNameWithoutExtension(source.FileName);
+
+        string imageName150 = Filepath + "\\" + mainFileName + "_150.JPG";
+        string imageName450 = Filepath + "\\" + mainFileName + "_450.JPG";
+
+        var result_150 = await _customerService.ResizeImage(source.OpenReadStream(),150,150, imageName150);
+        var result_450 = await _customerService.ResizeImage(source.OpenReadStream(), 400, 350, imageName450);
+
         return GetImagebyId(id, Filename, type);
     }    
     private string GetImagePath(string customerId)
@@ -251,7 +254,7 @@ public class CustomerController : BaseController
     /// <param name="type">Type Should be either Store / Customer </param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Return Image Uploaded Status</returns>
-    [HttpPut]
+    [HttpPost]
     [Route("UploadImages/{id}")]
     public async Task<IActionResult> UploadImages(string id, List<IFormFile> images, [BindRequired] string type, CancellationToken ct = default)
     {

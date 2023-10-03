@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Retail.Data.Entities.Cad;
 using Retail.Data.Entities.Common;
 using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.FileSystem;
@@ -46,6 +47,7 @@ public class RepositoryContext : DbContext
 
     public DbSet<CustomerImage> CustomerImages { get; set; }
     public DbSet<DrawingList> DrawingLists { get; set; }
+    public DbSet<CadUploadHistory> CadUploadHistories { get; set; }
 
 
 

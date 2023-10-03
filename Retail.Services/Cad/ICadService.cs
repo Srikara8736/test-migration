@@ -14,5 +14,8 @@ public interface ICadService
 
     public Task<bool> LoadXMLData(Message message);
 
+    public Task<ResultDto<List<CadUploadHistoryResponseDto>>> GetCadUploadHistoryByStore(Guid storeId, CancellationToken cancellationToken=default);
+
+
 
 }

@@ -270,18 +270,22 @@ public class StoreService : IStoreService
                         ImageUrl = path + image.FileName
 
                     };
-                   
-                    //string fileName = Path.GetFileNameWithoutExtension(image.FileName);
-                    //string filePath = Path.GetDirectoryName(image.FileName);
+
+                    string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+                    string filePath = Path.GetDirectoryName(image.FileName);
 
 
 
-                    //DirectoryInfo dir = new DirectoryInfo(_environment.WebRootPath + path+filePath);
-                    //FileInfo[] files = dir.GetFiles("*", SearchOption.TopDirectoryOnly);
-                    //foreach (var item in files)
-                    //{
-                    //    // do something here
-                    //}
+                    DirectoryInfo dir = new DirectoryInfo(_environment.WebRootPath + path + filePath);
+                    FileInfo[] filesInDir = dir.GetFiles("*" + fileName + "*.*");
+
+
+                    foreach (var item in filesInDir)
+                    {
+                        var itemName = Path.GetFileNameWithoutExtension(item.Name);
+                        if (itemName != fileName)
+                            storeImageItem.ThumnailUrls.Add(path+ store.Id+"/" + item.Name);
+                    }
 
 
                     store.StoreImages.Add(storeImageItem);
@@ -402,6 +406,22 @@ public class StoreService : IStoreService
                         ImageUrl = path + image.FileName
 
                     };
+
+                    string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+                    string filePath = Path.GetDirectoryName(image.FileName);
+
+
+
+                    DirectoryInfo dir = new DirectoryInfo(_environment.WebRootPath + path + filePath);
+                    FileInfo[] filesInDir = dir.GetFiles("*" + fileName + "*.*");
+
+
+                    foreach (var item in filesInDir)
+                    {
+                        var itemName = Path.GetFileNameWithoutExtension(item.Name);
+                        if (itemName != fileName)
+                            storeImageItem.ThumnailUrls.Add(path + store.Id + "/" + item.Name);
+                    }
 
 
                     store.StoreImages.Add(storeImageItem);
@@ -1289,6 +1309,24 @@ public class StoreService : IStoreService
                     ImageUrl = path + image.FileName
 
                 };
+
+                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+                string filePath = Path.GetDirectoryName(image.FileName);
+
+
+
+                DirectoryInfo dir = new DirectoryInfo(_environment.WebRootPath + path + filePath);
+                FileInfo[] filesInDir = dir.GetFiles("*" + fileName + "*.*");
+
+
+                foreach (var item in filesInDir)
+                {
+                    var itemName = Path.GetFileNameWithoutExtension(item.Name);
+                    if (itemName != fileName)
+                        storeImageItem.ThumnailUrls.Add(path + store.Id + "/" + item.Name);
+                }
+
+
                 store.StoreImages.Add(storeImageItem);
             }
 

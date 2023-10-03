@@ -1,10 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.Stores;
 using Retail.Data.Repository;
+using Retail.DTOs;
 using Retail.DTOs.Cad;
+using Retail.DTOs.Customers;
 using Retail.DTOs.XML;
+using Retail.Services.Common;
 using System.ComponentModel;
+using System.Net;
 using System.Numerics;
 
 namespace Retail.Services.Cad;
@@ -12,23 +17,25 @@ namespace Retail.Services.Cad;
 public class CadService : ICadService
 {
     private readonly RepositoryContext _repositoryContext;
+    private readonly IMapper _mapper;
 
-    public CadService( RepositoryContext repositoryContext)
+    public CadService(RepositoryContext repositoryContext, IMapper mapper)
     {
-        _repositoryContext= repositoryContext;
+        _repositoryContext = repositoryContext;
+        _mapper = mapper;
     }
 
     public List<CustomerItem> GetAllCustomer()
     {
         var customers = _repositoryContext.Customers.Where(x => x.IsDeleted == false).ToList();
-        
+
         var customerList = new List<CustomerItem>();
 
-        foreach(var customer in customers)
+        foreach (var customer in customers)
         {
             var item = new CustomerItem
             {
-                Id= customer.Id,
+                Id = customer.Id,
                 Code = customer.Id.ToString(),
                 Name = customer.Name,
                 Email = customer.Email,
@@ -56,10 +63,10 @@ public class CadService : ICadService
         {
             var item = new Retail.Data.Entities.Stores.Store
             {
-                Name = store.Name ,
+                Name = store.Name,
                 StoreNumber = store.StoreNumber,
                 Id = store.Id
-               
+
             };
 
             storeList.Add(item);
@@ -74,7 +81,7 @@ public class CadService : ICadService
         var storeInfo = await StoreInfoManagement(message);
         if (storeInfo != null)
         {
-           // var storeData = await InsertStoreData(storeInfo.Id);
+            // var storeData = await InsertStoreData(storeInfo.Id);
 
             var areaTypeGroup = await StoreAreaTypeGroupManagement(message);
             var areaType = await StoreAreaTypeManagement(message);
@@ -84,7 +91,7 @@ public class CadService : ICadService
             var storeSpace = await StoreSpaceManagement(message);
         }
         return true;
-        
+
     }
 
 
@@ -100,9 +107,9 @@ public class CadService : ICadService
 
         cadStore.StoreName.Value = "Store 1";
 
-        var storeItem =  await _repositoryContext.Stores.Where(x => x.Name.ToLower().Trim() == cadStore.StoreName.Value.ToLower().Trim()).FirstOrDefaultAsync();
+        var storeItem = await _repositoryContext.Stores.Where(x => x.Name.ToLower().Trim() == cadStore.StoreName.Value.ToLower().Trim()).FirstOrDefaultAsync();
 
-        if(storeItem != null)
+        if (storeItem != null)
             return storeItem;
         else
             return await InsertStore(cadStore);
@@ -118,7 +125,7 @@ public class CadService : ICadService
             Name = "Store 1",
             CustomerId = new Guid("0476E42C-D794-11ED-AFA1-0242AC120002"),
             StatusId = new Guid("6E9ECA58-3537-11EE-BE56-0242AC120002"),
-            AddressId= new Guid("B8D888BE-9C80-4056-49D5-08DB9416203D"),
+            AddressId = new Guid("B8D888BE-9C80-4056-49D5-08DB9416203D"),
             StoreNumber = "AB101",
         };
 
@@ -171,10 +178,10 @@ public class CadService : ICadService
         var areaTypeGroups = message.Data.AreaTypeGroupList.Group;
         if (areaTypeGroups != null)
         {
-            foreach(var areaTypeGroup in areaTypeGroups)
+            foreach (var areaTypeGroup in areaTypeGroups)
             {
                 var item = await _repositoryContext.AreaTypeGroups.Where(x => x.Name.ToLower().Trim() == areaTypeGroup.ToLower().Trim()).FirstOrDefaultAsync();
-                if(item != null)
+                if (item != null)
                     areaTypeGroupList.Add(item);
                 else
                 {
@@ -182,13 +189,13 @@ public class CadService : ICadService
                     areaTypeGroupList.Add(areaTypeGroupResponse);
 
                 }
-                   
+
 
             }
 
         }
         return areaTypeGroupList;
-       
+
 
     }
 
@@ -300,7 +307,7 @@ public class CadService : ICadService
 
     public async Task<Retail.Data.Entities.Stores.Category> GetCategory(DTOs.XML.Category category)
     {
-       return await _repositoryContext.Categories.Where(x => x.Name.ToLower().Trim() == category.Name.ToLower().Trim() && x.CategoryId.ToLower().Trim() == category.Id.ToLower().Trim()).FirstOrDefaultAsync();
+        return await _repositoryContext.Categories.Where(x => x.Name.ToLower().Trim() == category.Name.ToLower().Trim() && x.CategoryId.ToLower().Trim() == category.Id.ToLower().Trim()).FirstOrDefaultAsync();
     }
 
     public async Task<Retail.Data.Entities.Stores.Category> InsertCategory(DTOs.XML.Category category)
@@ -318,7 +325,7 @@ public class CadService : ICadService
 
         await _repositoryContext.Categories.AddAsync(categoryItem);
         await _repositoryContext.SaveChangesAsync();
-               
+
 
         return categoryItem;
 
@@ -326,19 +333,19 @@ public class CadService : ICadService
 
 
 
-    public async Task<List<Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup>> InsertStoreCategoryAreaTypeGroup(DTOs.XML.AreaType  areaType,Guid storeId, Guid categoryId,Guid spaceId)
+    public async Task<List<Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup>> InsertStoreCategoryAreaTypeGroup(DTOs.XML.AreaType areaType, Guid storeId, Guid categoryId, Guid spaceId)
     {
         var storeCatareaTypeGroups = new List<Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup>();
-       foreach (var areaTypeGroup in areaType.AreaTypeGroups.AreaTypeGroup)
+        foreach (var areaTypeGroup in areaType.AreaTypeGroups.AreaTypeGroup)
         {
 
             var areaTypeGroupItem = await GetAreaTypeGroup(areaTypeGroup);
 
-            if(areaTypeGroupItem != null)
+            if (areaTypeGroupItem != null)
             {
                 var storeCategoryItem = new Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup
                 {
-                    StoreId = storeId,                   
+                    StoreId = storeId,
                     CategoryId = categoryId,
                     AreaTypeGroupId = areaTypeGroupItem.Id,
                     SpaceId = spaceId
@@ -349,11 +356,11 @@ public class CadService : ICadService
 
                 storeCatareaTypeGroups.Add(storeCategoryItem);
             }
-           
+
 
         }
 
-      
+
 
         return storeCatareaTypeGroups;
 
@@ -391,25 +398,25 @@ public class CadService : ICadService
                             var item = await GetSpace(spaceitem);
                             if (item != null)
                             {
-                                
 
-                             
-                                    var storeSpaceItem = await GetStoreSpace(storeItem.Id, catergoryItem.Id, item.Id, storeData.Id);
-                                    if (storeSpaceItem == null)
+
+
+                                var storeSpaceItem = await GetStoreSpace(storeItem.Id, catergoryItem.Id, item.Id, storeData.Id);
+                                if (storeSpaceItem == null)
+                                {
+
+                                    var storeSpace = await InsertStoreSpace(spaceitem, storeItem.Id, storeData.Id, catergoryItem.Id, item.Id);
+                                    if (storeSpace != null)
                                     {
-
-                                        var storeSpace = await InsertStoreSpace(spaceitem, storeItem.Id, storeData.Id, catergoryItem.Id, item.Id);
-                                        if (storeSpace != null)
-                                        {
-                                            _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, item.Id);
-                                        }
+                                        _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, item.Id);
                                     }
+                                }
 
-                                    spaceList.Add(item);
+                                spaceList.Add(item);
 
-                                
 
-                              
+
+
 
                             }
 
@@ -421,7 +428,7 @@ public class CadService : ICadService
                                     var spaceResponse = await InsertSpace(spaceitem, catergoryItem.Id);
                                     spaceList.Add(spaceResponse);
 
-                                    if(spaceResponse != null)
+                                    if (spaceResponse != null)
                                     {
                                         var storeSpace = await InsertStoreSpace(spaceitem, storeItem.Id, storeData.Id, catergoryItem.Id, spaceResponse.Id);
 
@@ -451,7 +458,7 @@ public class CadService : ICadService
             }
 
         }
-       
+
         return spaceList;
 
 
@@ -462,13 +469,13 @@ public class CadService : ICadService
         return await _repositoryContext.Spaces.Where(x => x.Name.ToLower().Trim() == space.Name.ToLower().Trim()).FirstOrDefaultAsync();
     }
 
-    public async Task<Retail.Data.Entities.Stores.Space> InsertSpace(DTOs.XML.Space space,Guid categoryId)
+    public async Task<Retail.Data.Entities.Stores.Space> InsertSpace(DTOs.XML.Space space, Guid categoryId)
     {
-        
+
         var spaceItem = new Retail.Data.Entities.Stores.Space
         {
             Name = space.Name,
-            CadServiceNumber = Int32.Parse( space.Number),
+            CadServiceNumber = Int32.Parse(space.Number),
             CategoryId = categoryId
 
         };
@@ -481,15 +488,15 @@ public class CadService : ICadService
     }
 
 
-    public async Task<Retail.Data.Entities.Stores.StoreSpace> InsertStoreSpace(DTOs.XML.Space space,Guid storeId,Guid storeDataId, Guid categoryId, Guid spaceId)
+    public async Task<Retail.Data.Entities.Stores.StoreSpace> InsertStoreSpace(DTOs.XML.Space space, Guid storeId, Guid storeDataId, Guid categoryId, Guid spaceId)
     {
 
         var storeSpaceItem = new Retail.Data.Entities.Stores.StoreSpace
         {
             Unit = space.Unit,
-            Pieces = decimal.Parse( space.Pieces),
+            Pieces = decimal.Parse(space.Pieces),
             Area = decimal.Parse(space.Area),
-            Articles = decimal.Parse( space.Articles),
+            Articles = decimal.Parse(space.Articles),
             CategoryId = categoryId,
             SpaceId = spaceId,
             StoreId = storeId,
@@ -499,17 +506,17 @@ public class CadService : ICadService
         await _repositoryContext.StoreSpaces.AddAsync(storeSpaceItem);
         await _repositoryContext.SaveChangesAsync();
 
-       
+
         return storeSpaceItem;
 
     }
 
 
 
-    public async Task<Retail.Data.Entities.Stores.StoreSpace> GetStoreSpace(Guid storeId, Guid categoryId, Guid spaceId,Guid storeDataId)
+    public async Task<Retail.Data.Entities.Stores.StoreSpace> GetStoreSpace(Guid storeId, Guid categoryId, Guid spaceId, Guid storeDataId)
     {
 
-        var storeSpace = await _repositoryContext.StoreSpaces.Where(x => x.StoreId == storeId  && x.CategoryId == categoryId && x.SpaceId == spaceId && x.StoreDataId == storeDataId).FirstOrDefaultAsync();
+        var storeSpace = await _repositoryContext.StoreSpaces.Where(x => x.StoreId == storeId && x.CategoryId == categoryId && x.SpaceId == spaceId && x.StoreDataId == storeDataId).FirstOrDefaultAsync();
 
         return storeSpace;
 
@@ -525,10 +532,11 @@ public class CadService : ICadService
     public async Task<Retail.Data.Entities.Stores.DrawingList> InsertDrawingData(Guid storeId, MessageData messageData)
     {
         var drawingListItem = new Retail.Data.Entities.Stores.DrawingList();
-                
+
         drawingListItem.StoreId = storeId;
 
-        if(messageData.Properties != null) {
+        if (messageData.Properties != null)
+        {
 
             var propertyName = messageData.Properties.Where(x => x.PropertyName.ToLower() == "name").FirstOrDefault();
             if (propertyName != null)
@@ -543,9 +551,9 @@ public class CadService : ICadService
             }
 
             var startDateProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "startdate").FirstOrDefault();
-            if(startDateProperty != null)
+            if (startDateProperty != null)
             {
-                drawingListItem.StartDate =DateTime.Parse(startDateProperty.PropertyValue);
+                drawingListItem.StartDate = DateTime.Parse(startDateProperty.PropertyValue);
             }
 
             var dateProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "date").FirstOrDefault();
@@ -587,11 +595,50 @@ public class CadService : ICadService
         await _repositoryContext.DrawingLists.AddAsync(drawingListItem);
         await _repositoryContext.SaveChangesAsync();
 
-     
+
         return drawingListItem;
 
     }
 
 
     #endregion
+
+
+    public async Task<ResultDto<List<CadUploadHistoryResponseDto>>> GetCadUploadHistoryByStore(Guid storeId, CancellationToken cancellationToken = default)
+    {
+
+        if (storeId == null)
+        {
+            var cadResult = new ResultDto<List<CadUploadHistoryResponseDto>>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.BadRequest
+            };
+            return cadResult;
+        }
+
+        var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == storeId && x.Status).OrderByDescending(y => y.UploadOn) .ToListAsync();
+
+        if (uploadHistory.Count <= 0)            
+        {
+            var customerResult = new ResultDto<List<CadUploadHistoryResponseDto>>
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return customerResult;
+        }
+        var cadResponse = _mapper.Map<List<CadUploadHistoryResponseDto>>(uploadHistory);
+
+        var response = new ResultDto<List<CadUploadHistoryResponseDto>>
+        {
+            IsSuccess = true,
+            Data = cadResponse
+        };
+
+        return response;
+
+
+    }
+
 }

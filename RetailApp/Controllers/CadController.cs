@@ -21,7 +21,7 @@ using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController
@@ -263,8 +263,8 @@ namespace RetailApp.Controllers
         /// <param name="ct">Cancellation Token</param>
         /// <returns>Return Role Response</returns>
         [HttpGet]
-        [Route("CadHistory/{id}")]
-        public async Task<IActionResult> GetRoleById(Guid id, CancellationToken ct)
+        [Route("CadHistoryByStore/{id}")]
+        public async Task<IActionResult> CadHistoryByStore(Guid id, CancellationToken ct)
         {
 
             return this.Result(await _cadService.GetCadUploadHistoryByStore(id, ct));

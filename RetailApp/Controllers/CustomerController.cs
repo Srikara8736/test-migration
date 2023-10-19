@@ -256,7 +256,7 @@ public class CustomerController : BaseController
     /// <returns>Return Image Uploaded Status</returns>
     [HttpPost]
     [Route("UploadImages/{id}")]
-    public async Task<IActionResult> UploadImages(string id, List<IFormFile> images, [BindRequired] string type, CancellationToken ct = default)
+    public async Task<IActionResult> UploadImages( string id, List<IFormFile> images, [BindRequired] string type, CancellationToken ct = default)
     {
 
         var result = new ResultDto<bool>();

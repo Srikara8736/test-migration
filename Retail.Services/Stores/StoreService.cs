@@ -99,6 +99,22 @@ public class StoreService : IStoreService
     }
 
 
+    public async Task<bool> UpdateStoreActivity(Guid storeId)
+    {
+        if (storeId == null)
+            return false;
+
+       var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == storeId);
+
+        store.LastActivityDate = DateTime.UtcNow;
+        await _repositoryContext.SaveChangesAsync();
+
+        return true;
+
+
+    }
+
+
     public async Task<CustomerImage> InsertCustomerImage(CustomerImage image)
     {
         if (image == null)
@@ -205,7 +221,7 @@ public class StoreService : IStoreService
     public async Task<List<StoreResponseDto>> GetStoresByCustomerId(Guid customerId, CancellationToken ct = default)
     {
 
-       var stores = await _repositoryContext.Stores.Where(x => x.CustomerId == customerId).ToListAsync();
+       var stores = await _repositoryContext.Stores.Where(x => x.CustomerId == customerId).OrderByDescending(t => t.LastActivityDate).ToListAsync();
 
     
         if (stores == null)
@@ -336,7 +352,7 @@ public class StoreService : IStoreService
             query = query.Where(x => x.Name.Contains(keyword));
         }
 
-        var stores = await PagedList<Store>.ToPagedList(query.OrderByDescending(on => on.Name), pageIndex, pageSize);
+        var stores = await PagedList<Store>.ToPagedList(query.OrderByDescending(on => on.LastActivityDate), pageIndex, pageSize);
 
         if (stores == null)
         {
@@ -1250,9 +1266,11 @@ public class StoreService : IStoreService
         }
 
 
-
+        var updateActivityResult = UpdateStoreActivity(storeId);
 
         var store = _mapper.Map<StoreResponseDto>(storeItem);
+
+       
 
         var path = _configuration["AssetLocations:StoreImages"];
 

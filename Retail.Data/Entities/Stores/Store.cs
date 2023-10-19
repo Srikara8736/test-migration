@@ -34,6 +34,8 @@ public class Store : BaseEntity
     [Column(TypeName = "decimal(18,2)")]
     public decimal? TotalArea { get; set; }
 
+    public DateTime? LastActivityDate { get; set; }
+
 
     /// <summary>
     /// Gets or sets the reference of Status entity

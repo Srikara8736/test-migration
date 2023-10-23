@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Retail.Data.Entities.Common;
 using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.FileSystem;
 using Retail.Data.Entities.Stores;
@@ -45,12 +46,28 @@ public class StoreService : IStoreService
 
     #region Utilities
 
+
+    public async Task<Address?> getAddressById(Guid addressId)
+    { 
+        return await _repositoryContext.Addresses.Where(x => x.Id == addressId).AsNoTracking().FirstOrDefaultAsync(); 
+    }
+
+    public async Task<Customer?> getCustomerById(Guid customerId)
+    {
+        return await _repositoryContext.Customers.Where(x => x.Id == customerId).AsNoTracking().FirstOrDefaultAsync();
+    }
+
+    public async Task<CodeMaster?> getStatusById(Guid statusId)
+    {
+        return await _repositoryContext.CodeMasters.Where(x => x.Id == statusId).AsNoTracking().FirstOrDefaultAsync();
+    }
+
     public async Task<List<StoreImage>> GetStoreImagesByStoreId(Guid storeId)
     {
         if (storeId == null)
             return null;
 
-        return await _repositoryContext.StoreImages.Where(x => x.StoreId == storeId).ToListAsync();
+        return await _repositoryContext.StoreImages.Where(x => x.StoreId == storeId).AsNoTracking().ToListAsync();
     }
 
 
@@ -1266,7 +1283,7 @@ public class StoreService : IStoreService
         }
 
 
-        var updateActivityResult = UpdateStoreActivity(storeId);
+        var updateActivityResult = await UpdateStoreActivity(storeId);
 
         var store = _mapper.Map<StoreResponseDto>(storeItem);
 
@@ -1279,7 +1296,7 @@ public class StoreService : IStoreService
         if (store.AddressId != null)
         {
 
-            var result = _repositoryContext.Addresses.Where(x => x.Id == store.AddressId).FirstOrDefault();
+            var result = await getAddressById((Guid)store.AddressId);
             if (result != null)
             {
                 var customerAddress = _mapper.Map<AddressDto>(result);
@@ -1291,7 +1308,7 @@ public class StoreService : IStoreService
         if (store.CustomerId != null)
         {
 
-            var result = _repositoryContext.Customers.Where(x => x.Id == store.CustomerId).FirstOrDefault();
+            var result = await getCustomerById((Guid)store.CustomerId);
             if (result != null)
             {
                 var customer = _mapper.Map<CustomerDto>(result);
@@ -1303,7 +1320,7 @@ public class StoreService : IStoreService
         if (store.StatusId != null)
         {
 
-            var result = _repositoryContext.CodeMasters.Where(x => x.Id == store.StatusId).FirstOrDefault();
+            var result = await getStatusById((Guid)store.StatusId);
             if (result != null)
             {
 
@@ -1332,19 +1349,24 @@ public class StoreService : IStoreService
                 string filePath = Path.GetDirectoryName(image.FileName);
 
 
-
-                DirectoryInfo dir = new DirectoryInfo(_environment.WebRootPath + path + filePath);
-                FileInfo[] filesInDir = dir.GetFiles("*" + fileName + "*.*");
-
-
-                foreach (var item in filesInDir)
+                if (System.IO.Directory.Exists(_environment.WebRootPath + path + filePath))
                 {
-                    var itemName = Path.GetFileNameWithoutExtension(item.Name);
-                    if (itemName != fileName)
-                        storeImageItem.ThumnailUrls.Add(path + store.Id + "/" + item.Name);
+                    DirectoryInfo dir = new DirectoryInfo(_environment.WebRootPath + path + filePath);
+
+
+                    FileInfo[] filesInDir = dir.GetFiles("*" + fileName + "*.*");
+
+
+                    foreach (var item in filesInDir)
+                    {
+                        var itemName = Path.GetFileNameWithoutExtension(item.Name);
+                        if (itemName != fileName)
+                            storeImageItem.ThumnailUrls.Add(path + store.Id + "/" + item.Name);
+                    }
+
+
+                  
                 }
-
-
                 store.StoreImages.Add(storeImageItem);
             }
 

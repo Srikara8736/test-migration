@@ -5,6 +5,7 @@ using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.Stores;
 using Retail.DTOs;
 using Retail.DTOs.Customers;
+using Retail.DTOs.Stores;
 using Retail.Services.Customers;
 using Retail.Services.Stores;
 using RetailApp.Helpers;
@@ -282,38 +283,34 @@ public class CustomerController : BaseController
     /// <summary>
     ///Delete a Image
     /// </summary>
-    /// <param name="id">Store Id / Customer Id</param>
-    /// <param name="ImageMidId">Store Image Id / Customer Image  Id</param>
-    /// <param name="ImageId">Image Id</param>
-    /// <param name="ImgUrl">Image Url</param>
-    /// <param name="type">Should be either Store / Customer</param>
+    /// <param name="deleteImageRequest">Object Model</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Return Image deleted Status</returns>
 
     [HttpDelete]
     [Route("DeleteImage")]
-    public async Task<IActionResult> DeleteImage([BindRequired]Guid id, [BindRequired] Guid ImageMidId,[BindRequired]Guid ImageId ,[BindRequired] string ImgUrl, [BindRequired]string type, CancellationToken ct = default)
+    public async Task<IActionResult> DeleteImage([FromBody] DeleteImageDto deleteImageRequest, CancellationToken ct = default)
     {
 
         var deleteImage = new ResultDto<bool>();
-        if (type.ToLower().Trim() == "customer")
-            deleteImage = await _customerService.DeleteCustomerImage(id, ImageMidId, ImageId, ct);
+        if (deleteImageRequest.Type.ToLower().Trim() == "customer")
+            deleteImage = await _customerService.DeleteCustomerImage(deleteImageRequest.Id, deleteImageRequest.ImageMidId, deleteImageRequest.ImageId, ct);
         else
-            deleteImage = await _storeService.DeleteStoreImage(id, ImageMidId, ImageId, ct);
+            deleteImage = await _storeService.DeleteStoreImage(deleteImageRequest.Id, deleteImageRequest.ImageMidId, deleteImageRequest.ImageId, ct);
 
         if (!deleteImage.IsSuccess)
             return this.Result(deleteImage);
 
         string Filepath = string.Empty;
 
-        if (type.ToLower().Trim() == "customer")
-            Filepath = GetImagePath(id.ToString());
+        if (deleteImageRequest.Type.ToLower().Trim() == "customer")
+            Filepath = GetImagePath(deleteImageRequest.Id.ToString());
         else
 
-            Filepath = GetStoreImagePath(id.ToString());
+            Filepath = GetStoreImagePath(deleteImageRequest.Id.ToString());
 
 
-        var filename = Path.GetFileName(ImgUrl);
+        var filename = Path.GetFileName(deleteImageRequest.ImgUrl);
         string imagepath = Filepath + "\\" + filename;
 
         if (System.IO.File.Exists(imagepath))

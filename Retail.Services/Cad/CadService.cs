@@ -623,8 +623,9 @@ public class CadService : ICadService
         {
             var customerResult = new ResultDto<List<CadUploadHistoryResponseDto>>
             {
+                IsSuccess = true,
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NotFound
+                StatusCode = HttpStatusCode.OK
             };
             return customerResult;
         }

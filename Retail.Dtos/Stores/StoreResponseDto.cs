@@ -1,4 +1,5 @@
-﻿using Retail.DTOs.Customers;
+﻿using Retail.DTOs.Cad;
+using Retail.DTOs.Customers;
 
 namespace Retail.DTOs.Stores;
 
@@ -20,6 +21,8 @@ public class StoreResponseDto : StoreDto
 
 
     public List<ImageDto> StoreImages { get; set; } = new();
+
+    public CadUploadHistoryResponseDto cadUploadHistory { get; set; }
 
 }
 

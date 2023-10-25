@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.Stores;
 using Retail.DTOs;
+using Retail.DTOs.Cad;
 using Retail.DTOs.Customers;
 using Retail.DTOs.Stores;
 using Retail.Services.Customers;
@@ -14,7 +15,7 @@ using System.IO;
 namespace RetailApp.Controllers;
 
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CustomerController : BaseController
@@ -311,12 +312,23 @@ public class CustomerController : BaseController
             Filepath = GetStoreImagePath(deleteImageRequest.Id.ToString());
 
 
-        var filename = Path.GetFileName(deleteImageRequest.ImgUrl);
-        string imagepath = Filepath + "\\" + filename;
+        var fileFullName = Path.GetFileName(deleteImageRequest.ImgUrl);
 
-        if (System.IO.File.Exists(imagepath))
+
+        string fileName = Path.GetFileNameWithoutExtension(fileFullName);
+
+
+
+        DirectoryInfo dir = new DirectoryInfo(Filepath);
+        FileInfo[] filesInDir = dir.GetFiles("*" + fileName + "*.*");
+
+
+        foreach (var item in filesInDir)
         {
-            System.IO.File.Delete(imagepath);
+            if (System.IO.File.Exists(item.FullName))
+            {
+                System.IO.File.Delete(item.FullName);
+            }           
         }
 
 

@@ -458,8 +458,14 @@ public class StoreService : IStoreService
 
                     store.StoreImages.Add(storeImageItem);
                 }
+            }
 
+            var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == store.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
 
+            if (uploadHistory != null)
+            {
+                var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
+                store.cadUploadHistory = cadResponse;
             }
 
 
@@ -1372,6 +1378,15 @@ public class StoreService : IStoreService
 
         }
 
+        //cad upload History
+
+        var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == storeId && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+
+        if(uploadHistory != null)
+        {
+            var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
+            store.cadUploadHistory = cadResponse;
+        }
 
         var response = new ResultDto<StoreResponseDto>
         {

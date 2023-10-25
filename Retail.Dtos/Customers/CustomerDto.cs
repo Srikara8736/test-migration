@@ -74,24 +74,28 @@ public class AddressDto
     /// <summary>
     /// Gets or sets the Street
     /// </summary>
+    [Required]
     [StringLength(256)]
     public string Street { get; set; }
 
     /// <summary>
     /// Gets or sets the City
     /// </summary>
+    [Required]
     [StringLength(256)]
     public string City { get; set; }
 
     /// <summary>
     /// Gets or sets the Country
     /// </summary>
+    [Required]
     [StringLength(256)]
     public string Country { get; set; }
 
     /// <summary>
     /// Gets or sets the ZipCode
     /// </summary>
+    [Required]
     [StringLength(10)]
     public string ZipCode { get; set; }
 

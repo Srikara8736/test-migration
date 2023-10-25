@@ -3,6 +3,7 @@ using Retail.DTOs.Roles;
 using AutoMapper;
 using Retail.Data.Entities.Stores;
 using Retail.DTOs.Stores;
+using Retail.Data.Entities.Common;
 
 namespace RetailApp.Profiles;
 
@@ -15,5 +16,9 @@ public class StoreProfile : Profile
 
         CreateMap<DrawingList, DrawingListDto>().ReverseMap();
         CreateMap<DrawingList, DrawingListResponseDto>().ReverseMap();
+
+        CreateMap<CodeMaster, StoreStatusResponseDto>()
+            .ForMember(dest =>dest.Name, opt => opt.MapFrom(src => src.Value))
+            .ReverseMap();
     }
 }

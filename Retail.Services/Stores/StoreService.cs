@@ -10,7 +10,6 @@ using Retail.Data.Entities.UserAccount;
 using Retail.Data.Repository;
 using Retail.DTOs;
 using Retail.DTOs.Customers;
-using Retail.DTOs.Roles;
 using Retail.DTOs.Stores;
 using Retail.DTOs.XML;
 using Retail.Services.Common;
@@ -1381,6 +1380,52 @@ public class StoreService : IStoreService
         };
         return response;
 
+    }
+
+
+
+    /// <summary>
+    /// Get all StoreStatus
+    /// </summary>
+    /// <param name="pageIndex">PageIndex</param>
+    /// <param name="pageSize">PageSize</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    public virtual async Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default)
+    {
+
+        var query = from p in _repositoryContext.CodeMasters
+                    where p.Type== "StoreStatus"
+                    select p;
+
+        if (keyword != null)
+        {
+            query = query.Where(x => x.Value.Contains(keyword));
+        }
+
+        var  StoreStatus = await PagedList<CodeMaster>.ToPagedList(query.OrderBy(on => on.Order), pageIndex, pageSize);
+        if ( StoreStatus == null)
+        {
+            var errorResponse = new PaginationResultDto<PagedList<StoreStatusResponseDto>>
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NoContent
+            };
+            return errorResponse;
+        }
+
+        var  StoreStatusResponse = _mapper.Map<PagedList<StoreStatusResponseDto>>( StoreStatus);
+
+
+
+        var response = new PaginationResultDto<PagedList<StoreStatusResponseDto>>
+        {
+            IsSuccess = true,
+            Data =  StoreStatusResponse,
+            TotalCount =  StoreStatus.TotalCount,
+            TotalPages =  StoreStatus.TotalPages
+        };
+        return response;
     }
 
 }

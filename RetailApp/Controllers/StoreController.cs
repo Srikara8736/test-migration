@@ -153,6 +153,20 @@ public class StoreController : BaseController
     }
 
 
+    /// <summary>
+    /// Get all StoreStatus
+    /// </summary>
+    /// <param name="parameters">Search parameters</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return StoreStatus optionally with paged List Response</returns>
+    [HttpGet]
+    [Route("GetStoreStatus")]
+    public async Task<IActionResult> mGetStoreStatus([FromQuery] PagingParam parameters, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetAllStoreStatus(parameters.Keyword, parameters.PageIndex, parameters.PageSize, ct));
+    }
+
     #endregion
 
 }

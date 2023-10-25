@@ -39,6 +39,7 @@ public class CustomerController : BaseController
     #endregion
 
 
+    
     #region Utilities
 
     private async Task<string> UploadCustomerLogo(IFormFile source, string customerId)
@@ -112,8 +113,8 @@ public class CustomerController : BaseController
         string imageName150 = Filepath + "\\" + mainFileName + "_150.JPG";
         string imageName450 = Filepath + "\\" + mainFileName + "_450.JPG";
 
-        var result_150 = await _customerService.ResizeImage(source.OpenReadStream(),150,150, imageName150);
-        var result_450 = await _customerService.ResizeImage(source.OpenReadStream(), 400, 350, imageName450);
+        var result_150 = await _customerService.ResizeImage(source.OpenReadStream(),250,150, imageName150);
+        var result_450 = await _customerService.ResizeImage(source.OpenReadStream(), 750, 450, imageName450);
 
         return GetImagebyId(id, Filename, type);
     }    

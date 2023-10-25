@@ -122,4 +122,16 @@ public interface IStoreService
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Grid Data</returns>
     Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, CancellationToken ct = default);
+
+
+
+    /// <summary>
+    /// Get all StoreStatus
+    /// </summary>
+    /// <param name="keyword">keyword</param>
+    /// <param name="pageIndex">PageIndex</param>
+    /// <param name="pageSize">PageSize</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
+    Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
 }

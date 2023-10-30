@@ -21,7 +21,7 @@ using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-    [Authorize]
+   [Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController
@@ -49,12 +49,16 @@ namespace RetailApp.Controllers
 
         #region Utilities
 
-
-
-        private (string filepath,Stream strem) UploadCadFileAsync(IFormFile source)
+        private async Task<(string filepath, string strem)> UploadCadFileAsync(IFormFile source, string storeId)
         {
-            string Filepath = GetFilePath();
-            string Filename = source.FileName;
+            string Filepath = GetFilePath(storeId);
+           // string Filename = source.FileName;
+
+            string FilenameGen = Path.GetFileNameWithoutExtension(source.FileName);
+            string Exten = Path.GetExtension(source.FileName);
+            long time = DateTime.Now.Ticks;
+
+            var Filename = FilenameGen + Convert.ToString(time) + Exten;
 
 
             if (!System.IO.Directory.Exists(Filepath))
@@ -62,28 +66,43 @@ namespace RetailApp.Controllers
                 System.IO.Directory.CreateDirectory(Filepath);
             }
 
-            if (System.IO.File.Exists(Filepath+ Filename))
+            if (System.IO.File.Exists(Filepath + "\\" + Filename))
             {
-                System.IO.File.Delete(Filepath+ Filename);
+                System.IO.File.Delete(Filepath + "\\" + Filename);
             }
 
-            FileStream stream = System.IO.File.Create(Filepath + "\\" + Filename);
-           
-                source.CopyToAsync(stream);
-            
-            
           
-            
-          // var result = Path.GetFileNameWithoutExtension(Filepath + "\\" + Filename);
 
-           // ZipFile.ExtractToDirectory(Filepath + "\\" + Filename, Filepath + "\\" + result);
+            using (FileStream stream = System.IO.File.Create(Filepath + "\\" + Filename))
+            {
+                await source.CopyToAsync(stream);
+               
+            }
 
-           return (Filepath, stream);
+            var result = Path.GetFileNameWithoutExtension(Filepath + "\\" + Filename);
+
+            var extractedpath = (Filepath + "\\Extracted\\");
+
+            if (!System.IO.Directory.Exists(extractedpath))
+            {
+                System.IO.Directory.CreateDirectory(extractedpath);
+            }
+
+            ZipFile.ExtractToDirectory(Filepath + "\\" + Filename, extractedpath + result);
+
+            var fileLocpath = GetFilePathWithoutWebRoot(storeId, result);
+
+            return (fileLocpath, Filepath + "\\" + Filename);
         }
 
-        private string GetFilePath()
+        private string GetFilePath(string storeId)
         {
-            return this._environment.WebRootPath + "\\StoreAssets\\StoreFiles\\";
+            return this._environment.WebRootPath + "\\StoreAssets\\StoreFiles\\" + storeId;
+        }
+
+        private string GetFilePathWithoutWebRoot(string storeId,string fileName)
+        {
+            return "\\StoreAssets\\StoreFiles\\" + storeId+ "\\Extracted"+"\\"+ fileName;
         }
 
         private List<string> ManifestReader(string manifestContent, string xPath)
@@ -164,7 +183,7 @@ namespace RetailApp.Controllers
 
         [HttpGet]
         [Route("External/Customers/GetStoresByCustomerNo")]
-        public List<Retail.Data.Entities.Stores.Store> GetStoresByCustomerNo(string customerNo)
+        public List<Retail.DTOs.Cad.Store> GetStoresByCustomerNo(string customerNo)
         {
 
             return _cadService.GetStoresByCustomerNo(customerNo);
@@ -173,9 +192,9 @@ namespace RetailApp.Controllers
 
         [HttpPost]
         [Route("Cad/UploadCad")]
-        public async Task<object> UploadCad([BindRequired] IFormFile cadFile)
+        public async Task<object> UploadCad([FromForm]CadUploadDto cadUpload)
         {
-            if (cadFile.ContentType != "application/x-zip-compressed")
+            if (cadUpload.CadFile.ContentType != "application/x-zip-compressed")
             {        
 
                 return HttpStatusCode.UnsupportedMediaType;
@@ -185,24 +204,11 @@ namespace RetailApp.Controllers
             //try
             //{
 
+            var fileStream = await UploadCadFileAsync(cadUpload.CadFile, cadUpload.StoreId.ToString());
 
-                //Message items = null;
-                //string path = this._environment.WebRootPath + "\\StoreAssets\\cadspace.xml";
-
-                //XmlSerializer serializer = new XmlSerializer(typeof(Message));
-
-               // StreamReader reader = new StreamReader(path);
-                //items = (Message)serializer.Deserialize(reader);
-                //reader.Close();
-
-                //var loadXml = await _cadService.LoadXMLData(items);
-
-
-
-
-            var fileStream = UploadCadFileAsync(cadFile);
-
-            using (var zip = new ZipArchive(fileStream.strem, ZipArchiveMode.Read))
+           // string manifestConten1t = Encoding.UTF8.GetString(ZipStreamReader(fileStream.strem, "Manifest.xml"));
+            var stream = cadUpload.CadFile.OpenReadStream();
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
             {
                 //Fetch Manifest.xml
                 //Extract the Manifest file
@@ -225,7 +231,6 @@ namespace RetailApp.Controllers
                 foreach (string cadFileName in cadFileNames)
                 {
 
-                  
 
                     byte[] CADContent = ZipStreamReader(zip, cadFileName);
 
@@ -235,14 +240,35 @@ namespace RetailApp.Controllers
 
                    if(cadData != null)
                     {
-                        //var loadXml = await _cadService.LoadXMLData(items);
+                      // var loadXml = await _cadService.LoadXMLData(items);
+                    }
+
+                    var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
+                    if(document != null)
+                    {
+                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id);
                     }
 
 
                 }
 
+
+                foreach (string cadpdfFileName in cadPDFFileNames)
+                {
+
+                    var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
+                    if (document != null)
+                    {
+                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id);
+                    }
+
+
+                }
+
+
             }
 
+            var caduploadHistory = _cadService.InsertCadUploadHistory(cadUpload.StoreId, cadUpload.CadFile.FileName);
 
             return this.Ok();
 

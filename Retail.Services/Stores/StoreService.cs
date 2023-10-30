@@ -13,6 +13,7 @@ using Retail.DTOs.Customers;
 using Retail.DTOs.Stores;
 using Retail.DTOs.XML;
 using Retail.Services.Common;
+using SixLabors.ImageSharp.ColorSpaces;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -327,7 +328,18 @@ public class StoreService : IStoreService
                 
             }
 
+            //cad upload History
 
+            var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == store.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+
+            if (uploadHistory != null)
+            {
+                var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
+                store.cadUploadHistory = cadResponse;
+            }
+
+
+            store.PdfLink = await PdfFileUrlByStoreId(store.Id);
 
         }
 
@@ -338,7 +350,31 @@ public class StoreService : IStoreService
     }
 
 
+    public async Task<string> PdfFileUrlByStoreId(Guid storeId)
+    {
+        var path = string.Empty;
 
+
+        var result = from at in _repositoryContext.StoreDocuments
+                     join cat in _repositoryContext.Documents on at.DocumentId equals cat.Id
+                     where cat.StatusId == Guid.Parse("8AE98FB5-16ED-429E-AF96-83B6CAEC15A5") && at.StoreId == storeId
+                     orderby at.UploadedOn descending
+                     select cat.Path;
+
+        path = await result.FirstOrDefaultAsync();
+
+
+        //var storeDocument = await _repositoryContext.StoreDocuments.Where(x => x.StoreId == storeId).Select(x=>x .DocumentId).ToListAsync();
+
+        //if(storeDocument != null)
+        //{
+        //    var document = await _repositoryContext.Documents.Where(x =>  storeDocument.Contains(x.Id)  && x.StatusId == Guid.Parse("8AE98FB5-16ED-429E-AF96-83B6CAEC15A5")).FirstOrDefaultAsync();
+
+        //    if (document != null)
+        //        path = document.Path;
+        //}
+        return path;
+    }
 
     /// <summary>
     /// gets all Stores
@@ -467,7 +503,7 @@ public class StoreService : IStoreService
                 var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
                 store.cadUploadHistory = cadResponse;
             }
-
+            store.PdfLink = await PdfFileUrlByStoreId(store.Id);
 
         }
 
@@ -1387,6 +1423,8 @@ public class StoreService : IStoreService
             var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
             store.cadUploadHistory = cadResponse;
         }
+
+        store.PdfLink = await PdfFileUrlByStoreId(store.Id);
 
         var response = new ResultDto<StoreResponseDto>
         {

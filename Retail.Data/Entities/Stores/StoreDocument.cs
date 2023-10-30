@@ -10,7 +10,11 @@ namespace Retail.Data.Entities.Stores;
 [Table("StoreDocument")]
 public class StoreDocument : BaseEntity
 {
-   
+    /// <summary>
+    /// Gets or sets the reference of Status entity
+    /// </summary>
+    public DateTime UploadedOn { get; set; }
+
     /// <summary>
     /// Gets or sets the reference of Status entity
     /// </summary>

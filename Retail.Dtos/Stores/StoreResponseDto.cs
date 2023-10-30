@@ -12,6 +12,7 @@ public class StoreResponseDto : StoreDto
 
 
     public string StoreStatus { get; set; }
+    public string PdfLink { get; set; }
 
     /// <summary>
     /// Gets or sets the Address

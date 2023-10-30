@@ -52,16 +52,16 @@ public class CadService : ICadService
     }
 
 
-    public List<Retail.Data.Entities.Stores.Store> GetStoresByCustomerNo(string customerNo)
+    public List<DTOs.Cad.Store> GetStoresByCustomerNo(string customerNo)
     {
         var stores = _repositoryContext.Stores.Where(x => x.CustomerId == new Guid(customerNo)).ToList();
 
-        var storeList = new List<Retail.Data.Entities.Stores.Store>();
+        var storeList = new List<DTOs.Cad.Store>();
 
 
         foreach (var store in stores)
         {
-            var item = new Retail.Data.Entities.Stores.Store
+            var item = new DTOs.Cad.Store
             {
                 Name = store.Name,
                 StoreNumber = store.StoreNumber,
@@ -641,5 +641,65 @@ public class CadService : ICadService
 
 
     }
+
+    #region Store Document
+
+    public async Task<Retail.Data.Entities.FileSystem.Document> InsertDocument(string Name, string path,Guid typeGuid)
+    {
+        var docItem = new Retail.Data.Entities.FileSystem.Document
+        {
+            Name = Name,
+            Path = path,          
+            StatusId = typeGuid
+
+        };
+
+        await _repositoryContext.Documents.AddAsync(docItem);
+        await _repositoryContext.SaveChangesAsync();
+
+        return docItem;
+
+    }
+
+    public async Task<Retail.Data.Entities.Stores.StoreDocument> InsertStoreDocument(Guid storeId, Guid documentId)
+    {
+        var docItem = new Retail.Data.Entities.Stores.StoreDocument
+        {
+            DocumentId = documentId,
+            StoreId= storeId,
+            UploadedOn = DateTime.UtcNow,
+
+        };
+
+        await _repositoryContext.StoreDocuments.AddAsync(docItem);
+        await _repositoryContext.SaveChangesAsync();
+
+        return docItem;
+
+    }
+
+
+    public async Task<Retail.Data.Entities.Cad.CadUploadHistory> InsertCadUploadHistory(Guid storeId, string fileName)
+    {
+        var docItem = new Retail.Data.Entities.Cad.CadUploadHistory
+        {   
+            Name = fileName,
+            UploadId ="fileUpload",
+            StoreId = storeId,
+            Status = true,
+            UploadOn = DateTime.UtcNow,
+            CreatedOn = DateTime.UtcNow
+
+        };
+
+        await _repositoryContext.CadUploadHistories.AddAsync(docItem);
+        await _repositoryContext.SaveChangesAsync();
+
+        return docItem;
+
+    }
+
+
+    #endregion
 
 }

@@ -250,8 +250,26 @@ public class StoreService : IStoreService
         var path = _configuration["AssetLocations:StoreImages"];
 
 
+       
+
         foreach (var store in storeResponse)
         {
+            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id).ToListAsync();
+            if(storeData != null)
+            {
+                foreach(var item in storeData)
+                {
+                    var storeDataVersion = new StoreDataVersion()
+                    {
+                        Id = item.Id,
+                        Version = "Version "+ item.VersionNumber
+
+                    };
+                    store.storeDataVersions.Add(storeDataVersion);
+                }
+            }
+
+
             if (store.AddressId != null)
             {
 
@@ -425,6 +443,24 @@ public class StoreService : IStoreService
 
         foreach (var store in storeResponse)
         {
+            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id).ToListAsync();
+            if (storeData != null)
+            {
+                foreach (var item in storeData)
+                {
+                    var storeDataVersion = new StoreDataVersion()
+                    {
+                        Id = item.Id,
+                        Version = "Version " + item.VersionNumber
+
+                    };
+                    store.storeDataVersions.Add(storeDataVersion);
+                }
+            }
+
+
+
+
             if (store.AddressId != null)
             {
                
@@ -543,13 +579,25 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        if (storeData == null)
+        {
+            var storeResult = new ResultDto<List<ChartGridDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return storeResult;
+        }
+
+
         try
         {
             var query = (from at in _repositoryContext.AreaTypes
                          join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
                          join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
                          join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
-                         where stsp.StoreId == StoreId
+                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id
                          select new
                          {
                              CategoryId = cat.Id,
@@ -650,11 +698,11 @@ public class StoreService : IStoreService
     }
 
 
-    public void DraftCategoryChart(List<ChartGraphDto> charts, Guid storeId)
+    public void DraftCategoryChart(List<ChartGraphDto> charts, Guid storeId, Guid storeDataId)
     {
         var query = (from cat in _repositoryContext.Categories
                      join stsp in _repositoryContext.StoreSpaces on cat.Id equals stsp.CategoryId
-                     where cat.AreaTypeId == null && stsp.StoreId == storeId
+                     where cat.AreaTypeId == null && stsp.StoreId == storeId && stsp.StoreDataId == storeDataId
                      orderby cat.CadServiceNumber
                      select new
                      {
@@ -710,13 +758,24 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        if (storeData == null)
+        {
+            var storeResult = new ResultDto<List<ChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NotFound
+            };
+            return storeResult;
+        }
+
         try
         {
             var query = (from at in _repositoryContext.AreaTypes
                          join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
                          join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
                          join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
-                         where stsp.StoreId == StoreId
+                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id
                          orderby cat.CadServiceNumber 
                          select new
                          {
@@ -986,7 +1045,7 @@ public class StoreService : IStoreService
             }
 
             
-            DraftCategoryChart(chartItems, StoreId);
+            DraftCategoryChart(chartItems, StoreId,storeData.Id);
 
 
             var successResponse = new ResultDto<List<ChartGraphDto>>
@@ -1327,11 +1386,25 @@ public class StoreService : IStoreService
         var updateActivityResult = await UpdateStoreActivity(storeId);
 
         var store = _mapper.Map<StoreResponseDto>(storeItem);
-
-       
+               
 
         var path = _configuration["AssetLocations:StoreImages"];
 
+
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id).ToListAsync();
+        if (storeData != null)
+        {
+            foreach (var item in storeData)
+            {
+                var storeDataVersion = new StoreDataVersion()
+                {
+                    Id = item.Id,
+                    Version = "Version " + item.VersionNumber
+
+                };
+                store.storeDataVersions.Add(storeDataVersion);
+            }
+        }
 
 
         if (store.AddressId != null)

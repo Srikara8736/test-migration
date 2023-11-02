@@ -25,6 +25,14 @@ public class StoreResponseDto : StoreDto
 
     public CadUploadHistoryResponseDto cadUploadHistory { get; set; }
 
+    public List<StoreDataVersion> storeDataVersions { get; set; } = new();
+
+}
+
+public class StoreDataVersion
+{
+    public Guid Id { get; set; }
+    public string Version { get; set; }
 }
 
 

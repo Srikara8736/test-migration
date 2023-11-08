@@ -160,8 +160,14 @@ namespace RetailApp.Controllers
                 if (!Item.IsSuccess)
                     return Unauthorized();
 
-               
-                return Item.Data.AccessToken;
+                var customer = Item.Data.Customer;
+                return new
+                {
+                    accessToken = Item.Data.AccessToken,
+                    customerName = customer.Name,
+                    customerNo = customer.Id
+
+                };
 
 
             }
@@ -173,12 +179,20 @@ namespace RetailApp.Controllers
         }
 
 
-        [HttpGet]
-        [Route("External/Customers/GetAllcustomers")]
-        public List<CustomerItem> GetAllCustomers()
-        {
-            return _cadService.GetAllCustomer();
-        }
+        //[HttpGet]
+        //[Route("External/Customers/GetAllcustomers")]
+        //public List<CustomerItem> GetAllCustomers()
+        //{
+        //    return _cadService.GetAllCustomer();
+        //}
+
+
+        //[HttpGet]
+        //[Route("External/Customers/GetcustomerInfo")]
+        //public List<CustomerItem> GetAllCustomers()
+        //{
+        //    return _cadService.GetAllCustomer();
+        //}
 
 
         [HttpGet]
@@ -201,10 +215,10 @@ namespace RetailApp.Controllers
             }
 
 
-            //try
-            //{
+            try
+            {
 
-            var fileStream = await UploadCadFileAsync(cadUpload.CadFile, cadUpload.StoreId.ToString());
+                var fileStream = await UploadCadFileAsync(cadUpload.CadFile, cadUpload.StoreId.ToString());
 
            // string manifestConten1t = Encoding.UTF8.GetString(ZipStreamReader(fileStream.strem, "Manifest.xml"));
             var stream = cadUpload.CadFile.OpenReadStream();
@@ -234,14 +248,30 @@ namespace RetailApp.Controllers
 
                     byte[] CADContent = ZipStreamReader(zip, cadFileName);
 
-                    XmlSerializer serializer = new XmlSerializer(typeof(CADData));
+                    
+                    if(cadUpload.Type.ToLower() == "space")
+                        {
+                            XmlSerializer serializer = new XmlSerializer(typeof(Message));
 
-                    CADData cadData = (CADData)serializer.Deserialize(new MemoryStream(CADContent));
+                            Message cadData = (Message)serializer.Deserialize(new MemoryStream(CADContent));
 
-                   if(cadData != null)
-                    {
-                      // var loadXml = await _cadService.LoadXMLData(items);
-                    }
+                            if (cadData != null)
+                            {
+                                 var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId);
+                            }
+                        }
+                        else
+                        {
+                            XmlSerializer serializer = new XmlSerializer(typeof(CADData));
+                            CADData cadData = (CADData)serializer.Deserialize(new MemoryStream(CADContent));
+
+                            if (cadData != null)
+                            {
+                                // var loadXml = await _cadService.LoadXMLData(items);
+                            }
+                        }
+
+                   
 
                     var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
                     if(document != null)
@@ -272,12 +302,16 @@ namespace RetailApp.Controllers
 
             return this.Ok();
 
-            //}
-            //catch (Exception ex)
-            //{
+            }
+            catch (Exception ex)
+            {
 
-            //    return HttpStatusCode.InternalServerError;
-            //}
+                return new
+                {
+                   statusCode =  HttpStatusCode.InternalServerError                   ,
+                    message = "File may not be a valid format."
+                };
+            }
 
         }
 

@@ -28,7 +28,7 @@ public class JWTTokenResponseDTO
     //public DateTime? Expiration { get; set; }
 
     public UserInformation User { get; set; }
-    public CustomerDto? Customer { get; set; }
+    public CustomerResponseDto? Customer { get; set; }
 
 }
 

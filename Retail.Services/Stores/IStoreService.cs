@@ -134,4 +134,6 @@ public interface IStoreService
     /// <param name="ct">CancellationToken</param>
     /// <returns></returns>
     Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
+
+    Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid StoreId, Guid Version1, Guid Version2, CancellationToken ct = default);
 }

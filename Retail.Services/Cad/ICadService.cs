@@ -12,6 +12,7 @@ public interface ICadService
     public List<DTOs.Cad.Store> GetStoresByCustomerNo(string customerNo);
 
     public Task<bool> LoadXMLData(Message message, Guid storeId);
+    Task<Retail.Data.Entities.Stores.DrawingList> LoadDrawingData(Guid storeId, MessageData messageData);
 
     public Task<ResultDto<List<CadUploadHistoryResponseDto>>> GetCadUploadHistoryByStore(Guid storeId, CancellationToken cancellationToken=default);
 

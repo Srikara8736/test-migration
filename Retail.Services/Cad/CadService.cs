@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Retail.Data.Entities.Common;
 using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.Stores;
 using Retail.Data.Repository;
@@ -539,7 +540,7 @@ public class CadService : ICadService
 
     #region Drawing List
 
-    public async Task<Retail.Data.Entities.Stores.DrawingList> InsertDrawingData(Guid storeId, MessageData messageData)
+    public async Task<Retail.Data.Entities.Stores.DrawingList> LoadDrawingData(Guid storeId, MessageData messageData)
     {
         var drawingListItem = new Retail.Data.Entities.Stores.DrawingList();
 
@@ -547,14 +548,14 @@ public class CadService : ICadService
 
         if (messageData.Properties != null)
         {
-
+          
             var propertyName = messageData.Properties.Where(x => x.PropertyName.ToLower() == "name").FirstOrDefault();
             if (propertyName != null)
             {
                 drawingListItem.Name = propertyName.PropertyValue;
             }
 
-            var propertyId = messageData.Properties.Where(x => x.PropertyName.ToLower() == "id").FirstOrDefault();
+            var propertyId = messageData.Properties.Where(x => x.PropertyName.ToLower() == "pno").FirstOrDefault();
             if (propertyId != null)
             {
                 drawingListItem.DrawingListId = propertyId.PropertyValue;
@@ -580,10 +581,10 @@ public class CadService : ICadService
             }
 
             var noProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "no").FirstOrDefault();
-            if (noProperty != null)
-            {
-                drawingListItem.No = Int32.Parse(noProperty.PropertyValue);
-            }
+            //if (noProperty != null)
+            //{
+            //    drawingListItem.No = Int32.Parse(noProperty.PropertyValue);
+            //}
 
 
             var noteProperty = messageData.Properties.Where(x => x.PropertyName.ToLower() == "note").FirstOrDefault();
@@ -598,6 +599,21 @@ public class CadService : ICadService
                 drawingListItem.Sign = signProperty.PropertyValue;
             }
 
+            var statusProperty = messageData.Properties.Where(x => x.PropertyName.ToString().ToLower() == "status").FirstOrDefault();
+
+            if (statusProperty != null) 
+            {
+                var status = await _repositoryContext.CodeMasters.Where(x => x.Value == statusProperty.PropertyValue && x.Type =="drawing").FirstOrDefaultAsync();
+                if (status != null)
+                    drawingListItem.StatusId = status.Id;
+                else
+                {
+                    var statusItem = await CreateStatus(statusProperty.PropertyValue, "drawing");
+                    if(statusItem != null)
+                        drawingListItem.StatusId = statusItem.Id;
+                }
+             }
+
         }
 
 
@@ -607,7 +623,29 @@ public class CadService : ICadService
 
 
         return drawingListItem;
+        
+    }
 
+    public async Task<CodeMaster> CreateStatus(string value, string type)
+    {
+        int order = 1;
+        var lastItem = await _repositoryContext.CodeMasters.Where(x => x.Type.ToLower() == type).OrderByDescending(x => x.Order).FirstOrDefaultAsync();
+        if (lastItem != null)
+            order = lastItem.Order + 1;
+
+        var statusItem = new CodeMaster()
+        {
+            Type = type,
+            Value = value,
+            Order= order
+
+        };
+
+
+        await _repositoryContext.CodeMasters.AddAsync(statusItem);
+        await _repositoryContext.SaveChangesAsync();
+
+        return statusItem;
     }
 
 

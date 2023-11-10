@@ -149,7 +149,7 @@ namespace RetailApp.Controllers
             {
                 var login = new LoginRequestDTO()
                 {
-                    Email= model.UserName,
+                    UserName = model.UserName,
                     Password= model.Password
                 };
 
@@ -267,7 +267,7 @@ namespace RetailApp.Controllers
 
                             if (cadData != null)
                             {
-                                // var loadXml = await _cadService.LoadXMLData(items);
+                                 var loadXml = await _cadService.LoadDrawingData(cadUpload.StoreId, cadData.MessageBlock.Messages.MessageData);
                             }
                         }
 
@@ -286,7 +286,7 @@ namespace RetailApp.Controllers
                 foreach (string cadpdfFileName in cadPDFFileNames)
                 {
 
-                    var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
+                    var document = await _cadService.InsertDocument(cadpdfFileName,fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
                     if (document != null)
                     {
                         var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id);

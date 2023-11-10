@@ -134,7 +134,7 @@ public class UserService : IUserService
             };
             return UserResult;
         }
-        var user = await _repositoryContext.Users.FirstOrDefaultAsync(x => x.Email == userDto.Email && x.IsDeleted == false, ct);
+        var user = await _repositoryContext.Users.FirstOrDefaultAsync(x => x.UserName == userDto.UserName && x.IsDeleted == false, ct);
         if (user == null)
         {
             var UserResult = new ResultDto<UserResponseDto>()

@@ -131,7 +131,7 @@ public class AuthTokenBuilder : IAuthTokenBuilder
 
         UserDto userRequestDto = new UserDto
         {
-            Email = user.Email,
+            UserName = user.UserName,
             PasswordHash = user.Password,
         };
 
@@ -154,7 +154,7 @@ public class AuthTokenBuilder : IAuthTokenBuilder
         {
 
             new Claim("UserId", userDetails.Data.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Email),
+            new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.Role, userDetails.Data.RoleName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
@@ -165,6 +165,7 @@ public class AuthTokenBuilder : IAuthTokenBuilder
 
         var userInfo = new UserInformation()
         {
+            UserName = userDetails.Data.UserName,
             Email = userDetails.Data.Email,
             Role = userDetails.Data.RoleName,
             Id = userDetails.Data.Id,

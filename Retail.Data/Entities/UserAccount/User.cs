@@ -26,6 +26,13 @@ public class User : BaseEntity
     [StringLength(256)]
     public string LastName { get; set; }
 
+    /// <summary>
+    /// Gets or sets the UserName
+    /// </summary>
+    [Required]
+    [StringLength(256)]
+    public string UserName { get; set; }
+
 
     /// <summary>
     /// Gets or sets the Email

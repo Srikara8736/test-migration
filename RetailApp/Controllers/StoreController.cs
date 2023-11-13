@@ -32,8 +32,6 @@ public class StoreController : BaseController
     #endregion
 
 
-   
-
     #region Methods
 
     /// <summary>
@@ -173,8 +171,7 @@ public class StoreController : BaseController
     public async Task<IActionResult> StoreComparision([FromBody] StoreComparisionRequestDto storeComparision, CancellationToken ct = default)
     {
 
-       // return this.Ok();
-        return this.Result(await _storeService.CompareStoreVersionData(storeComparision.StoreId, storeComparision.Version1, storeComparision.Version2, ct));
+        return this.Result(await _storeService.CompareStoreVersionData(storeComparision.FirstStoreId, storeComparision.FirstVersionId, storeComparision.SecondStoreId,storeComparision.SecondVersionId, ct));
     }
 
     #endregion

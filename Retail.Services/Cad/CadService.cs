@@ -324,6 +324,16 @@ public class CadService : ICadService
     {
         var areaType = await GetAreaType(category.AreaType);
 
+        var guid = new Guid();
+        if(areaType != null)
+            guid = areaType.Id;
+        else { 
+            var areaTypeItem = await InsertAreaType(category.AreaType.Name);
+            guid = areaTypeItem.Id;
+        }
+          
+
+
 
         var categoryItem = new Retail.Data.Entities.Stores.Category
         {

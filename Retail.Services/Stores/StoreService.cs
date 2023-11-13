@@ -1556,10 +1556,12 @@ public class StoreService : IStoreService
 
 
 
-    public async Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid StoreId,Guid Version1,Guid Version2, CancellationToken ct = default)
+    public async Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId, CancellationToken ct = default)
     {
 
-        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
+
+
+        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == FirstStoreId, ct);
         if (store == null)
         {
             var storeResult = new ResultDto<List<ComparisionChartGraphDto>>()
@@ -1571,8 +1573,19 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
+        var secondStore = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == FirstStoreId, ct);
+        if (secondStore == null)
+        {
+            var storeResult = new ResultDto<List<ComparisionChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.OK,
+                Data = null
+            };
+            return storeResult;
+        }
 
-        var storeDataV1 = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.Id == Version1).FirstOrDefaultAsync();
+        var storeDataV1 = await _repositoryContext.StoreDatas.Where(x => x.StoreId == FirstStoreId && x.Id == FirstVersionId).FirstOrDefaultAsync();
         if (storeDataV1 == null)
         {
             var storeResult = new ResultDto<List<ComparisionChartGraphDto>>()
@@ -1586,7 +1599,7 @@ public class StoreService : IStoreService
 
 
 
-        var storeDataV2 = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.Id == Version2).FirstOrDefaultAsync();
+        var storeDataV2 = await _repositoryContext.StoreDatas.Where(x => x.StoreId == SecondStoreId && x.Id == SecondVersionId).FirstOrDefaultAsync();
         if (storeDataV2 == null)
         {
             var storeResult = new ResultDto<List<ComparisionChartGraphDto>>()
@@ -1602,9 +1615,9 @@ public class StoreService : IStoreService
         try
         {
         
-            var version1 = await GetChartDataItem(StoreId, storeDataV1.Id);
+            var version1 = await GetChartDataItem(FirstStoreId, storeDataV1.Id);
 
-            var version2 = await GetChartDataItem(StoreId, storeDataV2.Id);
+            var version2 = await GetChartDataItem(SecondStoreId, storeDataV2.Id);
 
             var comparisionList = new List<ComparisionChartGraphDto>();
 

@@ -10,11 +10,15 @@ namespace Retail.DTOs.Stores;
 public class StoreComparisionRequestDto
 {
     [Required]
-    public Guid StoreId { get; set; }
+    public Guid FirstStoreId { get; set; }
 
     [Required]
-    public Guid Version1 { get; set; }
+    public Guid FirstVersionId { get; set; }
 
     [Required]
-    public Guid Version2 { get; set; }
+    public Guid SecondStoreId { get; set; }
+
+    [Required]
+    public Guid SecondVersionId { get; set; }
 }
+

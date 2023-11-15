@@ -9,9 +9,12 @@ using Retail.DTOs.Cad;
 using Retail.DTOs.Customers;
 using Retail.DTOs.XML;
 using Retail.Services.Common;
+using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Net;
 using System.Numerics;
+using System.Security.AccessControl;
 
 namespace Retail.Services.Cad;
 
@@ -80,7 +83,7 @@ public class CadService : ICadService
     {
 
         //var storeInfo = await StoreInfoManagement(message);
-        var storeInfo =await _repositoryContext.Stores.Where(x => x.Id == storeId).FirstOrDefaultAsync();
+        var storeInfo =await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == storeId);
         if (storeInfo != null)
         {
              var storeData = await InsertStoreData(storeInfo.Id);
@@ -265,6 +268,9 @@ public class CadService : ICadService
 
     public async Task<Retail.Data.Entities.Stores.AreaType> InsertAreaType(string areaTypeGroup)
     {
+        if (areaTypeGroup == "")
+            return null;
+
         var areaTypeItem = new Retail.Data.Entities.Stores.AreaType
         {
             Name = areaTypeGroup
@@ -320,35 +326,67 @@ public class CadService : ICadService
         return await _repositoryContext.Categories.Where(x => x.Name.ToLower().Trim() == category.Name.ToLower().Trim() && x.CategoryId.ToLower().Trim() == category.Id.ToLower().Trim()).FirstOrDefaultAsync();
     }
 
-    public async Task<Retail.Data.Entities.Stores.Category> InsertCategory(DTOs.XML.Category category)
+    public async Task<Retail.Data.Entities.Stores.Category> InserCategoryItem (Retail.Data.Entities.Stores.Category category)
     {
-        var areaType = await GetAreaType(category.AreaType);
+      
 
-        var guid = new Guid();
-        if(areaType != null)
-            guid = areaType.Id;
-        else { 
-            var areaTypeItem = await InsertAreaType(category.AreaType.Name);
-            guid = areaTypeItem.Id;
-        }
-          
-
-
-
-        var categoryItem = new Retail.Data.Entities.Stores.Category
-        {
-            Name = category.Name,
-            CategoryId = category.Id,
-            CadServiceNumber = category.Number,
-            AreaTypeId = areaType.Id
-        };
-
-        await _repositoryContext.Categories.AddAsync(categoryItem);
+        await _repositoryContext.Categories.AddAsync(category);
         await _repositoryContext.SaveChangesAsync();
 
 
-        return categoryItem;
+        return category;
 
+    }
+
+    public async Task<Retail.Data.Entities.Stores.Category> InsertCategory(DTOs.XML.Category category)
+    {
+        var areaType = await GetAreaType(category.AreaType);
+        var category_Item = new Retail.Data.Entities.Stores.Category();
+
+        if (areaType != null)
+        {
+            var guid = areaType.Id;
+            var categoryItem = new Retail.Data.Entities.Stores.Category
+            {
+                Name = category.Name,
+                CategoryId = category.Id,
+                CadServiceNumber = category.Number,
+                AreaTypeId = guid,
+
+            };
+            await _repositoryContext.Categories.AddAsync(categoryItem);
+            await _repositoryContext.SaveChangesAsync();
+
+
+            category_Item = categoryItem;
+
+        }
+
+        else 
+        { 
+            var areaTypeItem = await InsertAreaType(category.AreaType.Name);
+            if (areaTypeItem != null)
+            {
+                var categoryItem = new Retail.Data.Entities.Stores.Category
+                {
+                    Name = category.Name,
+                    CategoryId = category.Id,
+                    CadServiceNumber = category.Number,
+                    AreaTypeId = areaTypeItem.Id,
+
+                };
+
+                await _repositoryContext.Categories.AddAsync(categoryItem);
+                await _repositoryContext.SaveChangesAsync();
+
+
+                category_Item = categoryItem;
+
+            }
+        }
+          
+
+        return category_Item;
     }
 
 
@@ -515,9 +553,9 @@ public class CadService : ICadService
         var storeSpaceItem = new Retail.Data.Entities.Stores.StoreSpace
         {
             Unit = space.Unit,
-            Pieces = decimal.Parse(space.Pieces),
-            Area = decimal.Parse(space.Area),
-            Articles = decimal.Parse(space.Articles),
+            Pieces = decimal.Parse(space.Pieces, CultureInfo.InvariantCulture),
+            Area = decimal.Parse(space.Area, CultureInfo.InvariantCulture),
+            Articles = decimal.Parse(space.Articles, CultureInfo.InvariantCulture),
             CategoryId = categoryId,
             SpaceId = spaceId,
             StoreId = storeId,

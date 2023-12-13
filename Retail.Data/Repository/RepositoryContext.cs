@@ -6,6 +6,7 @@ using Retail.Data.Entities.FileSystem;
 using Retail.Data.Entities.Projects;
 using Retail.Data.Entities.Stores;
 using Retail.Data.Entities.UserAccount;
+using Retail.Data.Migrations;
 
 namespace Retail.Data.Repository;
 
@@ -48,6 +49,9 @@ public class RepositoryContext : DbContext
     public DbSet<CustomerImage> CustomerImages { get; set; }
     public DbSet<DrawingList> DrawingLists { get; set; }
     public DbSet<CadUploadHistory> CadUploadHistories { get; set; }
+    public DbSet<PackageData> PackageDatas { get; set; }
+    public DbSet<OrderList> OrderLists { get; set; }
+
 
 
 
@@ -140,6 +144,20 @@ public class RepositoryContext : DbContext
         .WithMany()
         .HasForeignKey(x => x.StoreId)
         .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+        builder.Entity<PackageData>()
+        .HasOne(x => x.Store)
+        .WithMany()
+        .HasForeignKey(x => x.StoreId)
+        .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+        builder.Entity<OrderList>()
+            .HasOne(x => x.Store)
+            .WithMany()
+            .HasForeignKey(x => x.StoreId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
 
         base.OnModelCreating(builder);

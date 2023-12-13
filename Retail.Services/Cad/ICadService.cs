@@ -22,4 +22,6 @@ public interface ICadService
     Task<Retail.Data.Entities.Stores.StoreDocument> InsertStoreDocument(Guid storeId, Guid documentId);
 
     Task<Retail.Data.Entities.Cad.CadUploadHistory> InsertCadUploadHistory(Guid storeId, string fileName);
+
+    Task<bool> LoadOrderListData(Guid storeId, OrderMessageBlock orderMessage);
 }

@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Retail.Data.Entities.Stores;
 using Retail.DTOs.Cad;
 using Retail.DTOs.UserAccounts;
 using Retail.DTOs.XML;
 using Retail.Services.Cad;
 using RetailApp.Authentication;
+using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
@@ -254,6 +256,28 @@ namespace RetailApp.Controllers
                                 }
                         
                         }
+                        else if (cadUpload.Type.ToLower() == "order")
+                        {
+                            CADOrder cadData = new CADOrder();
+                            XmlSerializer serializer = new XmlSerializer(typeof(CADOrder));
+                            try
+                            {
+                                cadData = (CADOrder)serializer.Deserialize(new MemoryStream(CADContent));
+                            }
+                            catch (Exception ex)
+                            {
+                                return new
+                                {
+                                    IsSuccess = false,
+                                    statusCode = HttpStatusCode.InternalServerError,
+                                    message = "Order XML may not be valid, "
+                                };
+                            }
+                            if (cadData != null)
+                            {
+                                var loadXml = await _cadService.LoadOrderListData(cadUpload.StoreId, cadData.MessageBlock);
+                            }
+                        }
                         else
                         {
                         CADData cadData = new CADData();
@@ -325,6 +349,174 @@ namespace RetailApp.Controllers
                     message = ex.Message
                 };
 }
+
+        }
+
+
+
+        [HttpPost]
+        [Route("Cad/UploadCadAlt")]
+        public async Task<object> UploadCadAlt([Required] Guid StoreId , [Required] IFormFile CadFile, [Required] string Type)
+        {
+            if (CadFile.ContentType != "application/x-zip-compressed")
+            {
+
+                return HttpStatusCode.UnsupportedMediaType;
+            }
+
+
+            try
+            {
+
+                var fileStream = await UploadCadFileAsync(CadFile, StoreId.ToString());
+
+                var stream = CadFile.OpenReadStream();
+                using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+                {
+                    //Fetch Manifest.xml
+                    //Extract the Manifest file
+                    string manifestContent = Encoding.UTF8.GetString(ZipStreamReader(zip, "Manifest.xml"));
+
+
+                    List<string> cadFileNames = null;
+                    List<string> cadPDFFileNames = null;
+
+                    if (manifestContent != string.Empty)
+                    {
+                        string xPath = "//cad:CADXML/@name";
+                        cadFileNames = ManifestReader(manifestContent, xPath);
+
+                        string xpdfPath = "//cad:CADPDF/@name";
+                        cadPDFFileNames = ManifestReader(manifestContent, xpdfPath);
+                    }
+
+
+                    foreach (string cadFileName in cadFileNames)
+                    {
+
+
+                        byte[] CADContent = ZipStreamReader(zip, cadFileName);
+
+
+                        if (Type.ToLower() == "space")
+                        {
+
+                            Message cadData = new Message();
+                            XmlSerializer serializer = new XmlSerializer(typeof(Message));
+                            try
+                            {
+                                cadData = (Message)serializer.Deserialize(new MemoryStream(CADContent));
+                            }
+                            catch (Exception ex)
+                            {
+                                return new
+                                {
+                                    IsSuccess = false,
+                                    statusCode = HttpStatusCode.InternalServerError,
+                                    message = "XML may not be valid format"
+                                };
+                            }
+                            if (cadData != null)
+                            {
+                                var loadXml = await _cadService.LoadXMLData(cadData, StoreId);
+                            }
+
+                        }
+                        else if(Type.ToLower() == "order")
+                        {
+                            CADOrder cadData = new CADOrder();
+                            XmlSerializer serializer = new XmlSerializer(typeof(CADOrder));
+                            try
+                            {
+                                cadData = (CADOrder)serializer.Deserialize(new MemoryStream(CADContent));
+                            }
+                            catch (Exception ex)
+                            {
+                                return new
+                                {
+                                    IsSuccess = false,
+                                    statusCode = HttpStatusCode.InternalServerError,
+                                    message = "Order XML may not be valid, "
+                                };
+                            }
+                            if (cadData != null)
+                            {
+                                var loadXml = await _cadService.LoadOrderListData(StoreId, cadData.MessageBlock);
+                            }
+                        }
+
+
+                        else
+                        {
+                            CADData cadData = new CADData();
+                            XmlSerializer serializer = new XmlSerializer(typeof(CADData));
+                            try
+                            {
+                                cadData = (CADData)serializer.Deserialize(new MemoryStream(CADContent));
+                            }
+                            catch (Exception ex)
+                            {
+                                return new
+                                {
+                                    IsSuccess = false,
+                                    statusCode = HttpStatusCode.InternalServerError,
+                                    message = "XML may not be valid, "
+                                };
+                            }
+                            if (cadData != null)
+                            {
+                                var loadXml = await _cadService.LoadDrawingData(StoreId, cadData.MessageBlock.Messages.MessageData);
+                            }
+                        }
+
+
+
+                        var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
+                        if (document != null)
+                        {
+                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                        }
+
+
+                    }
+
+
+                    foreach (string cadpdfFileName in cadPDFFileNames)
+                    {
+
+                        var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
+                        if (document != null)
+                        {
+                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                        }
+
+
+                    }
+
+
+                }
+
+                var caduploadHistory = _cadService.InsertCadUploadHistory(StoreId, CadFile.FileName);
+
+                return new
+                {
+
+                    IsSuccess = true,
+                    StatusCode = HttpStatusCode.OK
+
+                };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new
+                {
+                    IsSuccess = false,
+                    statusCode = HttpStatusCode.InternalServerError,
+                    message = ex.Message
+                };
+            }
 
         }
 

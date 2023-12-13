@@ -1224,6 +1224,68 @@ public class StoreService : IStoreService
 
 
     /// <summary>
+    /// gets all Order Grid Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    public async Task<ResultDto<PackageDataDto>> GetOrderListGridData(Guid StoreId, CancellationToken ct = default)
+    {
+
+        var storePackageList = await _repositoryContext.PackageDatas.Where(x => x.StoreId == StoreId).FirstOrDefaultAsync();
+
+        if (storePackageList == null)
+        {
+            var storeResult = new ResultDto<PackageDataDto>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var storePackageResponse = _mapper.Map<PackageDataDto>(storePackageList);
+
+
+        if (storePackageList.StatusId != null)
+        {
+
+            var result = _repositoryContext.CodeMasters.Where(x => x.Id == storePackageList.StatusId).FirstOrDefault();
+            if (result != null)
+                storePackageResponse.StatusName = result.Value;
+        }
+
+
+        if (storePackageList.StoreId != null)
+        {
+
+            var result = _repositoryContext.Stores.Where(x => x.Id == storePackageList.StoreId).FirstOrDefault();
+            if (result != null)
+                storePackageResponse.StoreName = result.Name;
+        }
+
+
+        var storeOrderList = await _repositoryContext.OrderLists.Where(x => x.StoreId == StoreId && x.PackageDataId == storePackageResponse.Id).ToListAsync();
+
+        var storeOrderListResponse = _mapper.Map<List<OrderListDto>>(storeOrderList);
+
+        storePackageResponse.OrderList = storeOrderListResponse;
+
+          var response = new ResultDto<PackageDataDto>()
+        {
+            IsSuccess = true,
+            Data = storePackageResponse
+          };
+        return response;
+
+    }
+
+
+
+
+
+
+    /// <summary>
     /// Inserts Store 
     /// </summary>
     /// <param name="storeDto">store</param>

@@ -20,5 +20,8 @@ public class StoreProfile : Profile
         CreateMap<CodeMaster, StoreStatusResponseDto>()
             .ForMember(dest =>dest.Name, opt => opt.MapFrom(src => src.Value))
             .ReverseMap();
+
+        CreateMap<OrderList, OrderListDto>().ReverseMap();
+        CreateMap<PackageData, PackageDataDto>().ReverseMap();
     }
 }

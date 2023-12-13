@@ -83,20 +83,20 @@ public class CadService : ICadService
     {
 
         //var storeInfo = await StoreInfoManagement(message);
-        var storeInfo =await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == storeId);
+        var storeInfo = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == storeId);
         if (storeInfo != null)
         {
-             var storeData = await InsertStoreData(storeInfo.Id);
+            var storeData = await InsertStoreData(storeInfo.Id);
 
             var areaTypeGroup = await StoreAreaTypeGroupManagement(message);
             var areaType = await StoreAreaTypeManagement(message);
             var category = await StoreCategoryManagement(message);
 
-            if(storeData != null)
+            if (storeData != null)
             {
                 var storeSpace = await StoreSpaceManagement(message, storeInfo.Id, storeData.Id);
             }
-                
+
         }
         return true;
 
@@ -160,9 +160,9 @@ public class CadService : ICadService
     {
         int versionNo = 1;
         var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
-        
-        if (storeData != null) 
-            versionNo = storeData.VersionNumber +1;
+
+        if (storeData != null)
+            versionNo = storeData.VersionNumber + 1;
         var storeDataItem = new Retail.Data.Entities.Stores.StoreData
         {
             StoreId = storeId,
@@ -326,9 +326,9 @@ public class CadService : ICadService
         return await _repositoryContext.Categories.Where(x => x.Name.ToLower().Trim() == category.Name.ToLower().Trim() && x.CategoryId.ToLower().Trim() == category.Id.ToLower().Trim()).FirstOrDefaultAsync();
     }
 
-    public async Task<Retail.Data.Entities.Stores.Category> InserCategoryItem (Retail.Data.Entities.Stores.Category category)
+    public async Task<Retail.Data.Entities.Stores.Category> InserCategoryItem(Retail.Data.Entities.Stores.Category category)
     {
-      
+
 
         await _repositoryContext.Categories.AddAsync(category);
         await _repositoryContext.SaveChangesAsync();
@@ -362,8 +362,8 @@ public class CadService : ICadService
 
         }
 
-        else 
-        { 
+        else
+        {
             var areaTypeItem = await InsertAreaType(category.AreaType.Name);
             if (areaTypeItem != null)
             {
@@ -384,7 +384,7 @@ public class CadService : ICadService
 
             }
         }
-          
+
 
         return category_Item;
     }
@@ -401,7 +401,7 @@ public class CadService : ICadService
 
             var spaceItem = await _repositoryContext.Spaces.Where(x => x.Id == spaceId).FirstOrDefaultAsync();
 
-            if(areaTypeGroupItem != null && spaceItem != null)
+            if (areaTypeGroupItem != null && spaceItem != null)
             {
                 var storeCategoryItem = new Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup
                 {
@@ -431,7 +431,7 @@ public class CadService : ICadService
 
     #region Space Section
 
-    public async Task<List<Retail.Data.Entities.Stores.Space>> StoreSpaceManagement(Message message,Guid storeId, Guid storeDataId)
+    public async Task<List<Retail.Data.Entities.Stores.Space>> StoreSpaceManagement(Message message, Guid storeId, Guid storeDataId)
     {
 
         var spaceList = new List<Retail.Data.Entities.Stores.Space>();
@@ -443,80 +443,80 @@ public class CadService : ICadService
 
         //var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeItem.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
 
-            var categoryItems = message.Data.CadSpaces.Category;
-            if (categoryItems != null)
+        var categoryItems = message.Data.CadSpaces.Category;
+        if (categoryItems != null)
+        {
+            foreach (var category in categoryItems)
             {
-                foreach (var category in categoryItems)
+                var catergoryItem = await GetCategory(category);
+                if (category.Spaces != null)
                 {
-                    var catergoryItem = await GetCategory(category);
-                    if (category.Spaces != null)
+
+                    foreach (var spaceitem in category.Spaces.Space)
                     {
-
-                        foreach (var spaceitem in category.Spaces.Space)
+                        var item = await GetSpace(spaceitem);
+                        if (item != null)
                         {
-                            var item = await GetSpace(spaceitem);
-                            if (item != null)
+
+
+
+                            var storeSpaceItem = await GetStoreSpace(storeId, catergoryItem.Id, item.Id, storeDataId);
+                            if (storeSpaceItem == null)
                             {
 
-
-
-                                var storeSpaceItem = await GetStoreSpace(storeId, catergoryItem.Id, item.Id, storeDataId);
-                                if (storeSpaceItem == null)
+                                var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, item.Id);
+                                if (storeSpace != null)
                                 {
-
-                                    var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, item.Id);
-                                    if (storeSpace != null)
-                                    {
-                                        _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, item.Id);
-                                    }
+                                    _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, item.Id);
                                 }
-
-                                spaceList.Add(item);
-
-
-
-
-
                             }
 
-                            else
-                            {
-
-                                if (catergoryItem != null)
-                                {
-                                    var spaceResponse = await InsertSpace(spaceitem, catergoryItem.Id);
-                                    spaceList.Add(spaceResponse);
-
-                                    if (spaceResponse != null)
-                                    {
-                                        var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, spaceResponse.Id);
-
-                                        if (storeSpace != null)
-                                        {
-                                            _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, storeSpace.Id);
-                                        }
+                            spaceList.Add(item);
 
 
-                                    }
-
-                                }
-
-
-                            }
 
 
 
                         }
 
+                        else
+                        {
+
+                            if (catergoryItem != null)
+                            {
+                                var spaceResponse = await InsertSpace(spaceitem, catergoryItem.Id);
+                                spaceList.Add(spaceResponse);
+
+                                if (spaceResponse != null)
+                                {
+                                    var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, spaceResponse.Id);
+
+                                    if (storeSpace != null)
+                                    {
+                                        _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, storeSpace.Id);
+                                    }
+
+
+                                }
+
+                            }
+
+
+                        }
+
+
+
                     }
-
-
 
                 }
 
+
+
             }
 
-      
+        }
+
+
 
         return spaceList;
 
@@ -596,7 +596,7 @@ public class CadService : ICadService
 
         if (messageData.Properties != null)
         {
-          
+
             var propertyName = messageData.Properties.Where(x => x.PropertyName.ToLower() == "name").FirstOrDefault();
             if (propertyName != null)
             {
@@ -649,18 +649,18 @@ public class CadService : ICadService
 
             var statusProperty = messageData.Properties.Where(x => x.PropertyName.ToString().ToLower() == "status").FirstOrDefault();
 
-            if (statusProperty != null) 
+            if (statusProperty != null)
             {
-                var status = await _repositoryContext.CodeMasters.Where(x => x.Value == statusProperty.PropertyValue && x.Type =="drawing").FirstOrDefaultAsync();
+                var status = await _repositoryContext.CodeMasters.Where(x => x.Value == statusProperty.PropertyValue && x.Type == "drawing").FirstOrDefaultAsync();
                 if (status != null)
                     drawingListItem.StatusId = status.Id;
                 else
                 {
                     var statusItem = await CreateStatus(statusProperty.PropertyValue, "drawing");
-                    if(statusItem != null)
+                    if (statusItem != null)
                         drawingListItem.StatusId = statusItem.Id;
                 }
-             }
+            }
 
         }
 
@@ -671,7 +671,7 @@ public class CadService : ICadService
 
 
         return drawingListItem;
-        
+
     }
 
     public async Task<CodeMaster> CreateStatus(string value, string type)
@@ -685,7 +685,7 @@ public class CadService : ICadService
         {
             Type = type,
             Value = value,
-            Order= order
+            Order = order
 
         };
 
@@ -713,9 +713,9 @@ public class CadService : ICadService
             return cadResult;
         }
 
-        var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == storeId && x.Status).OrderByDescending(y => y.UploadOn) .ToListAsync();
+        var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == storeId && x.Status).OrderByDescending(y => y.UploadOn).ToListAsync();
 
-        if (uploadHistory.Count <= 0)            
+        if (uploadHistory.Count <= 0)
         {
             var customerResult = new ResultDto<List<CadUploadHistoryResponseDto>>
             {
@@ -740,12 +740,12 @@ public class CadService : ICadService
 
     #region Store Document
 
-    public async Task<Retail.Data.Entities.FileSystem.Document> InsertDocument(string Name, string path,Guid typeGuid)
+    public async Task<Retail.Data.Entities.FileSystem.Document> InsertDocument(string Name, string path, Guid typeGuid)
     {
         var docItem = new Retail.Data.Entities.FileSystem.Document
         {
             Name = Name,
-            Path = path,          
+            Path = path,
             StatusId = typeGuid
 
         };
@@ -762,7 +762,7 @@ public class CadService : ICadService
         var docItem = new Retail.Data.Entities.Stores.StoreDocument
         {
             DocumentId = documentId,
-            StoreId= storeId,
+            StoreId = storeId,
             UploadedOn = DateTime.UtcNow,
 
         };
@@ -778,9 +778,9 @@ public class CadService : ICadService
     public async Task<Retail.Data.Entities.Cad.CadUploadHistory> InsertCadUploadHistory(Guid storeId, string fileName)
     {
         var docItem = new Retail.Data.Entities.Cad.CadUploadHistory
-        {   
+        {
             Name = fileName,
-            UploadId ="fileUpload",
+            UploadId = "fileUpload",
             StoreId = storeId,
             Status = true,
             UploadOn = DateTime.UtcNow,
@@ -797,5 +797,151 @@ public class CadService : ICadService
 
 
     #endregion
+
+
+    #region Order List
+
+
+
+    public async Task<Retail.Data.Entities.Stores.PackageData> LoadPackageData(Guid storeId, OrderMandatoryPoperties orderMandatory)
+    {
+        try
+        {
+            var packageData = new Retail.Data.Entities.Stores.PackageData();
+            packageData.StoreId = storeId;
+            packageData.StatusId = Guid.Parse("2DB5BA54-04C3-46EC-A47D-597D67108EAF");
+
+
+            if (orderMandatory.CadPackageName != null)
+                packageData.PackageName = orderMandatory.CadPackageName.Value;
+
+
+            if (orderMandatory.Createdby != null)
+                packageData.CreatedBy = orderMandatory.Createdby.Value;
+
+            if (orderMandatory.ArchicadFile != null)
+                packageData.FileName = orderMandatory.ArchicadFile.Value;
+
+            if (orderMandatory.CreationDate != null)
+                packageData.CreatedDate = orderMandatory.CreationDate.Value != null ? DateTime.Parse(orderMandatory.CreationDate.Value) : null;
+
+
+            await _repositoryContext.PackageDatas.AddAsync(packageData);
+            await _repositoryContext.SaveChangesAsync();
+
+            return packageData;
+        }
+        catch(Exception ex)
+        {
+            return null;
+        }
+
+
+
+
+    }
+
+    public async Task<bool> LoadOrderListData(Guid storeId, OrderMessageBlock orderMessage)
+    {
+        try
+        {
+            var packgeDate = await LoadPackageData(storeId, orderMessage.MandatoryPoperties);
+            if (packgeDate == null)
+                return false;
+
+            var messageDataItems = orderMessage.Messages.MessageData;
+
+            if (messageDataItems.Count > 0)
+            {
+                foreach (var messageData in messageDataItems)
+                {
+                    var orderListItem = new Retail.Data.Entities.Stores.OrderList
+                    {
+                        StoreId = storeId,
+                        PackageDataId = packgeDate.Id
+                    };
+
+
+
+                    var articleNumberData = messageData.Properties.Where(x => x.PropertyName.ToLower() == "article number").FirstOrDefault();
+                    if (articleNumberData != null)
+                    {
+                        orderListItem.ArticleNumber = articleNumberData.PropertyValue;
+                    }
+
+                    var quantityData = messageData.Properties.Where(x => x.PropertyName.ToLower() == "quantity").FirstOrDefault();
+                    if (quantityData != null)
+                    {
+                        orderListItem.Quantity = quantityData.PropertyValue != string.Empty ? Int32.Parse(quantityData.PropertyValue) : 0;
+                    }
+
+                    var nameData = messageData.Properties.Where(x => x.PropertyName.ToLower() == "name").FirstOrDefault();
+                    if (nameData != null)
+                    {
+                        orderListItem.Name = nameData.PropertyValue;
+                    }
+
+                    var cadData = messageData.Properties.Where(x => x.PropertyName.ToLower() == "cad data").FirstOrDefault();
+                    if (cadData != null)
+                    {
+                        orderListItem.CadData = cadData.PropertyValue;
+                    }
+
+
+                    var producerData = messageData.Properties.Where(x => x.PropertyName.ToLower() == "producer").FirstOrDefault();
+                    if (producerData != null)
+                    {
+                        orderListItem.Producer = producerData.PropertyValue;
+                    }
+
+                    var priceData = messageData.Properties.Where(x => x.PropertyName.ToLower() == "price").FirstOrDefault();
+                    if (priceData != null)
+                    {
+                        orderListItem.Price = priceData.PropertyValue != string.Empty ? decimal.Parse(priceData.PropertyValue) : 0;
+                    }
+
+
+                    var sumData = messageData.Properties.Where(x => x.PropertyName.ToLower() == "sum").FirstOrDefault();
+                    if (sumData != null)
+                    {
+                        orderListItem.Sum = sumData.PropertyValue != string.Empty ? decimal.Parse(sumData.PropertyValue) : 0;
+                    }
+
+
+                    //var statusProperty = messageData.Properties.Where(x => x.PropertyName.ToString().ToLower() == "status").FirstOrDefault();
+
+                    //if (statusProperty != null)
+                    //{
+                    //    var status = await _repositoryContext.CodeMasters.Where(x => x.Value == statusProperty.PropertyValue && x.Type == "drawing").FirstOrDefaultAsync();
+                    //    if (status != null)
+                    //        drawingListItem.StatusId = status.Id;
+                    //    else
+                    //    {
+                    //        var statusItem = await CreateStatus(statusProperty.PropertyValue, "drawing");
+                    //        if (statusItem != null)
+                    //            drawingListItem.StatusId = statusItem.Id;
+                    //    }
+                    //}
+
+                    await _repositoryContext.OrderLists.AddAsync(orderListItem);
+                    await _repositoryContext.SaveChangesAsync();
+
+
+
+                }
+
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
+
+
+    #endregion
+
 
 }

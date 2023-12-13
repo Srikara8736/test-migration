@@ -136,4 +136,7 @@ public interface IStoreService
     Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
 
     Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId, CancellationToken ct = default);
+
+
+    Task<ResultDto<PackageDataDto>> GetOrderListGridData(Guid StoreId, CancellationToken ct = default);
 }

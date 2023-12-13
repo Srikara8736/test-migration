@@ -151,6 +151,23 @@ public class StoreController : BaseController
     }
 
 
+
+
+    /// <summary>
+    /// Gets Order Grid Data of Store
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    [HttpGet]
+    [Route("GetOrderListData")]
+    public async Task<IActionResult> GetOrderListData([Required] Guid StoreId, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetOrderListGridData(StoreId, ct));
+    }
+
+
     /// <summary>
     /// Get all StoreStatus
     /// </summary>

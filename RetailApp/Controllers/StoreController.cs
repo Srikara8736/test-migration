@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RetailApp.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class StoreController : BaseController
@@ -166,6 +166,23 @@ public class StoreController : BaseController
 
         return this.Result(await _storeService.GetOrderListGridData(StoreId, ct));
     }
+
+
+
+    /// <summary>
+    /// Gets General List Grid Data of Store
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    [HttpGet]
+    [Route("GetGeneralListTypeGridData")]
+    public async Task<IActionResult> GetGeneralListTypeGridData([Required] Guid StoreId, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetGeneralListTypeGridData(StoreId, ct));
+    }
+
 
 
     /// <summary>

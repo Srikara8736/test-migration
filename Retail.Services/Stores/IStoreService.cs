@@ -139,4 +139,6 @@ public interface IStoreService
 
 
     Task<ResultDto<PackageDataDto>> GetOrderListGridData(Guid StoreId, CancellationToken ct = default);
+
+    Task<ResultDto<List<GeneralListTypeDataDto>>> GetGeneralListTypeGridData(Guid StoreId, CancellationToken ct = default);
 }

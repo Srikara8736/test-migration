@@ -51,6 +51,7 @@ public class RepositoryContext : DbContext
     public DbSet<CadUploadHistory> CadUploadHistories { get; set; }
     public DbSet<PackageData> PackageDatas { get; set; }
     public DbSet<OrderList> OrderLists { get; set; }
+    public DbSet<GeneralListTypeData> GeneralListTypeDatas { get; set; }
 
 
 
@@ -140,17 +141,17 @@ public class RepositoryContext : DbContext
              .IsRequired(false);
 
         builder.Entity<DrawingList>()
-        .HasOne(x => x.Store)
-        .WithMany()
-        .HasForeignKey(x => x.StoreId)
-        .OnDelete(DeleteBehavior.ClientSetNull);
+            .HasOne(x => x.Store)
+            .WithMany()
+            .HasForeignKey(x => x.StoreId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
 
         builder.Entity<PackageData>()
-        .HasOne(x => x.Store)
-        .WithMany()
-        .HasForeignKey(x => x.StoreId)
-        .OnDelete(DeleteBehavior.ClientSetNull);
+            .HasOne(x => x.Store)
+            .WithMany()
+            .HasForeignKey(x => x.StoreId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
 
         builder.Entity<OrderList>()
@@ -158,6 +159,13 @@ public class RepositoryContext : DbContext
             .WithMany()
             .HasForeignKey(x => x.StoreId)
             .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+        builder.Entity<GeneralListTypeData>()
+        .HasOne(x => x.Store)
+        .WithMany()
+        .HasForeignKey(x => x.StoreId)
+        .OnDelete(DeleteBehavior.ClientSetNull);
 
 
         base.OnModelCreating(builder);

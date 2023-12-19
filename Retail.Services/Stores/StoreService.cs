@@ -1283,6 +1283,69 @@ public class StoreService : IStoreService
 
 
 
+    /// <summary>
+    /// Gets all General List Grid Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Grid Data</returns>
+    public async Task<ResultDto<List<GeneralListTypeDataDto>>> GetGeneralListTypeGridData(Guid StoreId, CancellationToken ct = default)
+    {
+
+        var generalList = await _repositoryContext.GeneralListTypeDatas.Where(x => x.StoreId == StoreId).ToListAsync(ct);
+
+        if (generalList.Count <= 0)
+        {
+            var storeResult = new ResultDto<List<GeneralListTypeDataDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+     
+
+        var generalListData = new List<GeneralListTypeDataDto>();
+       
+
+        foreach (var item in generalList)
+        {
+            var model = new GeneralListTypeDataDto
+            {
+                Id = item.Id,
+                Name = item.Koncept1,
+                RealPercentage = item.RealPercentage,
+                Realm2 = item.Realm2
+            };
+
+            if (item.Koncept2 != null)
+                model.Name = model.Name + " " + item.Koncept2;
+
+
+            if (item.StoreId != null)
+            {
+                model.StoreId = StoreId;
+                var result = _repositoryContext.Stores.Where(x => x.Id == item.StoreId).FirstOrDefault();
+                if (result != null)
+                    model.StoreName = result.Name;
+            }
+
+            generalListData.Add(model);
+
+        }
+        
+
+        var response = new ResultDto<List<GeneralListTypeDataDto>>()
+        {
+            IsSuccess = true,
+            Data = generalListData
+        };
+        return response;
+
+    }
+
+
 
 
     /// <summary>

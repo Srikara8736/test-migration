@@ -738,6 +738,47 @@ public class StoreService : IStoreService
 
     }
 
+
+    public void DraftStoreCategoryChart(List<StoreChartGraphDto> charts, Guid storeId, Guid storeDataId)
+    {
+        var query = (from cat in _repositoryContext.Categories
+                     join stsp in _repositoryContext.StoreSpaces on cat.Id equals stsp.CategoryId
+                     where cat.AreaTypeId == null && stsp.StoreId == storeId && stsp.StoreDataId == storeDataId
+                     orderby cat.CadServiceNumber
+                     select new
+                     {
+                         categoryName = cat.Name.Trim(),
+                         article = stsp.Articles,
+                         unit = stsp.Unit,
+
+                     });
+
+        var DraftchartData = new StoreChartGraphDto();
+        DraftchartData.ChartTitle = "Draft Area";
+        DraftchartData.ChartCategory = "Article";
+        DraftchartData.ChartType = "Pie";
+
+        var totalArea = query.Sum(x => x.article);
+        foreach (var item in query)
+        {
+
+
+            var chartItem = new StoreChartItemDto
+            {
+                Key = item.categoryName,
+                Value = (decimal)item.article,
+                TotalPercentage = Math.Round((decimal)(item.article / totalArea * 100), 0),
+                Unit = item.unit,
+
+            };
+            DraftchartData.chartItems.Add(chartItem);
+        }
+
+        if (DraftchartData.chartItems.Count > 0)
+            charts.Add(DraftchartData);
+
+    }
+
     /// <summary>
     /// gets all Chart Data
     /// </summary>
@@ -783,6 +824,7 @@ public class StoreService : IStoreService
                              CategoryName = cat.Name,
                              AreaTypeId = at.Id,
                              AreaTypeName = at.Name,
+                             SpaceId = sp.Id,
                              SpaceName = sp.Name,
                              SpaceUnit = stsp.Unit,
                              SpaceAtricles = stsp.Articles,
@@ -821,6 +863,7 @@ public class StoreService : IStoreService
 
                         var space = new SpaceGridDto
                         {
+                            SpaceId = result.SpaceId,
                             Space = result.SpaceName.Trim(),
                             Unit = result.SpaceUnit,
                             Area = (decimal)result.SpaceArea,
@@ -872,13 +915,14 @@ public class StoreService : IStoreService
 
                 var chartItem = new ChartItemDto
                 {
+                    CategoryId = areaType.AreaTypeId,
                     Key = areaType.AreaType,
                     Value = areaType.TotalArea,
                     TotalPercentage = Math.Round((areaType.TotalArea / totalArea) * 100, 0),
                     Unit = "m2"
                     
                    
-                };
+                };                
                 areachartData.chartItems.Add(chartItem);
             }
 
@@ -892,9 +936,9 @@ public class StoreService : IStoreService
             //Chart Pie Sales Area
 
 
-            var categoriesItems = areaTypeGrid.Where( y => y.AreaType == "SalesArea").Select(x => x.Categories);
+            var areaTypeId = areaTypeGrid.Where( y => y.AreaType == "SalesArea").Select(x => x.AreaTypeId).FirstOrDefault();
+            var categoriesItems = areaTypeGrid.Where( y => y.AreaType == "SalesArea").Select(x =>  x.Categories);
            
-
             foreach (var categories in categoriesItems)
             {
                 var totalAreacategoriesItem = categories.Sum(x => x.TotalArea);
@@ -908,6 +952,8 @@ public class StoreService : IStoreService
                 {
                     var chartItem = new ChartItemDto
                     {
+                        CategoryId = category.CategoryId,
+                        ParentCategoryId = areaTypeId,
                         Key = category.Category,
                         Value =category.TotalArea,
                         TotalPercentage = Math.Round((category.TotalArea / totalAreacategoriesItem) * 100, 0),
@@ -928,6 +974,8 @@ public class StoreService : IStoreService
                     {
                         var spaceChartItem = new ChartItemDto
                         {
+                            CategoryId = spaceItem.SpaceId,
+                            ParentCategoryId = category.CategoryId,
                             Key = spaceItem.Space,
                             Value = spaceItem.Area,
                             TotalPercentage = Math.Round((spaceItem.Area / totalspaceArea) * 100, 0),
@@ -971,6 +1019,8 @@ public class StoreService : IStoreService
                     {
                         var spaceChartItem = new ChartItemDto
                         {
+                            CategoryId = spaceItem.SpaceId,
+                            ParentCategoryId = mainItem.AreaTypeId,
                             Key = spaceItem.Space,
                             Value = spaceItem.Area,
                             TotalPercentage = Math.Round((spaceItem.Area / totalspaceArea) * 100, 0),
@@ -1069,6 +1119,277 @@ public class StoreService : IStoreService
 
 
     }
+
+
+    public async Task<ResultDto<List<StoreChartGraphDto>>> GetStoreChartData(Guid StoreId, CancellationToken ct = default)
+    {
+
+        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
+        if (store == null)
+        {
+            var storeResult = new ResultDto<List<StoreChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        if (storeData == null)
+        {
+            var storeResult = new ResultDto<List<StoreChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        try
+        {
+            var query = (from at in _repositoryContext.AreaTypes
+                         join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
+                         join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
+                         join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
+                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id
+                         orderby cat.CadServiceNumber
+                         select new
+                         {
+                             CategoryId = cat.Id,
+                             CategoryName = cat.Name,
+                             AreaTypeId = at.Id,
+                             AreaTypeName = at.Name,
+                             SpaceId = sp.Id,
+                             SpaceName = sp.Name,
+                             SpaceUnit = stsp.Unit,
+                             SpaceAtricles = stsp.Articles,
+                             SpaceArea = stsp.Area,
+                             SpacePieces = stsp.Pieces,
+                             SpaceCadNumber = sp.CadServiceNumber
+
+                         }).ToList();
+
+
+
+            var areaTypeGrid = new List<ChartGridDto>();
+
+            var areaTypeGroupResult = query.GroupBy(x => x.AreaTypeId).ToList();
+
+            foreach (var item in areaTypeGroupResult)
+            {
+                var areaType = new ChartGridDto();
+
+                var categoryGrid = new List<CategoryGridDto>();
+
+                var categoryGroup = item.GroupBy(x => x.CategoryId).ToList();
+                foreach (var categoryResult in categoryGroup)
+                {
+                    var category = new CategoryGridDto();
+
+                    var spaceGrid = new List<SpaceGridDto>();
+
+                    foreach (var result in categoryResult.OrderBy(x => x.SpaceCadNumber))
+                    {
+                        areaType.AreaType = result.AreaTypeName.Trim();
+                        areaType.AreaTypeId = result.AreaTypeId;
+
+                        category.CategoryId = result.CategoryId;
+                        category.Category = result.CategoryName.Trim();
+
+                        var space = new SpaceGridDto
+                        {
+                            SpaceId = result.SpaceId,
+                            Space = result.SpaceName.Trim(),
+                            Unit = result.SpaceUnit,
+                            Area = (decimal)result.SpaceArea,
+                            Pieces = (decimal)result.SpacePieces,
+                            Atricles = (decimal)result.SpaceAtricles
+                        };
+                        spaceGrid.Add(space);
+
+                    }
+                    category.Spaces = spaceGrid;
+                    category.TotalArea = spaceGrid.Sum(x => x.Area);
+                    categoryGrid.Add(category);
+
+                };
+
+
+                areaType.Categories = categoryGrid;
+                areaType.TotalArea = categoryGrid.Sum(x => x.TotalArea);
+                areaType.TotalAreaPercentage = 100;
+                areaTypeGrid.Add(areaType);
+            }
+
+
+            foreach (var areatype in areaTypeGrid)
+            {
+                foreach (var category in areatype.Categories)
+                {
+                    category.TotalAreaPercentage = Math.Round((category.TotalArea / areatype.TotalArea) * 100, 0);
+                }
+
+            }
+
+
+            var chartItems = new List<StoreChartGraphDto>();
+
+            //Chart Total Area
+
+
+            var areachartData = new StoreChartGraphDto();
+            areachartData.ChartTitle = "Total Area";
+            areachartData.ChartCategory = "Space";
+            areachartData.ChartType = "Pie";
+
+            var totalArea = areaTypeGrid.Sum(x => x.TotalArea);
+
+            foreach (var areaType in areaTypeGrid)
+            {
+
+                var areaChartItem = new StoreChartItemDto
+                {
+                    CategoryId = areaType.AreaTypeId,
+                    Key = areaType.AreaType,
+                    Value = areaType.TotalArea,
+                    TotalPercentage = Math.Round((areaType.TotalArea / totalArea) * 100, 0),
+                    Unit = "m2"
+
+
+                };
+
+                foreach (var category in areaType.Categories)
+                {
+                    var totalAreacategoriesItem = areaType.Categories.Sum(x => x.TotalArea);
+
+                    var categoryChartItem = new StoreChartItemDto
+                    {
+                        CategoryId = category.CategoryId,
+                        ParentCategoryId = areaType.AreaTypeId,
+                        Key = category.Category,
+                        Value = category.TotalArea,
+                        TotalPercentage = Math.Round((category.TotalArea / totalAreacategoriesItem) * 100, 0),
+                        Unit = "m2"
+                    };
+
+                   
+                    
+
+                    var totalspaceArea = category.Spaces.Sum(x => x.Area);
+
+                    foreach (var spaceItem in category.Spaces)
+                    {
+                        var spaceChartItem = new StoreChartItemDto
+                        {
+                            CategoryId = spaceItem.SpaceId,
+                            ParentCategoryId = category.CategoryId,
+                            Key = spaceItem.Space,
+                            Value = spaceItem.Area,
+                            TotalPercentage = Math.Round((spaceItem.Area / totalspaceArea) * 100, 0),
+                            Unit = spaceItem.Unit
+                        };
+                        categoryChartItem.chartItems.Add(spaceChartItem);
+                    }
+
+
+                    areaChartItem.chartItems.Add(categoryChartItem);
+
+
+                   
+                }
+
+                areachartData.chartItems.Add(areaChartItem);
+            }
+
+            if (areachartData.chartItems.Count > 0)
+                chartItems.Add(areachartData);
+
+
+
+            //Chart Bar Sales Area
+
+
+            var categoriesBarItems = areaTypeGrid.Where(y => y.AreaType == "SalesArea").Select(x => x.Categories);
+
+            foreach (var categories in categoriesBarItems)
+            {
+
+                foreach (var category in categories)
+                {
+
+
+                    var spaceAtricleData = new StoreChartGraphDto();
+                    spaceAtricleData.ChartTitle = category.Category + " Articles";
+                    spaceAtricleData.ChartCategory = "Article";
+                    spaceAtricleData.ChartType = "Bar";
+
+
+                    var spacePiecesData = new StoreChartGraphDto();
+                    spacePiecesData.ChartTitle = category.Category + " Pieces";
+                    spacePiecesData.ChartCategory = "Article";
+                    spacePiecesData.ChartType = "Bar";
+
+                    foreach (var spaceItem in category.Spaces)
+                    {
+
+                        var spaceArtlicleChartItem = new StoreChartItemDto
+                        {
+                            Key = spaceItem.Space,
+                            Value = Math.Round(spaceItem.Atricles, 0),
+                            Unit = spaceItem.Unit
+                        };
+                        spaceAtricleData.chartItems.Add(spaceArtlicleChartItem);
+
+
+                        var spacePieceChartItem = new StoreChartItemDto
+                        {
+                            Key = spaceItem.Space,
+                            Value = Math.Round(spaceItem.Pieces, 0),
+                            Unit = spaceItem.Unit
+                        };
+                        spacePiecesData.chartItems.Add(spacePieceChartItem);
+                    }
+
+
+
+                    chartItems.Add(spaceAtricleData);
+                    chartItems.Add(spacePiecesData);
+                }
+
+
+
+
+            }
+
+
+            DraftStoreCategoryChart(chartItems, StoreId, storeData.Id);
+
+
+            var successResponse = new ResultDto<List<StoreChartGraphDto>>
+            {
+                IsSuccess = true,
+                Data = chartItems
+            };
+
+            return successResponse;
+
+        }
+        catch (Exception ex)
+        {
+            var storeResult = new ResultDto<List<StoreChartGraphDto>>()
+            {
+                ErrorMessage = ex.Message,
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+            return storeResult;
+        }
+
+
+    }
+
+
+
 
 
     public async Task<ResultDto<bool>> UploadStoreImage(string storeId, string imgUrl, string fileType, string fileExtension)

@@ -2,6 +2,8 @@
 
 public class ChartGraphDto
 {
+    //public Guid? CategoryId { get; set; }
+   // public Guid? ParentCategoryId { get; set; }
     public string ChartTitle { get; set; }
     public string ChartCategory { get; set; }
     public string ChartType { get; set; }
@@ -12,6 +14,8 @@ public class ChartGraphDto
 
 public class ChartItemDto
 {
+    public Guid? CategoryId { get; set; }
+    public Guid? ParentCategoryId { get; set; }
     public string Key { get; set; }
     public decimal Value { get; set; }
     public string Unit { get; set; }
@@ -39,3 +43,27 @@ public class ComparisionChartItemDto
     public decimal V2TotalPercentage { get; set; }
 }
 
+
+
+
+public class StoreChartGraphDto
+{
+    public string ChartTitle { get; set; }
+    public string ChartCategory { get; set; }
+    public string ChartType { get; set; }
+    public List<StoreChartItemDto> chartItems { get; set; } = new();
+
+
+}
+
+public class StoreChartItemDto
+{
+    public Guid? CategoryId { get; set; }
+    public Guid? ParentCategoryId { get; set; }
+    public string Key { get; set; }
+    public decimal Value { get; set; }
+    public string Unit { get; set; }
+    public decimal TotalPercentage { get; set; }
+
+    public List<StoreChartItemDto> chartItems { get; set; } = new();
+}

@@ -31,6 +31,7 @@ public class CategoryGridDto
 public class SpaceGridDto
 {
 
+    public Guid SpaceId { get; set; }
     public string Space { get; set; }
     public string Unit { get; set; }
     public decimal Atricles { get; set; }

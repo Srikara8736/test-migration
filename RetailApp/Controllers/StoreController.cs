@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RetailApp.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class StoreController : BaseController
@@ -133,6 +133,22 @@ public class StoreController : BaseController
     {
 
         return this.Result(await _storeService.GetChartData(StoreId, ct));
+    }
+
+
+
+    /// <summary>
+    /// Gets all Chart Data of Store
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Chart Data</returns>
+    [HttpGet]
+    [Route("GetChartDataByStore")]
+    public async Task<IActionResult> GetChartDataByStore([Required] Guid StoreId, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetStoreChartData(StoreId, ct));
     }
 
 

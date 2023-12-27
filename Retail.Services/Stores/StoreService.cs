@@ -574,7 +574,7 @@ public class StoreService : IStoreService
             var storeResult = new ResultDto<List < ChartGridDto>> ()
             {
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NotFound
+                IsSuccess = false
             };
             return storeResult;
         }
@@ -585,7 +585,7 @@ public class StoreService : IStoreService
             var storeResult = new ResultDto<List<ChartGridDto>>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NotFound
+                IsSuccess = false
             };
             return storeResult;
         }
@@ -793,8 +793,7 @@ public class StoreService : IStoreService
         {
             var storeResult = new ResultDto<List<ChartGraphDto>>()
             {
-                ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NotFound
+                ErrorMessage = StringResources.NoResultsFound,IsSuccess = false
             };
             return storeResult;
         }
@@ -805,7 +804,7 @@ public class StoreService : IStoreService
             var storeResult = new ResultDto<List<ChartGraphDto>>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NotFound
+                IsSuccess = false
             };
             return storeResult;
         }
@@ -1473,8 +1472,7 @@ public class StoreService : IStoreService
             var response = new ResultDto<bool>
             {
                 IsSuccess = false,
-                ErrorMessage = StringResources.RecordNotFound,
-                StatusCode = HttpStatusCode.NotFound
+                ErrorMessage = StringResources.RecordNotFound
             };
             return response;
 
@@ -1513,7 +1511,7 @@ public class StoreService : IStoreService
             var storeResult = new ResultDto<List<DrawingListResponseDto>>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NotFound
+                IsSuccess = false
             };
             return storeResult;
         }
@@ -1682,7 +1680,7 @@ public class StoreService : IStoreService
             var errorResponse = new ResultDto<StoreResponseDto>
             {
                 ErrorMessage = StringResources.RecordNotFound,
-                StatusCode = HttpStatusCode.NotFound
+                IsSuccess = false
             };
             return errorResponse;
         }

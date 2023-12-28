@@ -38,4 +38,12 @@ public class SpaceGridDto
     public decimal Pieces { get; set; }
     public decimal Area { get; set; }
 
+    public decimal TotalPercentage { get; set; }
+
+}
+
+
+public class DaparmentListDto: ChartGridDto
+{
+    public decimal TotalAreaPercentage { get; set; }
 }

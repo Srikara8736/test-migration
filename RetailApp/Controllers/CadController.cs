@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.Stores;
 using Retail.DTOs.Cad;
+using Retail.DTOs.Customers;
 using Retail.DTOs.UserAccounts;
 using Retail.DTOs.XML;
 using Retail.Services.Cad;
@@ -15,7 +18,7 @@ using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController
@@ -26,16 +29,18 @@ namespace RetailApp.Controllers
         private readonly IAuthTokenBuilder _authTokenBuilder;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _environment;
+        private readonly IMapper _mapper;
 
         #endregion
 
         #region Ctor
-        public CadController(ICadService cadService, IAuthTokenBuilder authTokenBuilder, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment)
+        public CadController(ICadService cadService, IAuthTokenBuilder authTokenBuilder, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment,IMapper mapper)
         {
             _cadService = cadService;
             _authTokenBuilder = authTokenBuilder;
             _httpContextAccessor = httpContextAccessor;
             _environment = environment;
+            _mapper = mapper;
         }
 
         #endregion
@@ -252,7 +257,7 @@ namespace RetailApp.Controllers
                                 }
                                 if (cadData != null)
                                 {
-                                        var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId);
+                                        var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId, "Space");
                                 }
                         
                         }
@@ -368,7 +373,7 @@ namespace RetailApp.Controllers
             try
             {
 
-                var fileStream = await UploadCadFileAsync(CadFile, StoreId.ToString());
+              //  var fileStream = await UploadCadFileAsync(CadFile, StoreId.ToString());
 
                 var stream = CadFile.OpenReadStream();
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
@@ -418,7 +423,7 @@ namespace RetailApp.Controllers
                             }
                             if (cadData != null)
                             {
-                                var loadXml = await _cadService.LoadXMLData(cadData, StoreId);
+                                var loadXml = await _cadService.LoadXMLData(cadData, StoreId,"Space");
                             }
 
                         }
@@ -442,6 +447,32 @@ namespace RetailApp.Controllers
                             if (cadData != null)
                             {
                                 var loadXml = await _cadService.LoadOrderListData(StoreId, cadData.MessageBlock);
+                            }
+                        }
+
+
+                        else if (Type.ToLower() == "department")
+                        {
+                            DepartmentMessageDto cadData = new DepartmentMessageDto();
+                            XmlSerializer serializer = new XmlSerializer(typeof(DepartmentMessageDto));
+                            try
+                            {
+                                cadData = (DepartmentMessageDto)serializer.Deserialize(new MemoryStream(CADContent));
+                            }
+                            catch (Exception ex)
+                            {
+                                return new
+                                {
+                                    IsSuccess = false,
+                                    statusCode = HttpStatusCode.InternalServerError,
+                                    message = "Order XML may not be valid, "
+                                };
+                            }
+                            if (cadData != null)
+                            {
+                                var messageModel = _mapper.Map<Message>(cadData);
+
+                                var loadXml = await _cadService.LoadXMLData(messageModel, StoreId,"Department");
                             }
                         }
 
@@ -471,11 +502,11 @@ namespace RetailApp.Controllers
 
 
 
-                        var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
-                        if (document != null)
-                        {
-                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
-                        }
+                        //var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
+                        //if (document != null)
+                        //{
+                        //    var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                        //}
 
 
                     }
@@ -484,11 +515,11 @@ namespace RetailApp.Controllers
                     foreach (string cadpdfFileName in cadPDFFileNames)
                     {
 
-                        var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
-                        if (document != null)
-                        {
-                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
-                        }
+                        //var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
+                        //if (document != null)
+                        //{
+                        //    var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                        //}
 
 
                     }

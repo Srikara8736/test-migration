@@ -53,4 +53,12 @@ public class StoreData : BaseEntity
     public Guid? DocumentId { get; set; }
     public virtual Document Document { get; set; }
 
+
+    /// <summary>
+    /// Gets or sets the reference of Code Master entity
+    /// </summary>
+    [ForeignKey(nameof(CadFileType))]
+    public Guid CadFileTypeId { get; set; }
+    public virtual CodeMaster CadFileType { get; set; }
+
 }

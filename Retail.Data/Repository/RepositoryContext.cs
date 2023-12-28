@@ -168,6 +168,19 @@ public class RepositoryContext : DbContext
         .OnDelete(DeleteBehavior.ClientSetNull);
 
 
+        builder.Entity<StoreData>()
+            .HasOne(x => x.CadFileType)
+            .WithMany()
+            .HasForeignKey(x => x.CadFileTypeId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+        builder.Entity<StoreSpace>()
+            .HasOne(x => x.CadFileType)
+            .WithMany()
+            .HasForeignKey(x => x.CadFileTypeId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+
         base.OnModelCreating(builder);
     }
 }

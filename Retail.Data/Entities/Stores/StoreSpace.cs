@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Retail.Data.Entities.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Retail.Data.Entities.Stores;
@@ -70,4 +71,12 @@ public class StoreSpace : BaseEntity
     [ForeignKey(nameof(StoreData))]
     public Guid StoreDataId { get; set; }
     public virtual StoreData StoreData { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the reference of Code Master entity
+    /// </summary>
+    [ForeignKey(nameof(CadFileType))]
+    public Guid CadFileTypeId { get; set; }
+    public virtual CodeMaster CadFileType { get; set; }
 }

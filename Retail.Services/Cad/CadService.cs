@@ -7,6 +7,7 @@ using Retail.Data.Repository;
 using Retail.DTOs;
 using Retail.DTOs.Cad;
 using Retail.DTOs.Customers;
+using Retail.DTOs.Master;
 using Retail.DTOs.XML;
 using Retail.Services.Common;
 using System;
@@ -79,14 +80,20 @@ public class CadService : ICadService
         return storeList;
     }
 
-    public async Task<bool> LoadXMLData(Message message, Guid storeId)
+    public async Task<CodeMaster> GetCodeMasterByName(string name)
+    {
+        return await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == name);
+    }
+
+    public async Task<bool> LoadXMLData(Message message, Guid storeId, string type)
     {
 
         //var storeInfo = await StoreInfoManagement(message);
         var storeInfo = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == storeId);
-        if (storeInfo != null)
+        var cadType = await GetCodeMasterByName(type);
+        if (storeInfo != null && cadType != null)
         {
-            var storeData = await InsertStoreData(storeInfo.Id);
+            var storeData = await InsertStoreData(storeInfo.Id,cadType.Id);
 
             var areaTypeGroup = await StoreAreaTypeGroupManagement(message);
             var areaType = await StoreAreaTypeManagement(message);
@@ -94,7 +101,7 @@ public class CadService : ICadService
 
             if (storeData != null)
             {
-                var storeSpace = await StoreSpaceManagement(message, storeInfo.Id, storeData.Id);
+                var storeSpace = await StoreSpaceManagement(message, storeInfo.Id, storeData.Id, cadType.Id);
             }
 
         }
@@ -140,7 +147,7 @@ public class CadService : ICadService
         await _repositoryContext.Stores.AddAsync(storeItem);
         await _repositoryContext.SaveChangesAsync();
 
-        await InsertStoreData(storeItem.Id);
+        //await InsertStoreData(storeItem.Id);
 
         return storeItem;
 
@@ -156,19 +163,21 @@ public class CadService : ICadService
 
     #region Store Data Section
 
-    public async Task<Retail.Data.Entities.Stores.StoreData> InsertStoreData(Guid storeId)
+    public async Task<Retail.Data.Entities.Stores.StoreData> InsertStoreData(Guid storeId, Guid typeId)
     {
         int versionNo = 1;
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == typeId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
 
         if (storeData != null)
             versionNo = storeData.VersionNumber + 1;
+
         var storeDataItem = new Retail.Data.Entities.Stores.StoreData
         {
             StoreId = storeId,
             VersionNumber = versionNo,
             CreatedOn = DateTime.UtcNow,
-            StatusId = new Guid("6E9EC88C-3537-11EE-BE56-0242AC120002")
+            StatusId = new Guid("6E9EC88C-3537-11EE-BE56-0242AC120002"),
+            CadFileTypeId = typeId,
 
         };
 
@@ -431,7 +440,7 @@ public class CadService : ICadService
 
     #region Space Section
 
-    public async Task<List<Retail.Data.Entities.Stores.Space>> StoreSpaceManagement(Message message, Guid storeId, Guid storeDataId)
+    public async Task<List<Retail.Data.Entities.Stores.Space>> StoreSpaceManagement(Message message, Guid storeId, Guid storeDataId,Guid cadTypeId)
     {
 
         var spaceList = new List<Retail.Data.Entities.Stores.Space>();
@@ -464,7 +473,7 @@ public class CadService : ICadService
                             if (storeSpaceItem == null)
                             {
 
-                                var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, item.Id);
+                                var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, item.Id, cadTypeId);
                                 if (storeSpace != null)
                                 {
                                     _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, item.Id);
@@ -489,7 +498,7 @@ public class CadService : ICadService
 
                                 if (spaceResponse != null)
                                 {
-                                    var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, spaceResponse.Id);
+                                    var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, spaceResponse.Id, cadTypeId);
 
                                     if (storeSpace != null)
                                     {
@@ -547,7 +556,7 @@ public class CadService : ICadService
     }
 
 
-    public async Task<Retail.Data.Entities.Stores.StoreSpace> InsertStoreSpace(DTOs.XML.Space space, Guid storeId, Guid storeDataId, Guid categoryId, Guid spaceId)
+    public async Task<Retail.Data.Entities.Stores.StoreSpace> InsertStoreSpace(DTOs.XML.Space space, Guid storeId, Guid storeDataId, Guid categoryId, Guid spaceId,Guid cadTypeId)
     {
 
         var storeSpaceItem = new Retail.Data.Entities.Stores.StoreSpace
@@ -559,7 +568,8 @@ public class CadService : ICadService
             CategoryId = categoryId,
             SpaceId = spaceId,
             StoreId = storeId,
-            StoreDataId = storeDataId
+            StoreDataId = storeDataId,
+            CadFileTypeId = cadTypeId
 
         };
         await _repositoryContext.StoreSpaces.AddAsync(storeSpaceItem);

@@ -200,6 +200,15 @@ public class StoreController : BaseController
     }
 
 
+    [HttpGet]
+    [Route("GetDepartmentListGridData")]
+    public async Task<IActionResult> GetDepartmentListGridData([Required] Guid StoreId, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetDepartmentGridData(StoreId, ct));
+    }
+
+
 
     /// <summary>
     /// Get all StoreStatus

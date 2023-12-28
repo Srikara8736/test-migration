@@ -579,7 +579,177 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+
+        if (codeMaster == null)
+        {
+            var storeResult = new ResultDto<List<ChartGridDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+
+        
+        if (storeData == null )
+        {
+            var storeResult = new ResultDto<List<ChartGridDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+
+        try
+        {
+            var query = (from at in _repositoryContext.AreaTypes
+                         join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
+                         join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
+                         join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
+                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id && stsp.CadFileTypeId == codeMaster.Id
+                         select new
+                         {
+                             CategoryId = cat.Id,
+                             CategoryName = cat.Name,
+                             AreaTypeId = at.Id,
+                             AreaTypeName = at.Name,
+                             SpaceName = sp.Name,
+                             SpaceUnit = stsp.Unit,
+                             SpaceAtricles = stsp.Articles,
+                             SpaceArea = stsp.Area,
+                             SpacePieces = stsp.Pieces,
+                             SpaceId = sp.Id
+
+                         }).ToList();
+
+
+
+            var areaTypeGrid = new List<ChartGridDto>();
+
+            var areaTypeGroupResult = query.GroupBy(x => x.AreaTypeId).ToList();
+
+            foreach (var item in areaTypeGroupResult)
+            {
+                var areaType = new ChartGridDto();
+
+                var categoryGrid = new List<CategoryGridDto>();
+
+                var categoryGroup = item.GroupBy(x => x.CategoryId).ToList();
+                foreach (var categoryResult in categoryGroup)
+                {
+                    var category = new CategoryGridDto();
+
+                    var spaceGrid = new List<SpaceGridDto>();
+
+                    foreach (var result in categoryResult)
+                    {
+                        areaType.AreaType = result.AreaTypeName.Trim();
+                        areaType.AreaTypeId = result.AreaTypeId;
+
+                        category.CategoryId = result.CategoryId;
+                        category.Category = result.CategoryName.Trim();
+
+                        var space = new SpaceGridDto
+                        {   SpaceId = result.SpaceId,
+                            Space = result.SpaceName.Trim(),
+                            Unit = result.SpaceUnit,
+                            Area = (decimal)result.SpaceArea,
+                            Pieces = (decimal)result.SpacePieces,
+                            Atricles = (decimal)result.SpaceAtricles
+                        };
+                        spaceGrid.Add(space);
+
+                    }
+                    category.Spaces = spaceGrid;
+                    category.TotalArea = spaceGrid.Sum(x => x.Area);
+                    categoryGrid.Add(category);
+
+                };
+
+
+                areaType.Categories = categoryGrid;
+                areaType.TotalArea = categoryGrid.Sum(x => x.TotalArea);
+                areaType.TotalAreaPercentage = 100;
+                areaTypeGrid.Add(areaType);
+            }
+
+            foreach(var areatype in areaTypeGrid)
+            {
+                foreach(var category in areatype.Categories)
+                {
+                    foreach (var space in category.Spaces)
+                    {
+                        space.TotalPercentage = Math.Round((space.Area / category.TotalArea) * 100,0);
+                    }
+
+                    category.TotalAreaPercentage = Math.Round((category.TotalArea / areatype.TotalArea) * 100, 0); 
+                }
+
+            }
+
+
+
+
+            var successResponse = new ResultDto<List<ChartGridDto>>
+            {
+                IsSuccess = true,
+                Data = areaTypeGrid
+            };
+
+            return successResponse;
+
+        }
+        catch(Exception ex)
+        {
+            var storeResult = new ResultDto<List<ChartGridDto>>()
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+            return storeResult;
+        }
+        
+
+    }
+
+
+
+    public async Task<ResultDto<List<ChartGridDto>>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default)
+    {
+
+        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
+        if (store == null)
+        {
+            var storeResult = new ResultDto<List<ChartGridDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Department");
+
+
+        if (codeMaster == null)
+        {
+            var storeResult = new ResultDto<List<ChartGridDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+
+       
+
         if (storeData == null)
         {
             var storeResult = new ResultDto<List<ChartGridDto>>()
@@ -597,7 +767,7 @@ public class StoreService : IStoreService
                          join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
                          join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
                          join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
-                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id
+                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id && stsp.CadFileTypeId == codeMaster.Id
                          select new
                          {
                              CategoryId = cat.Id,
@@ -608,7 +778,8 @@ public class StoreService : IStoreService
                              SpaceUnit = stsp.Unit,
                              SpaceAtricles = stsp.Articles,
                              SpaceArea = stsp.Area,
-                             SpacePieces = stsp.Pieces
+                             SpacePieces = stsp.Pieces,
+                             SpaceId =sp.Id
 
                          }).ToList();
 
@@ -641,6 +812,7 @@ public class StoreService : IStoreService
 
                         var space = new SpaceGridDto
                         {
+                            SpaceId = result.SpaceId,
                             Space = result.SpaceName.Trim(),
                             Unit = result.SpaceUnit,
                             Area = (decimal)result.SpaceArea,
@@ -663,11 +835,17 @@ public class StoreService : IStoreService
                 areaTypeGrid.Add(areaType);
             }
 
-            foreach(var areatype in areaTypeGrid)
+            foreach (var areatype in areaTypeGrid)
             {
-                foreach(var category in areatype.Categories)
+                foreach (var category in areatype.Categories)
                 {
-                    category.TotalAreaPercentage = Math.Round((category.TotalArea / areatype.TotalArea) * 100, 0); 
+                   foreach(var space in category.Spaces)
+                    {
+                        space.TotalPercentage = Math.Round((space.Area / category.TotalArea) * 100,0);
+                    }
+
+
+                    category.TotalAreaPercentage = Math.Round((category.TotalArea / areatype.TotalArea) * 100, 0);
                 }
 
             }
@@ -684,7 +862,7 @@ public class StoreService : IStoreService
             return successResponse;
 
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             var storeResult = new ResultDto<List<ChartGridDto>>()
             {
@@ -693,9 +871,11 @@ public class StoreService : IStoreService
             };
             return storeResult;
         }
-        
+
 
     }
+
+
 
 
     public void DraftCategoryChart(List<ChartGraphDto> charts, Guid storeId, Guid storeDataId)
@@ -798,8 +978,21 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
-        if (storeData == null)
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+
+        if (codeMaster == null)
+        {
+            var storeResult = new ResultDto<List<ChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+
+        if (storeData == null )
         {
             var storeResult = new ResultDto<List<ChartGraphDto>>()
             {
@@ -815,7 +1008,7 @@ public class StoreService : IStoreService
                          join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
                          join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
                          join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
-                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id
+                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id && stsp.CadFileTypeId == codeMaster.Id
                          orderby cat.CadServiceNumber 
                          select new
                          {
@@ -1134,7 +1327,20 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+
+        if (codeMaster == null)
+        {
+            var storeResult = new ResultDto<List<StoreChartGraphDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+
         if (storeData == null)
         {
             var storeResult = new ResultDto<List<StoreChartGraphDto>>()
@@ -1151,7 +1357,7 @@ public class StoreService : IStoreService
                          join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
                          join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
                          join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
-                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id
+                         where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id && stsp.CadFileTypeId == codeMaster.Id
                          orderby cat.CadServiceNumber
                          select new
                          {

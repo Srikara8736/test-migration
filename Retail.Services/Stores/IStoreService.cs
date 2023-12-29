@@ -144,5 +144,5 @@ public interface IStoreService
 
     Task<ResultDto<List<StoreChartGraphDto>>> GetStoreChartData(Guid StoreId, CancellationToken ct = default);
 
-    Task<ResultDto<List<ChartGridDto>>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default);
+    Task<ResultDto<DaparmentListDto>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default);
 }

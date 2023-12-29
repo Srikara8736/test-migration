@@ -43,7 +43,11 @@ public class SpaceGridDto
 }
 
 
-public class DaparmentListDto: ChartGridDto
+public class DaparmentListDto
 {
-    public decimal TotalAreaPercentage { get; set; }
+    public decimal TotalArea { get; set; }
+    public decimal TotalAreaIndoor { get; set; }
+    public decimal TotalAreaOutdoor { get; set; }
+
+    public List<ChartGridDto> chartGrids { get; set; } = new();
 }

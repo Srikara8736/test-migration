@@ -719,13 +719,13 @@ public class StoreService : IStoreService
 
 
 
-    public async Task<ResultDto<List<ChartGridDto>>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default)
+    public async Task<ResultDto<DaparmentListDto>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
         if (store == null)
         {
-            var storeResult = new ResultDto<List<ChartGridDto>>()
+            var storeResult = new ResultDto<DaparmentListDto>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
                 IsSuccess = false
@@ -738,7 +738,7 @@ public class StoreService : IStoreService
 
         if (codeMaster == null)
         {
-            var storeResult = new ResultDto<List<ChartGridDto>>()
+            var storeResult = new ResultDto<DaparmentListDto>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
                 IsSuccess = false
@@ -752,7 +752,7 @@ public class StoreService : IStoreService
 
         if (storeData == null)
         {
-            var storeResult = new ResultDto<List<ChartGridDto>>()
+            var storeResult = new ResultDto<DaparmentListDto>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
                 IsSuccess = false
@@ -786,6 +786,7 @@ public class StoreService : IStoreService
 
 
             var areaTypeGrid = new List<ChartGridDto>();
+
 
             var areaTypeGroupResult = query.GroupBy(x => x.AreaTypeId).ToList();
 
@@ -850,13 +851,16 @@ public class StoreService : IStoreService
 
             }
 
+            var departmentList = new DaparmentListDto
+            {
+                chartGrids = areaTypeGrid,
+                TotalArea = areaTypeGrid.Sum(x => x.TotalArea)
+            };
 
-
-
-            var successResponse = new ResultDto<List<ChartGridDto>>
+            var successResponse = new ResultDto<DaparmentListDto>
             {
                 IsSuccess = true,
-                Data = areaTypeGrid
+                Data = departmentList
             };
 
             return successResponse;
@@ -864,7 +868,7 @@ public class StoreService : IStoreService
         }
         catch (Exception ex)
         {
-            var storeResult = new ResultDto<List<ChartGridDto>>()
+            var storeResult = new ResultDto<DaparmentListDto>()
             {
                 ErrorMessage = StringResources.InvalidArgument,
                 StatusCode = HttpStatusCode.InternalServerError

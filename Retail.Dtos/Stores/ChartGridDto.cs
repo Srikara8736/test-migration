@@ -48,6 +48,10 @@ public class DaparmentListDto
     public decimal TotalArea { get; set; }
     public decimal TotalAreaIndoor { get; set; }
     public decimal TotalAreaOutdoor { get; set; }
+    public decimal StoreArea { get; set; }
+    public decimal StoreAreaIndoor { get; set; }
+    public decimal StoreAreaOutdoor { get; set; }
+
 
     public List<ChartGridDto> chartGrids { get; set; } = new();
 }

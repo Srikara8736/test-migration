@@ -2213,8 +2213,6 @@ public class StoreService : IStoreService
     public async Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId, CancellationToken ct = default)
     {
 
-
-
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == FirstStoreId, ct);
         if (store == null)
         {
@@ -2484,7 +2482,6 @@ public class StoreService : IStoreService
 
 
         //Chart Pie Sales Area
-
         var categoriesItems = areaTypeGrid.Where(y => y.AreaType == "SalesArea").Select(x => x.Categories);
 
 
@@ -2537,11 +2534,7 @@ public class StoreService : IStoreService
         }
 
 
-
-
         //Chart Serice & various
-
-
         var mainAreaItems = areaTypeGrid.Where(y => y.AreaType != "SalesArea");
 
 
@@ -2583,8 +2576,6 @@ public class StoreService : IStoreService
 
 
         //Chart Bar Sales Area
-
-
         var categoriesBarItems = areaTypeGrid.Where(y => y.AreaType == "SalesArea").Select(x => x.Categories);
 
         foreach (var categories in categoriesBarItems)

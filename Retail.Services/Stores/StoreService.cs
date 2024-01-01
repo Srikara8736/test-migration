@@ -4,20 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Retail.Data.Entities.Common;
 using Retail.Data.Entities.Customers;
-using Retail.Data.Entities.FileSystem;
 using Retail.Data.Entities.Stores;
 using Retail.Data.Entities.UserAccount;
 using Retail.Data.Repository;
 using Retail.DTOs;
 using Retail.DTOs.Customers;
 using Retail.DTOs.Stores;
-using Retail.DTOs.XML;
 using Retail.Services.Common;
-using SixLabors.ImageSharp.ColorSpaces;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Security.AccessControl;
 
 
 namespace Retail.Services.Stores;
@@ -46,22 +40,45 @@ public class StoreService : IStoreService
 
     #region Utilities
 
-
+    /// <summary>
+    /// Get Address By Identifiers
+    /// </summary>
+    /// <param name="addressId">Address Id</param>
+    /// <returns> Address Infromation</returns>
     public async Task<Address?> getAddressById(Guid addressId)
     { 
         return await _repositoryContext.Addresses.Where(x => x.Id == addressId).AsNoTracking().FirstOrDefaultAsync(); 
     }
 
+
+    /// <summary>
+    /// Get Customer By Identifiers
+    /// </summary>
+    /// <param name="customerId">Customer Id</param>
+    /// <returns> Customer Infromation</returns>
     public async Task<Customer?> getCustomerById(Guid customerId)
     {
         return await _repositoryContext.Customers.Where(x => x.Id == customerId).AsNoTracking().FirstOrDefaultAsync();
     }
 
+
+    /// <summary>
+    /// Get Status by Status Identifiers
+    /// </summary>
+    /// <param name="statusId">Store Id</param>
+    /// <returns> Status Infromation</returns>
     public async Task<CodeMaster?> getStatusById(Guid statusId)
     {
         return await _repositoryContext.CodeMasters.Where(x => x.Id == statusId).AsNoTracking().FirstOrDefaultAsync();
     }
 
+
+
+    /// <summary>
+    /// Get Store Image items by Store Identifiers
+    /// </summary>
+    /// <param name="storeId">Store Id</param>
+    /// <returns> Image items</returns>
     public async Task<List<StoreImage>> GetStoreImagesByStoreId(Guid storeId)
     {
         if (storeId == null)
@@ -71,6 +88,12 @@ public class StoreService : IStoreService
     }
 
 
+    /// <summary>
+    /// Get Image item by Identifiers
+    /// </summary>
+    /// <param name="id">id</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>Image Information</returns>
     public async Task<Data.Entities.FileSystem.Image> GetImageById(Guid id, CancellationToken ct = default)
     {
         if (id == null)
@@ -79,6 +102,14 @@ public class StoreService : IStoreService
         return await _repositoryContext.Images.FirstOrDefaultAsync(x => x.Id == id, cancellationToken: ct);
     }
 
+
+
+    /// <summary>
+    /// Insert Image 
+    /// </summary>
+    /// <param name="image">image</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>Image Information</returns>
     public async Task<Data.Entities.FileSystem.Image> InsertImage(Data.Entities.FileSystem.Image image)
     {
         if (image == null)
@@ -89,8 +120,12 @@ public class StoreService : IStoreService
 
     }
 
-
-
+    /// <summary>
+    /// Delete Image
+    /// </summary>
+    /// <param name="image">image</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>True / False Image Delete Status</returns>
     public async Task<bool> DeleteImage(Guid ImageId)
     {
         var ImageItem = await _repositoryContext.Images.FirstOrDefaultAsync(x => x.Id == ImageId);
@@ -104,6 +139,12 @@ public class StoreService : IStoreService
 
     }
 
+    /// <summary>
+    /// Insert store Image
+    /// </summary>
+    /// <param name="image">image</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>Store Image Information</returns>
     public async Task<StoreImage> InsertStoreImage(StoreImage image)
     {
         if (image == null)
@@ -116,6 +157,13 @@ public class StoreService : IStoreService
     }
 
 
+
+    /// <summary>
+    /// Update store activity
+    /// </summary>
+    /// <param name="storeId">storeId</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>True / False to update store activity</returns>
     public async Task<bool> UpdateStoreActivity(Guid storeId)
     {
         if (storeId == null)
@@ -132,6 +180,12 @@ public class StoreService : IStoreService
     }
 
 
+    /// <summary>
+    /// Insert customer Image
+    /// </summary>
+    /// <param name="image">Image</param>
+    /// <param name="ct">Cancellation Charages</param>
+    /// <returns>Insert customer Image</returns>
     public async Task<CustomerImage> InsertCustomerImage(CustomerImage image)
     {
         if (image == null)
@@ -145,11 +199,11 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// Delete Customer Image
+    /// Insert customer Address
     /// </summary>
     /// <param name="addressDto">Address</param>
     /// <param name="ct">Cancellation Charages</param>
-    /// <returns>Delete Customer Image</returns>
+    /// <returns>Insert customer Address</returns>
     public async Task<Address> InsertCustomerAddress(AddressDto addressDto, CancellationToken ct)
     {
         try
@@ -229,8 +283,11 @@ public class StoreService : IStoreService
     #endregion
 
 
+    #region Methods
+
+
     /// <summary>
-    /// Gets all Stores
+    /// Get all Stores
     /// </summary>
     /// <param name="customerId">customerId</param>
     /// <param name="ct">cancellation token</param>
@@ -368,6 +425,11 @@ public class StoreService : IStoreService
     }
 
 
+    /// <summary>
+    /// Get PDF Url By store Id
+    /// </summary>
+    /// <param name="storeId">storeId</param>
+    /// <returns>Store PDF Url</returns>
     public async Task<string> PdfFileUrlByStoreId(Guid storeId)
     {
         var path = string.Empty;
@@ -395,7 +457,7 @@ public class StoreService : IStoreService
     }
 
     /// <summary>
-    /// gets all Stores
+    /// Get all Stores
     /// </summary>
     /// <param name="customerId">customerId</param>
     /// <param name="keyword">keyword</param>
@@ -560,7 +622,7 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// gets all Grid Data
+    /// Get all Grid Data
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
@@ -719,6 +781,12 @@ public class StoreService : IStoreService
 
 
 
+    /// <summary>
+    /// Get all Grid Data of Department List
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Department List Grid Data</returns>
     public async Task<ResultDto<DaparmentListDto>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default)
     {
 
@@ -881,7 +949,13 @@ public class StoreService : IStoreService
 
 
 
-
+    /// <summary>
+    /// Get Chart items of Draft Category of Charts
+    /// </summary>
+    /// <param name="charts">Generated Chart List</param>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="storeDataId">Store DataIdentifier</param>
+    /// <returns>Chart items of Draft Category</returns>
     public void DraftCategoryChart(List<ChartGraphDto> charts, Guid storeId, Guid storeDataId)
     {
         var query = (from cat in _repositoryContext.Categories
@@ -923,6 +997,15 @@ public class StoreService : IStoreService
     }
 
 
+
+
+    /// <summary>
+    /// Get Store Chart items of Draft Category of Charts
+    /// </summary>
+    /// <param name="charts">Generated Chart List</param>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="storeDataId">Store DataIdentifier</param>
+    /// <returns>Chart items of Store Draft Category</returns>
     public void DraftStoreCategoryChart(List<StoreChartGraphDto> charts, Guid storeId, Guid storeDataId)
     {
         var query = (from cat in _repositoryContext.Categories
@@ -964,7 +1047,7 @@ public class StoreService : IStoreService
     }
 
     /// <summary>
-    /// gets all Chart Data
+    /// Get all Chart Data
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
@@ -1317,6 +1400,12 @@ public class StoreService : IStoreService
     }
 
 
+    /// <summary>
+    /// Get Store Chart Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Chart Data</returns>
     public async Task<ResultDto<List<StoreChartGraphDto>>> GetStoreChartData(Guid StoreId, CancellationToken ct = default)
     {
 
@@ -1600,7 +1689,14 @@ public class StoreService : IStoreService
 
 
 
-
+    /// <summary>
+    /// Update Store Images
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="imgUrl">Store Image URL</param>
+    /// <param name="fileType">File Type</param>
+    /// <param name="fileExtension">File Extension</param>
+    /// <returns>True / False of Store Image Updation</returns>
     public async Task<ResultDto<bool>> UploadStoreImage(string storeId, string imgUrl, string fileType, string fileExtension)
     {
         if(storeId == null || imgUrl == null)
@@ -1674,6 +1770,14 @@ public class StoreService : IStoreService
 
 
 
+    /// <summary>
+    /// Delete Store Images
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="storeImageId">Store Image Id</param>
+    /// <param name="ImageId">Image  Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>True / False of Store Image Deletion</returns>
     public virtual async Task<ResultDto<bool>> DeleteStoreImage(Guid storeId, Guid storeImageId, Guid ImageId, CancellationToken ct = default)
     {
         var storeImage = await _repositoryContext.StoreImages.FirstOrDefaultAsync(x => x.Id == storeImageId && x.StoreId == storeId, ct);
@@ -1706,11 +1810,11 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// gets all Drawing Grid Data
+    /// Get all Drawing Grid Data By store
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
-    /// <returns>Store Grid Data</returns>
+    /// <returns>Store Drawing Tye Grid Data</returns>
     public async Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, CancellationToken ct = default)
     {
 
@@ -1753,7 +1857,7 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// gets all Order Grid Data
+    /// Get all Order Grid Data
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
@@ -1813,7 +1917,7 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// Gets all General List Grid Data
+    /// Get all General List Grid Data
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
@@ -1878,11 +1982,11 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// Inserts Store 
+    /// Insert Store Information
     /// </summary>
     /// <param name="storeDto">store</param>
     /// <param name="ct">CancellationToken</param>
-    /// <returns></returns>
+    /// <returns>Store Infromation</returns>
     public async Task<ResultDto<StoreResponseDto>> InsertStore(StoreDto storeDto, CancellationToken ct = default)
     {
         if (storeDto == null)
@@ -1917,12 +2021,12 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// Updates Store
+    /// Update Store Information
     /// </summary>
     /// <param name="id">Store Id</param>
     /// <param name="storeDto">Store</param>
     /// <param name="ct">CancellationToken</param>
-    /// <returns></returns>
+    /// <returns>Updated Store Information</returns>
     public async Task<ResultDto<StoreResponseDto>> UpdateStore(string storeId, StoreDto storeDto, CancellationToken ct = default)
     {
 
@@ -1974,11 +2078,11 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// Delete Role
+    /// Delete Store
     /// </summary>
     /// <param name="id">Store Id</param>
     /// <param name="ct">CancellationToken</param>
-    /// <returns></returns>
+    /// <returns>True / False status of Store Deletion</returns>
     public async Task<ResultDto<bool>> DeleteStore(string id, CancellationToken ct = default)
     {
 
@@ -2018,7 +2122,7 @@ public class StoreService : IStoreService
     /// </summary>
     /// <param name="storeId">customerId</param>
     /// <param name="ct">cancellation token</param>
-    /// <returns>Store List with Pagination</returns>
+    /// <returns>Store Information</returns>
     public async Task<ResultDto<StoreResponseDto>> GetStoreById(Guid storeId, CancellationToken ct = default)
     {
 
@@ -2170,7 +2274,7 @@ public class StoreService : IStoreService
     /// <param name="pageIndex">PageIndex</param>
     /// <param name="pageSize">PageSize</param>
     /// <param name="ct">CancellationToken</param>
-    /// <returns></returns>
+    /// <returns>Get Store status with Pagination</returns>
     public virtual async Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default)
     {
 
@@ -2210,6 +2314,15 @@ public class StoreService : IStoreService
 
 
 
+    /// <summary>
+    /// Get Comparision chart data of Two versions
+    /// </summary>
+    /// <param name="FirstStoreId">First Store ID</param>
+    /// <param name="FirstVersionId">First Version ID</param>
+    /// <param name="SecondStoreId">Second Store ID</param>
+    /// <param name="SecondVersionId">Second Version ID</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Comparision chart data</returns>
     public async Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId, CancellationToken ct = default)
     {
 
@@ -2365,6 +2478,14 @@ public class StoreService : IStoreService
     }
 
 
+
+    /// <summary>
+    /// Get chart data By Store Id
+    /// </summary>
+    /// <param name="storeId">Store ID</param>
+    /// <param name="storeDataId">Store Data ID</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns></returns>
     public async Task<List<ChartGraphDto>> GetChartDataItem(Guid storeId, Guid storeDataId)
     {
         var query = (from at in _repositoryContext.AreaTypes
@@ -2630,5 +2751,6 @@ public class StoreService : IStoreService
         return chartItems;
     }
 
+    #endregion
 
 }

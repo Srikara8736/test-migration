@@ -21,15 +21,29 @@ namespace Retail.Services.Cad;
 
 public class CadService : ICadService
 {
+    #region Fields
+
     private readonly RepositoryContext _repositoryContext;
     private readonly IMapper _mapper;
 
+    #endregion
+
+
+    #region Ctor
     public CadService(RepositoryContext repositoryContext, IMapper mapper)
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
     }
 
+    #endregion
+
+
+
+    /// <summary>
+    /// Get All Customers
+    /// </summary>
+    /// <returns> All Customer Informations</returns>
     public List<CustomerItem> GetAllCustomer()
     {
         var customers = _repositoryContext.Customers.Where(x => x.IsDeleted == false).ToList();
@@ -56,7 +70,11 @@ public class CadService : ICadService
 
     }
 
-
+    /// <summary>
+    /// Get Stores By Customer Number
+    /// </summary>
+    /// <param name="customerNo">customerNo</param>
+    /// <returns> Store Information</returns>
     public List<DTOs.Cad.Store> GetStoresByCustomerNo(string customerNo)
     {
         var stores = _repositoryContext.Stores.Where(x => x.CustomerId == new Guid(customerNo)).ToList();
@@ -80,11 +98,24 @@ public class CadService : ICadService
         return storeList;
     }
 
-    public async Task<CodeMaster> GetCodeMasterByName(string name)
+    /// <summary>
+    /// Get Status By Name
+    /// </summary>
+    /// <param name="name">Status Name</param>
+    /// <returns> Status Information</returns>
+    public async Task<CodeMaster?> GetCodeMasterByName(string name)
     {
         return await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == name);
     }
 
+
+    /// <summary>
+    /// Load Space / Department List Zip XML data
+    /// </summary>
+    /// <param name="message">Deserialized XML Model</param>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="type">Store Type</param>
+    /// <returns> True / False of Loading XMl Data Status</returns>
     public async Task<bool> LoadXMLData(Message message, Guid storeId, string type)
     {
 
@@ -112,6 +143,12 @@ public class CadService : ICadService
 
     #region Store Info Section
 
+
+    /// <summary>
+    /// Create Store 
+    /// </summary>
+    /// <param name="message">Deserialized XML Model</param>
+    /// <returns> Store Information</returns>
     public async Task<Retail.Data.Entities.Stores.Store> StoreInfoManagement(Message message)
     {
 
@@ -131,7 +168,11 @@ public class CadService : ICadService
 
     }
 
-
+    /// <summary>
+    /// Insert Store model
+    /// </summary>
+    /// <param name="Info">Store Info Model</param>
+    /// <returns> Store Information</returns>
     public async Task<Retail.Data.Entities.Stores.Store> InsertStore(Info cadStore)
     {
         var storeItem = new Retail.Data.Entities.Stores.Store
@@ -154,7 +195,13 @@ public class CadService : ICadService
     }
 
 
-    public async Task<Retail.Data.Entities.Stores.Store> GetStore(string storeInfo, string storeNumber)
+    /// <summary>
+    /// Get Store Info By Name & Number
+    /// </summary>
+    /// <param name="storeInfo">Store Info</param>
+    /// <param name="storeNumber">Store Number</param>
+    /// <returns> Store Information</returns>
+    public async Task<Retail.Data.Entities.Stores.Store?> GetStore(string storeInfo, string storeNumber)
     {
         return await _repositoryContext.Stores.Where(x => x.Name.ToLower().Trim() == storeInfo.ToLower().Trim() && x.StoreNumber == storeNumber).FirstOrDefaultAsync();
     }
@@ -163,6 +210,12 @@ public class CadService : ICadService
 
     #region Store Data Section
 
+    /// <summary>
+    /// Inser Store Data with version Number
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="typeId">XML Type</param>
+    /// <returns> Store Data Information</returns>
     public async Task<Retail.Data.Entities.Stores.StoreData> InsertStoreData(Guid storeId, Guid typeId)
     {
         int versionNo = 1;
@@ -192,6 +245,11 @@ public class CadService : ICadService
 
     #region Area Type Group Section
 
+    /// <summary>
+    /// Insert / Get Area Group with version Number
+    /// </summary>
+    /// <param name="message">Deserialize XMl Model</param>
+    /// <returns> Area Type Group Items</returns>
     public async Task<List<Retail.Data.Entities.Stores.AreaTypeGroup>> StoreAreaTypeGroupManagement(Message message)
     {
 
@@ -222,6 +280,11 @@ public class CadService : ICadService
     }
 
 
+    /// <summary>
+    /// Insert Area Group with version Number
+    /// </summary>
+    /// <param name="areaTypeGroup">Area Type Group Name</param>
+    /// <returns> Area Type Group </returns>
     public async Task<Retail.Data.Entities.Stores.AreaTypeGroup> InsertAreaTypeGroup(string areaTypeGroup)
     {
         var areaTypeGroupItem = new Retail.Data.Entities.Stores.AreaTypeGroup
@@ -236,7 +299,13 @@ public class CadService : ICadService
 
     }
 
-    public async Task<Retail.Data.Entities.Stores.AreaTypeGroup> GetAreaTypeGroup(string areaTypeGroupName)
+
+    /// <summary>
+    /// Get Area Group By Name
+    /// </summary>
+    /// <param name="areaTypeGroupName">Area Type Group Name</param>
+    /// <returns> Area Type Group </returns>
+    public async Task<Retail.Data.Entities.Stores.AreaTypeGroup?> GetAreaTypeGroup(string areaTypeGroupName)
     {
         return await _repositoryContext.AreaTypeGroups.Where(x => x.Name.ToLower().Trim() == areaTypeGroupName.ToLower().Trim()).FirstOrDefaultAsync();
     }
@@ -245,6 +314,11 @@ public class CadService : ICadService
 
     #region Area Type Section
 
+    /// <summary>
+    /// Insert / Get Area Type with version Number
+    /// </summary>
+    /// <param name="message">Deserialize XMl Model</param>
+    /// <returns> Area Type Items</returns>
     public async Task<List<Retail.Data.Entities.Stores.AreaType>> StoreAreaTypeManagement(Message message)
     {
 
@@ -274,8 +348,12 @@ public class CadService : ICadService
 
     }
 
-
-    public async Task<Retail.Data.Entities.Stores.AreaType> InsertAreaType(string areaTypeGroup)
+    /// <summary>
+    /// Insert Area Type with version Number
+    /// </summary>
+    /// <param name="areaTypeGroup">Area Type Name</param>
+    /// <returns> Area Type</returns>
+    public async Task<Retail.Data.Entities.Stores.AreaType?> InsertAreaType(string areaTypeGroup)
     {
         if (areaTypeGroup == "")
             return null;
@@ -292,7 +370,13 @@ public class CadService : ICadService
 
     }
 
-    public async Task<Retail.Data.Entities.Stores.AreaType> GetAreaType(DTOs.XML.AreaType areaType)
+
+    /// <summary>
+    /// Get Area Type By Name
+    /// </summary>
+    /// <param name="areaType">Area Type</param>
+    /// <returns> Area Type</returns>
+    public async Task<Retail.Data.Entities.Stores.AreaType?> GetAreaType(DTOs.XML.AreaType areaType)
     {
         return await _repositoryContext.AreaTypes.Where(x => x.Name.ToLower().Trim() == areaType.Name.ToLower().Trim()).FirstOrDefaultAsync();
     }
@@ -301,6 +385,11 @@ public class CadService : ICadService
 
     #region Category Section
 
+    /// <summary>
+    ///  Get List of Category
+    /// </summary>
+    /// <param name="message">Deserialize Category Model</param>
+    /// <returns>Category Information</returns>
     public async Task<List<Retail.Data.Entities.Stores.Category>> StoreCategoryManagement(Message message)
     {
 
@@ -330,14 +419,25 @@ public class CadService : ICadService
 
     }
 
-    public async Task<Retail.Data.Entities.Stores.Category> GetCategory(DTOs.XML.Category category)
+
+    /// <summary>
+    /// Get Category By Name
+    /// </summary>
+    /// <param name="category">Category Model</param>
+    /// <returns> Category</returns>
+    public async Task<Retail.Data.Entities.Stores.Category?> GetCategory(DTOs.XML.Category category)
     {
         return await _repositoryContext.Categories.Where(x => x.Name.ToLower().Trim() == category.Name.ToLower().Trim() && x.CategoryId.ToLower().Trim() == category.Id.ToLower().Trim()).FirstOrDefaultAsync();
     }
 
+
+    /// <summary>
+    /// Save Category Item
+    /// </summary>
+    /// <param name="category">Category Model</param>
+    /// <returns>Category Information</returns>
     public async Task<Retail.Data.Entities.Stores.Category> InserCategoryItem(Retail.Data.Entities.Stores.Category category)
     {
-
 
         await _repositoryContext.Categories.AddAsync(category);
         await _repositoryContext.SaveChangesAsync();
@@ -347,6 +447,11 @@ public class CadService : ICadService
 
     }
 
+    /// <summary>
+    /// Insert Category Item
+    /// </summary>
+    /// <param name="category">Category Model</param>
+    /// <returns>Category Information</returns>
     public async Task<Retail.Data.Entities.Stores.Category> InsertCategory(DTOs.XML.Category category)
     {
         var areaType = await GetAreaType(category.AreaType);
@@ -399,7 +504,14 @@ public class CadService : ICadService
     }
 
 
-
+    /// <summary>
+    /// Insert Store Category Area Type Group
+    /// </summary>
+    /// <param name="areaType">Store Category Area Type Group Model</param>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="categoryId">Category Identifier</param>
+    /// <param name="spaceId">Space Identifier</param>
+    /// <returns>Category Information</returns>
     public async Task<List<Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup>> InsertStoreCategoryAreaTypeGroup(DTOs.XML.AreaType areaType, Guid storeId, Guid categoryId, Guid spaceId)
     {
         var storeCatareaTypeGroups = new List<Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup>();
@@ -440,6 +552,14 @@ public class CadService : ICadService
 
     #region Space Section
 
+    /// <summary>
+    /// Manage Space Section
+    /// </summary>
+    /// <param name="message">Deserailze XMl Model</param>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="storeDataId">Store Data Identifier</param>
+    /// <param name="cadTypeId">Cad Type Identifier</param>
+    /// <returns>List of space Information</returns>
     public async Task<List<Retail.Data.Entities.Stores.Space>> StoreSpaceManagement(Message message, Guid storeId, Guid storeDataId,Guid cadTypeId)
     {
 
@@ -532,11 +652,23 @@ public class CadService : ICadService
 
     }
 
-    public async Task<Retail.Data.Entities.Stores.Space> GetSpace(DTOs.XML.Space space)
+
+    /// <summary>
+    /// Get Space By Name
+    /// </summary>
+    /// <param name="space">Space Model Name</param>
+    /// <returns>space Information</returns>
+    public async Task<Retail.Data.Entities.Stores.Space?> GetSpace(DTOs.XML.Space space)
     {
         return await _repositoryContext.Spaces.Where(x => x.Name.ToLower().Trim() == space.Name.ToLower().Trim()).FirstOrDefaultAsync();
     }
 
+    /// <summary>
+    /// Insert Space Item
+    /// </summary>
+    /// <param name="space">Space Model</param>
+    /// <param name="categoryId">Category Identifier</param>
+    /// <returns>space Information</returns>
     public async Task<Retail.Data.Entities.Stores.Space> InsertSpace(DTOs.XML.Space space, Guid categoryId)
     {
 
@@ -555,7 +687,16 @@ public class CadService : ICadService
 
     }
 
-
+    /// <summary>
+    /// Insert Store Space Item
+    /// </summary>
+    /// <param name="space">Space Model</param>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="storeDataId">Store Data Identifier</param>
+    /// <param name="categoryId">Category Identifier</param>
+    /// <param name="spaceId">Space Identifier</param>
+    /// <param name="cadTypeId">Cad type Identifier</param>
+    /// <returns>Store space Information</returns>
     public async Task<Retail.Data.Entities.Stores.StoreSpace> InsertStoreSpace(DTOs.XML.Space space, Guid storeId, Guid storeDataId, Guid categoryId, Guid spaceId,Guid cadTypeId)
     {
 
@@ -580,9 +721,15 @@ public class CadService : ICadService
 
     }
 
-
-
-    public async Task<Retail.Data.Entities.Stores.StoreSpace> GetStoreSpace(Guid storeId, Guid categoryId, Guid spaceId, Guid storeDataId)
+    /// <summary>
+    /// Get Store Space Item
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="storeDataId">Store Data Identifier</param>
+    /// <param name="categoryId">Category Identifier</param>
+    /// <param name="spaceId">Space Identifier</param>
+    /// <returns>space Information</returns>
+    public async Task<Retail.Data.Entities.Stores.StoreSpace?> GetStoreSpace(Guid storeId, Guid categoryId, Guid spaceId, Guid storeDataId)
     {
 
         var storeSpace = await _repositoryContext.StoreSpaces.Where(x => x.StoreId == storeId && x.CategoryId == categoryId && x.SpaceId == spaceId && x.StoreDataId == storeDataId).FirstOrDefaultAsync();
@@ -598,6 +745,12 @@ public class CadService : ICadService
 
     #region Drawing List
 
+    /// <summary>
+    /// Load Drawing XMl Data
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="messageData">Store Data Identifier</param>
+    /// <returns>Drawing Type Information</returns>
     public async Task<Retail.Data.Entities.Stores.DrawingList> LoadDrawingData(Guid storeId, MessageData messageData)
     {
         var drawingListItem = new Retail.Data.Entities.Stores.DrawingList();
@@ -684,6 +837,13 @@ public class CadService : ICadService
 
     }
 
+
+    /// <summary>
+    /// Create Status
+    /// </summary>
+    /// <param name="value">Status Name</param>
+    /// <param name="type">Status Type</param>
+    /// <returns>Status Information</returns>
     public async Task<CodeMaster> CreateStatus(string value, string type)
     {
         int order = 1;
@@ -710,6 +870,12 @@ public class CadService : ICadService
     #endregion
 
 
+    /// <summary>
+    /// Cad Upload History By Store
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>List of Upload History Information</returns>
     public async Task<ResultDto<List<CadUploadHistoryResponseDto>>> GetCadUploadHistoryByStore(Guid storeId, CancellationToken cancellationToken = default)
     {
 
@@ -750,6 +916,14 @@ public class CadService : ICadService
 
     #region Store Document
 
+
+    /// <summary>
+    /// Insert Document
+    /// </summary>
+    /// <param name="Name">Document Name</param>
+    /// <param name="path">Document path</param>
+    /// <param name="typeGuid">Document Type</param>
+    /// <returns>Document Information</returns>
     public async Task<Retail.Data.Entities.FileSystem.Document> InsertDocument(string Name, string path, Guid typeGuid)
     {
         var docItem = new Retail.Data.Entities.FileSystem.Document
@@ -767,6 +941,13 @@ public class CadService : ICadService
 
     }
 
+
+    /// <summary>
+    /// Insert Store Document
+    /// </summary>
+    /// <param name="storeId">Store Document Identifier</param>
+    /// <param name="documentId">Document Indetifier</param>
+    /// <returns>Store Document Information</returns>
     public async Task<Retail.Data.Entities.Stores.StoreDocument> InsertStoreDocument(Guid storeId, Guid documentId)
     {
         var docItem = new Retail.Data.Entities.Stores.StoreDocument
@@ -785,6 +966,12 @@ public class CadService : ICadService
     }
 
 
+    /// <summary>
+    /// Insert Cad Upload History for Store
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="fileName">File Name</param>
+    /// <returns> Upload History Information</returns>
     public async Task<Retail.Data.Entities.Cad.CadUploadHistory> InsertCadUploadHistory(Guid storeId, string fileName)
     {
         var docItem = new Retail.Data.Entities.Cad.CadUploadHistory
@@ -812,7 +999,12 @@ public class CadService : ICadService
     #region Order List
 
 
-
+    /// <summary>
+    /// Load Package Data From XMl - Order
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="orderMandatory">Mandatory Attributes of Order data</param>
+    /// <returns>Order Package Information</returns>
     public async Task<Retail.Data.Entities.Stores.PackageData> LoadPackageData(Guid storeId, OrderMandatoryPoperties orderMandatory)
     {
         try
@@ -851,6 +1043,13 @@ public class CadService : ICadService
 
     }
 
+
+    /// <summary>
+    /// Load Order Type XML Data
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="orderMessage">Deserialize Model</param>
+    /// <returns>True / False status of XML load</returns>
     public async Task<bool> LoadOrderListData(Guid storeId, OrderMessageBlock orderMessage)
     {
         try

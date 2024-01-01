@@ -14,19 +14,27 @@ public interface ICustomerService
 {
     #region Methods
 
+    /// <summary>
+    ///Rezise the Image
+    /// </summary>
+    /// <param name="imageStream">Image Stream</param>
+    /// <param name="width">Image Width</param>
+    /// <param name="height">Image Height</param>
+    /// <param name="outPath">Image Location</param>
+    /// <returns>Resize Image</returns>
     Task<bool> ResizeImage(Stream imageStream, int width, int height, string outPath);
 
 
 
     /// <summary>
-    /// gets all Customer Images
+    /// Get all Customer Images
     /// </summary>
     /// <param name="customerId">Customer Id</param>
     /// <returns>Customer Image</returns>
     Task<List<CustomerImage>> GetCustomerImagesByCustomerId(Guid customerId);
 
     /// <summary>
-    /// gets all Customers
+    /// Get all Customers
     /// </summary>
     /// <param name="pageIndex">page Indes</param>
     /// <param name="pageSize">page size</param>
@@ -37,13 +45,23 @@ public interface ICustomerService
 
 
     /// <summary>
-    /// gets the Customer details by Id
+    /// Get the Customer details by Id
     /// </summary>
     /// <param name="id">customer Id</param>
     /// <param name="ct">Cancellation Token</param>
-    /// <returns> User Infromation</returns>
+    /// <returns> Customer Information</returns>
     Task<ResultDto<CustomerResponseDto>> GetCustomerById(Guid id, CancellationToken ct);
 
+
+    /// <summary>
+    /// Upload Logo for the customer
+    /// </summary>
+    /// <param name="id">customer Id</param>
+    /// <param name="ImgUrl">Image URl</param>
+    /// <param name="fileType">File Type</param>
+    /// <param name="fileExtension">File Extension</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns> Customer Information</returns>
     Task<ResultDto<CustomerResponseDto>> UploadLogoByCustomerId(Guid id, string ImgUrl,string fileType,string fileExtension, CancellationToken ct);
 
 

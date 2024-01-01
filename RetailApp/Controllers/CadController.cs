@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Retail.Data.Entities.Customers;
-using Retail.Data.Entities.Stores;
 using Retail.DTOs.Cad;
-using Retail.DTOs.Customers;
 using Retail.DTOs.UserAccounts;
 using Retail.DTOs.XML;
 using Retail.Services.Cad;
@@ -207,9 +204,12 @@ namespace RetailApp.Controllers
             try
             {
 
+
                 var fileStream = await UploadCadFileAsync(cadUpload.CadFile, cadUpload.StoreId.ToString());
-                     
-            var stream = cadUpload.CadFile.OpenReadStream();
+                var caduploadHistory = await _cadService.InsertCadUploadHistory(cadUpload.StoreId, cadUpload.CadFile.FileName);
+                var stream = cadUpload.CadFile.OpenReadStream();
+
+
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
             {
                 //Fetch Manifest.xml
@@ -257,7 +257,7 @@ namespace RetailApp.Controllers
                                 }
                                 if (cadData != null)
                                 {
-                                        var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId, "Space");
+                                        var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId, "Space", caduploadHistory.Id);
                                 }
                         
                         }
@@ -285,7 +285,7 @@ namespace RetailApp.Controllers
                         }
                         else
                         {
-                        CADData cadData = new CADData();
+                            CADData cadData = new CADData();
                             XmlSerializer serializer = new XmlSerializer(typeof(CADData));
                             try
                             {
@@ -333,7 +333,7 @@ namespace RetailApp.Controllers
 
             }
 
-            var caduploadHistory = _cadService.InsertCadUploadHistory(cadUpload.StoreId, cadUpload.CadFile.FileName);
+        
 
                 return new
                 {
@@ -373,8 +373,8 @@ namespace RetailApp.Controllers
             try
             {
 
-              //  var fileStream = await UploadCadFileAsync(CadFile, StoreId.ToString());
-
+              var fileStream = await UploadCadFileAsync(CadFile, StoreId.ToString());
+                var caduploadHistory = await _cadService.InsertCadUploadHistory(StoreId, CadFile.FileName);
                 var stream = CadFile.OpenReadStream();
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
                 {
@@ -423,7 +423,7 @@ namespace RetailApp.Controllers
                             }
                             if (cadData != null)
                             {
-                                var loadXml = await _cadService.LoadXMLData(cadData, StoreId,"Space");
+                                var loadXml = await _cadService.LoadXMLData(cadData, StoreId,"Space", caduploadHistory.Id);
                             }
 
                         }
@@ -472,7 +472,7 @@ namespace RetailApp.Controllers
                             {
                                 var messageModel = _mapper.Map<Message>(cadData);
 
-                                var loadXml = await _cadService.LoadXMLData(messageModel, StoreId,"Department");
+                                var loadXml = await _cadService.LoadXMLData(messageModel, StoreId,"Department", caduploadHistory.Id);
                             }
                         }
 
@@ -527,8 +527,7 @@ namespace RetailApp.Controllers
 
                 }
 
-                var caduploadHistory = _cadService.InsertCadUploadHistory(StoreId, CadFile.FileName);
-
+              
                 return new
                 {
 

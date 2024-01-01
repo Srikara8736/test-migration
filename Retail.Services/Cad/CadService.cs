@@ -116,7 +116,7 @@ public class CadService : ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="type">Store Type</param>
     /// <returns> True / False of Loading XMl Data Status</returns>
-    public async Task<bool> LoadXMLData(Message message, Guid storeId, string type)
+    public async Task<bool> LoadXMLData(Message message, Guid storeId, string type, Guid UploadHistoryId)
     {
 
         //var storeInfo = await StoreInfoManagement(message);
@@ -132,7 +132,7 @@ public class CadService : ICadService
 
             if (storeData != null)
             {
-                var storeSpace = await StoreSpaceManagement(message, storeInfo.Id, storeData.Id, cadType.Id);
+                var storeSpace = await StoreSpaceManagement(message, storeInfo.Id, storeData.Id, cadType.Id,UploadHistoryId);
             }
 
         }
@@ -552,6 +552,46 @@ public class CadService : ICadService
 
     #region Space Section
 
+
+    public async Task<CadStoreCategory> AddCadStoreCategory(Guid storeId, Guid storeDataId, Guid cadTypeId, Guid uploadHistoryId, Guid categoryId)
+    {
+        var cadStoreCategory = new CadStoreCategory()
+        {
+            CadTypeId= cadTypeId,
+            CreatedDate= DateTime.UtcNow,
+            StoreDataId = storeDataId,
+            StoreId = storeId,
+            UploadHistoryId = uploadHistoryId,
+            CategoryId = categoryId
+        };
+
+        await _repositoryContext.CadStoreCategories.AddAsync(cadStoreCategory);
+        await _repositoryContext.SaveChangesAsync();
+
+        return cadStoreCategory;
+    }
+
+
+    public async Task<CadStoreSpace> AddCadStoreStore(Guid storeId, Guid storeDataId, Guid cadTypeId, Guid uploadHistoryId, Guid spaceId)
+    {
+        var cadStoreSpace = new CadStoreSpace()
+        {
+            CadTypeId = cadTypeId,
+            CreatedDate = DateTime.UtcNow,
+            StoreDataId = storeDataId,
+            StoreId = storeId,
+            UploadHistoryId = uploadHistoryId,
+            SpaceId = spaceId
+        };
+
+        await _repositoryContext.CadStoreSpaces.AddAsync(cadStoreSpace);
+        await _repositoryContext.SaveChangesAsync();
+
+        return cadStoreSpace;
+    }
+
+
+
     /// <summary>
     /// Manage Space Section
     /// </summary>
@@ -560,24 +600,20 @@ public class CadService : ICadService
     /// <param name="storeDataId">Store Data Identifier</param>
     /// <param name="cadTypeId">Cad Type Identifier</param>
     /// <returns>List of space Information</returns>
-    public async Task<List<Retail.Data.Entities.Stores.Space>> StoreSpaceManagement(Message message, Guid storeId, Guid storeDataId,Guid cadTypeId)
+    public async Task<List<Retail.Data.Entities.Stores.Space>> StoreSpaceManagement(Message message, Guid storeId, Guid storeDataId,Guid cadTypeId, Guid uploadHistoryId)
     {
 
         var spaceList = new List<Retail.Data.Entities.Stores.Space>();
-
-        //message.Info.StoreName.Value = "Store 1";
-        //message.Info.StoreNo.Value = "AB101";
-
-        //var storeItem = await GetStore(message.Info.StoreName.Value, message.Info.StoreNo.Value);
-
-        //var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeItem.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
-
+        
         var categoryItems = message.Data.CadSpaces.Category;
         if (categoryItems != null)
         {
             foreach (var category in categoryItems)
             {
                 var catergoryItem = await GetCategory(category);
+
+                var categoryDto = await AddCadStoreCategory(storeId,storeDataId,cadTypeId, uploadHistoryId, catergoryItem.Id);
+
                 if (category.Spaces != null)
                 {
 
@@ -587,8 +623,6 @@ public class CadService : ICadService
                         if (item != null)
                         {
 
-
-
                             var storeSpaceItem = await GetStoreSpace(storeId, catergoryItem.Id, item.Id, storeDataId);
                             if (storeSpaceItem == null)
                             {
@@ -596,15 +630,12 @@ public class CadService : ICadService
                                 var storeSpace = await InsertStoreSpace(spaceitem, storeId, storeDataId, catergoryItem.Id, item.Id, cadTypeId);
                                 if (storeSpace != null)
                                 {
+                                    var spaceDto = await AddCadStoreStore(storeId, storeDataId, cadTypeId, uploadHistoryId, item.Id);
                                     _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, item.Id);
                                 }
                             }
 
                             spaceList.Add(item);
-
-
-
-
 
                         }
 
@@ -615,6 +646,7 @@ public class CadService : ICadService
                             {
                                 var spaceResponse = await InsertSpace(spaceitem, catergoryItem.Id);
                                 spaceList.Add(spaceResponse);
+                               
 
                                 if (spaceResponse != null)
                                 {
@@ -622,6 +654,8 @@ public class CadService : ICadService
 
                                     if (storeSpace != null)
                                     {
+                                        var spaceDto = await AddCadStoreStore(storeId, storeDataId, cadTypeId, uploadHistoryId, spaceResponse.Id);
+
                                         _ = await InsertStoreCategoryAreaTypeGroup(category.AreaType, storeSpace.StoreId, storeSpace.CategoryId, storeSpace.Id);
                                     }
 

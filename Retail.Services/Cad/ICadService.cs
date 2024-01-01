@@ -26,7 +26,7 @@ public interface ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="type">Store Type</param>
     /// <returns> True / False of Loading XMl Data Status</returns>
-    public Task<bool> LoadXMLData(Message message, Guid storeId,string type);
+    public Task<bool> LoadXMLData(Message message, Guid storeId,string type,Guid UploadHistoryId);
 
 
     /// <summary>

@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RetailApp.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class StoreController : BaseController
@@ -30,7 +30,6 @@ public class StoreController : BaseController
     }
 
     #endregion
-
 
     #region Methods
 

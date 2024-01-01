@@ -52,6 +52,8 @@ public class RepositoryContext : DbContext
     public DbSet<PackageData> PackageDatas { get; set; }
     public DbSet<OrderList> OrderLists { get; set; }
     public DbSet<GeneralListTypeData> GeneralListTypeDatas { get; set; }
+    public DbSet<CadStoreCategory> CadStoreCategories { get; set; }
+    public DbSet<CadStoreSpace> CadStoreSpaces { get; set; }
 
 
 
@@ -178,6 +180,19 @@ public class RepositoryContext : DbContext
             .HasOne(x => x.CadFileType)
             .WithMany()
             .HasForeignKey(x => x.CadFileTypeId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+        builder.Entity<CadStoreSpace>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.CadTypeId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+        builder.Entity<CadStoreCategory>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.CadTypeId)
             .OnDelete(DeleteBehavior.ClientSetNull);
 
 

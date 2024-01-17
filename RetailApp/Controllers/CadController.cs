@@ -502,11 +502,11 @@ namespace RetailApp.Controllers
 
 
 
-                        //var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
-                        //if (document != null)
-                        //{
-                        //    var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
-                        //}
+                        var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
+                        if (document != null)
+                        {
+                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                        }
 
 
                     }
@@ -515,11 +515,11 @@ namespace RetailApp.Controllers
                     foreach (string cadpdfFileName in cadPDFFileNames)
                     {
 
-                        //var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
-                        //if (document != null)
-                        //{
-                        //    var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
-                        //}
+                        var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
+                        if (document != null)
+                        {
+                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                        }
 
 
                     }

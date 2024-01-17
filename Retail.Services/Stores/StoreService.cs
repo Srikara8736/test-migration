@@ -834,7 +834,7 @@ public class StoreService : IStoreService
             var query = (from at in _repositoryContext.AreaTypes
                          join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
                          join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
-                         join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
+                         join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId                        
                          where stsp.StoreId == StoreId && stsp.StoreDataId == storeData.Id && stsp.CadFileTypeId == codeMaster.Id
                          select new
                          {
@@ -847,9 +847,14 @@ public class StoreService : IStoreService
                              SpaceAtricles = stsp.Articles,
                              SpaceArea = stsp.Area,
                              SpacePieces = stsp.Pieces,
-                             SpaceId =sp.Id
+                             SpaceId =sp.Id,
+                             MissingCat = cat.CategoryId,
 
                          }).ToList();
+
+
+
+           var categories = _repositoryContext.CadStoreCategories.Where(x => x.StoreDataId == storeData.Id && x.StoreId == StoreId).ToList();
 
 
 
@@ -913,6 +918,9 @@ public class StoreService : IStoreService
                         space.TotalPercentage = Math.Round((space.Area / category.TotalArea) * 100,0);
                     }
 
+                    var itemToRemove = categories.FirstOrDefault(r => r.CategoryId == category.CategoryId);
+                    if (itemToRemove != null)
+                        categories.Remove(itemToRemove);
 
                     category.TotalAreaPercentage = Math.Round((category.TotalArea / areatype.TotalArea) * 100, 0);
                 }

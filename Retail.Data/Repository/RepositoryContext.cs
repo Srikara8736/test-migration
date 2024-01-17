@@ -196,6 +196,32 @@ public class RepositoryContext : DbContext
             .OnDelete(DeleteBehavior.ClientSetNull);
 
 
+        builder.Entity<CadStoreCategory>()
+            .HasOne(x => x.Store)
+            .WithMany()
+            .HasForeignKey(x => x.StoreId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+        builder.Entity<CadStoreCategory>()
+            .HasOne(x => x.StoreData)
+            .WithMany()
+            .HasForeignKey(x => x.StoreDataId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+        builder.Entity<CadStoreSpace>()
+        .HasOne(x => x.Store)
+        .WithMany()
+        .HasForeignKey(x => x.StoreId)
+        .OnDelete(DeleteBehavior.ClientSetNull);
+
+        builder.Entity<CadStoreSpace>()
+            .HasOne(x => x.StoreData)
+            .WithMany()
+            .HasForeignKey(x => x.StoreDataId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+
         base.OnModelCreating(builder);
     }
 }

@@ -612,10 +612,14 @@ public class CadService : ICadService
             {
                 var catergoryItem = await GetCategory(category);
 
-                var categoryDto = await AddCadStoreCategory(storeId,storeDataId,cadTypeId, uploadHistoryId, catergoryItem.Id);
+                if (catergoryItem != null)
+                    _ = await AddCadStoreCategory(storeId, storeDataId, cadTypeId, uploadHistoryId, catergoryItem.Id);
+
+
 
                 if (category.Spaces != null)
                 {
+                    
 
                     foreach (var spaceitem in category.Spaces.Space)
                     {

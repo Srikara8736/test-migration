@@ -38,6 +38,14 @@ public class Store : BaseEntity
 
 
     /// <summary>
+    /// Gets or sets the IndoorSalesArea
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? IndoorSalesArea { get; set; }
+
+
+
+    /// <summary>
     /// Gets or sets the reference of Status entity
     /// </summary>
     [ForeignKey(nameof(CodeMaster))]

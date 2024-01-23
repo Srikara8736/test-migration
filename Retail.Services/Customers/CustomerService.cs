@@ -198,11 +198,13 @@ public class CustomerService : ICustomerService
                     var areaDetails = await _storeService.GetGridData(store.Id);
                     if (areaDetails.Data != null)
                     {
-                        customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
+                        //customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
                         customerStore.TotalSalesArea = customerStore.TotalSalesArea + areaDetails.Data.Where(y => y.AreaType == "SalesArea").Sum(x => x.TotalArea);
                     }
 
                 }
+
+                customerStore.TotalStoreArea = stores.Sum(x => x.TotalArea);
 
                 var storeStatus = _repositoryContext.CodeMasters.Where(x => x.Type.ToLower().Trim() == "storestatus").ToList();
 
@@ -358,12 +360,12 @@ public class CustomerService : ICustomerService
                 var areaDetails = await _storeService.GetGridData(store.Id);
                 if (areaDetails.Data != null)
                 {
-                    customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
+                   // customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
                     customerStore.TotalSalesArea = customerStore.TotalSalesArea + areaDetails.Data.Where(y => y.AreaType == "SalesArea").Sum(x => x.TotalArea);
                 }
 
             }
-
+            customerStore.TotalStoreArea = stores.Sum(x => x.TotalArea);
             var storeStatusItems = new List<StoreStatusDto>();
 
             foreach (var store in stores.GroupBy(x => x.StoreStatus).Select(group => new {

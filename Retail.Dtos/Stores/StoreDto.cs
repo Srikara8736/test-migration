@@ -26,6 +26,12 @@ public class StoreDto
     /// </summary>
     public decimal? TotalArea { get; set; }
 
+
+    /// <summary>
+    /// Gets or sets the TotalArea
+    /// </summary>
+    public decimal? IndoorSalesArea { get; set; }
+
     /// <summary>
     /// Gets or sets the CustomerId
     /// </summary>
@@ -52,7 +58,7 @@ public class CustomerStoreDto
 {
 
     public int NumberOfStore { get; set; }
-    public decimal TotalStoreArea { get; set; }
+    public decimal? TotalStoreArea { get; set; }
     public decimal TotalSalesArea { get; set; }
     public List<StoreResponseDto> Store { get; set; } = new();
     public List<StoreStatusDto> StoreStatus { get; set; } = new();

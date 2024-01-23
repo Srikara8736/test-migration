@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using Retail.Data.Repository;
 using Retail.Services.Cad;
 using Retail.Services.Customers;
+using Retail.Services.Master;
 using Retail.Services.Stores;
 using Retail.Services.UserAccounts;
 using RetailApp.Authentication;
@@ -91,6 +92,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICadService, CadService>();
+builder.Services.AddScoped<ICodeMasterService, CodeMasterService>();
 
 builder.Services.AddHttpContextAccessor();
 

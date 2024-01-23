@@ -12,14 +12,16 @@ public class CodeMasterDto
     /// <summary>
     /// Gets or sets the Type
     /// </summary>
+    [Required]
     [StringLength(256)]
     public string Type { get; set; }
 
+    [Required]
     /// <summary>
     /// Gets or sets the Value
     /// </summary>
     [StringLength(256)]
-    public string? Value { get; set; }
+    public string Value { get; set; }
 
     /// <summary>
     /// Gets or sets the Order

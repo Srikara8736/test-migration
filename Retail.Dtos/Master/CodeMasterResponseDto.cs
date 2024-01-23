@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Retail.DTOs.Master;
 
-public class CodeMasterResponseDto
+public class CodeMasterResponseDto :CodeMasterDto
 {
     /// <summary>
     /// Gets or sets the Id

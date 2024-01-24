@@ -39,7 +39,8 @@ public class CodeMasterService : ICodeMasterService
     /// <summary>
     /// Validate Status Is Already Exists
     /// </summary>
-    /// <param name="role">Status</param>
+    /// <param name="status">Status</param>
+    /// <param name="type">type</param>
     /// <returns>Return Frue / False</returns>
     public bool ValidateStatus(string status, string type)
     {
@@ -53,6 +54,27 @@ public class CodeMasterService : ICodeMasterService
 
     }
 
+
+    /// <summary>
+    /// Validate Customer Status Is Already Exists
+    /// </summary>
+    /// <param name="status">Status</param>
+    /// <param name="customerId">Customer Id</param>
+    /// <param name="statusId">Status Id</param>
+    /// <returns>Return Frue / False</returns>
+    public bool ValidateCustomerStatus(string status, Guid customerId, Guid statusId)
+    {
+        bool isExists = false;
+
+        if (status != null && status != "")
+            isExists = _repositoryContext.customerCodemasters.Any(x => (x.StatusName.ToLower().Trim() == status.ToLower().Trim()) && (x.CustomerId == customerId) && (x.StatusId == statusId));
+
+        return isExists;
+
+
+    }
+
+
     #endregion
 
     #region Methods
@@ -63,7 +85,7 @@ public class CodeMasterService : ICodeMasterService
     /// <param name="id">Status Id</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns> Status Infromation</returns>
-    public async Task<ResultDto<CodeMasterResponseDto>> GetStatusById(Guid id, CancellationToken ct)
+    public async Task<ResultDto<CodeMasterResponseDto>> GetStatusById(Guid id,Guid? customerId, CancellationToken ct)
     {
         if (id == null)
         {
@@ -85,11 +107,21 @@ public class CodeMasterService : ICodeMasterService
             return UserResult;
         }
 
-        var roleResponse = _mapper.Map<CodeMasterResponseDto>(role);
+        var codeMasterResponse = _mapper.Map<CodeMasterResponseDto>(role);
+
+        if(customerId != null)
+        {
+            var customerCodeMaster = await GetCustomerStatus(codeMasterResponse.Id, (Guid)customerId, ct);
+            if (customerCodeMaster != null)
+                codeMasterResponse.customerCodeMaster = customerCodeMaster;
+
+        }
+       
+
         var response = new ResultDto<CodeMasterResponseDto>
         {
             IsSuccess = true,
-            Data = roleResponse
+            Data = codeMasterResponse
         };
         return response;
     }
@@ -166,8 +198,8 @@ public class CodeMasterService : ICodeMasterService
         }
 
 
-        var isRoleExists = _repositoryContext.CodeMasters.Any(x => x.Value == StatusDto.Value && x.Id != StatusId);
-        if (isRoleExists == true)
+        var isStatusExists = _repositoryContext.CodeMasters.Any(x => x.Value == StatusDto.Value && x.Id != StatusId);
+        if (isStatusExists == true)
         {
             var errorResponse = new ResultDto<CodeMasterResponseDto>
             {
@@ -281,7 +313,7 @@ public class CodeMasterService : ICodeMasterService
     /// <param name="pageSize"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public virtual async Task<PaginationResultDto<PagedList<CodeMasterResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default)
+    public virtual async Task<PaginationResultDto<PagedList<CodeMasterResponseDto>>> GetAllStoreStatus(string keyword = null, Guid? customerId = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default)
     {
 
         var query = from p in _repositoryContext.CodeMasters
@@ -304,16 +336,206 @@ public class CodeMasterService : ICodeMasterService
             return errorResponse;
         }
 
-        var rolesResponse = _mapper.Map<PagedList<CodeMasterResponseDto>>(codeMaster);
+        var statusResponse = _mapper.Map<PagedList<CodeMasterResponseDto>>(codeMaster);
+
+        foreach(var item in statusResponse)
+        {
+            if (customerId != null)
+            {
+                var customerCodeMaster = await GetCustomerStatus(item.Id, (Guid)customerId, ct);
+                if (customerCodeMaster != null)
+                    item.customerCodeMaster = customerCodeMaster;
+
+            }
+        }
+
         var response = new PaginationResultDto<PagedList<CodeMasterResponseDto>>
         {
             IsSuccess = true,
-            Data = rolesResponse,
+            Data = statusResponse,
             TotalCount = codeMaster.TotalCount,
             TotalPages = codeMaster.TotalPages
         };
         return response;
     }
+
+    #endregion
+
+
+
+    #region Customer Code Master
+
+    /// <summary>
+    /// gets the Status details by Id
+    /// </summary>
+    /// <param name="id">Status Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns> Status Infromation</returns>
+    public async Task<ResultDto<CustomerCodeMasterResponseDto>> GetCustomerStatusById(Guid id, CancellationToken ct)
+    {
+        if (id == null)
+        {
+            var UserResult = new ResultDto<CustomerCodeMasterResponseDto>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                IsSuccess = false
+            };
+            return UserResult;
+        }
+        var customerCodemaster = await _repositoryContext.customerCodemasters.FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (customerCodemaster == null)
+        {
+            var UserResult = new ResultDto<CustomerCodeMasterResponseDto>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return UserResult;
+        }
+
+        var customerCodemasterResponse = _mapper.Map<CustomerCodeMasterResponseDto>(customerCodemaster);
+        var response = new ResultDto<CustomerCodeMasterResponseDto>
+        {
+            IsSuccess = true,
+            Data = customerCodemasterResponse
+        };
+        return response;
+    }
+
+
+    /// <summary>
+    /// gets the Status details by Id
+    /// </summary>
+    /// <param name="id">Status Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns> Status Infromation</returns>
+    public async Task<CustomerCodeMasterResponseDto?> GetCustomerStatus(Guid statusId,Guid customerId, CancellationToken ct)
+    {
+      
+        var customerCodemaster = await _repositoryContext.customerCodemasters.FirstOrDefaultAsync(x => x.StatusId == statusId && x.CustomerId == customerId, ct);
+
+        if (customerCodemaster == null)
+            return null;       
+
+       return _mapper.Map<CustomerCodeMasterResponseDto>(customerCodemaster);
+    }
+
+
+
+    /// <summary>
+    /// Creates a new Status
+    /// </summary>
+    /// <param name="StatusDto">Status</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
+    public async Task<ResultDto<CodeMasterResponseDto>> InsertCustomerStatus(CustomerCodeMasterDto StatusDto, CancellationToken ct = default)
+    {
+        if (StatusDto == null)
+        {
+            var errorResponse = new ResultDto<CodeMasterResponseDto>
+            {
+                ErrorMessage = StringResources.RecordNotFound,
+                IsSuccess = false
+            };
+            return errorResponse;
+        }
+
+        var isExists = ValidateCustomerStatus(StatusDto.StatusName, StatusDto.CustomerId, StatusDto.StatusId);
+
+        if (isExists)
+        {
+            var errorResponse = new ResultDto<CodeMasterResponseDto>
+            {
+                ErrorMessage = StringResources.RecordExists,
+                IsSuccess = false
+
+            };
+            return errorResponse;
+        }
+
+        var customerCodeMaster = _mapper.Map<CustomerCodemaster>(StatusDto);
+
+        await _repositoryContext.customerCodemasters.AddAsync(customerCodeMaster, ct);
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var customerMaster = await GetStatusById(customerCodeMaster.Id, customerCodeMaster.CustomerId,new CancellationToken());
+
+        var result = new ResultDto<CodeMasterResponseDto>
+        {
+            Data = customerMaster?.Data,
+            IsSuccess = true
+        };
+
+        return result;
+
+    }
+
+
+    /// <summary>
+    /// Updates the existing Status
+    /// </summary>
+    /// <param name="id">StatusId</param>
+    /// <param name="StatusDto">Status</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
+    public async Task<ResultDto<CodeMasterResponseDto>> UpdateCustomerStatus(Guid customerStatusId, CustomerCodeMasterDto StatusDto, CancellationToken ct = default)
+    {
+        if (StatusDto == null)
+        {
+            var errorResponse = new ResultDto<CodeMasterResponseDto>
+            {
+                ErrorMessage = StringResources.BadRequest,
+                IsSuccess = false
+            };
+            return errorResponse;
+        }
+
+
+        var isStatusExists = _repositoryContext.customerCodemasters.Any(x => x.StatusName == StatusDto.StatusName && x.CustomerId == StatusDto.CustomerId && x.StatusId == StatusDto.StatusId && x.Id != customerStatusId);
+        if (isStatusExists == true)
+        {
+            var errorResponse = new ResultDto<CodeMasterResponseDto>
+            {
+                ErrorMessage = StringResources.BadRequest,IsSuccess= false
+            };
+            return errorResponse;
+        }
+        var customerCodeMasterResult = await _repositoryContext.customerCodemasters.FirstOrDefaultAsync(x => x.Id == customerStatusId, ct);
+
+        if(customerCodeMasterResult == null)
+        {
+            if (StatusDto == null)
+            {
+                var errorResponse = new ResultDto<CodeMasterResponseDto>
+                {
+                    ErrorMessage = StringResources.RecordNotFound,
+                    IsSuccess = false
+                };
+                return errorResponse;
+            }
+
+        }
+
+
+        customerCodeMasterResult.StatusName = StatusDto.StatusName;
+
+
+        await _repositoryContext.SaveChangesAsync(ct);
+
+
+        
+        var codeMasterResponse = await GetStatusById(customerCodeMasterResult.StatusId, customerCodeMasterResult.CustomerId,new CancellationToken());
+
+        var result = new ResultDto<CodeMasterResponseDto>
+        {
+            Data = codeMasterResponse?.Data,
+            IsSuccess = true
+        };
+        return result;
+
+    }
+
+
 
     #endregion
 }

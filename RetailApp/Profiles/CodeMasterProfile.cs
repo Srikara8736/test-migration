@@ -15,6 +15,10 @@ public class CodeMasterProfile : Profile
     {
         CreateMap<CodeMaster, CodeMasterDto>().ReverseMap();
         CreateMap<CodeMaster, CodeMasterResponseDto>().ReverseMap();
+
+
+        CreateMap<CustomerCodemaster, CustomerCodeMasterDto>().ReverseMap();
+        CreateMap<CustomerCodemaster, CustomerCodeMasterResponseDto>().ReverseMap();
     }
 }
 

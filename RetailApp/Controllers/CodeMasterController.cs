@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.DTOs.Master;
 using Retail.DTOs.Roles;
 using Retail.Services.Master;
@@ -85,9 +86,25 @@ public class CodeMasterController : BaseController
     /// <returns>Return updated Status Information</returns>
     [HttpPut]
     [Route("{id}")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] CodeMasterDto codeMaster, CancellationToken ct)
+    public async Task<IActionResult> UpdateStatus(Guid id,[BindRequired]Guid CustomerId, [FromBody] CodeMasterDto codeMaster, CancellationToken ct)
     {
         return this.Result(await _codeMasterService.UpdateStatus(id, codeMaster, ct));
+    }
+
+
+    /// <summary>
+    ///Add a new Customer Status item
+    /// </summary>
+    /// <param name="codeMaster">codeMasters</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return newly added status</returns>
+    [HttpPost]
+    [Route("{InsertCustomerStatus}")]
+    public async Task<IActionResult> InsertCustomerStatus([FromBody] CustomerCodeMasterDto codeMaster, CancellationToken ct = default)
+    {
+
+        return this.Result(await _codeMasterService.InsertStatus(codeMaster, ct));
+
     }
 
 

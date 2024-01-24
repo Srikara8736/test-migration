@@ -14,13 +14,15 @@ namespace Retail.Services.Master;
     public interface ICodeMasterService
     {
 
-        /// <summary>
-        /// gets the Status details by Id
-        /// </summary>
-        /// <param name="id">Status Id</param>
-        /// <param name="ct">Cancellation Token</param>
-        /// <returns> Status Infromation</returns>
-        Task<ResultDto<CodeMasterResponseDto>> GetStatusById(Guid id, CancellationToken ct);
+    #region Status
+
+    /// <summary>
+    /// gets the Status details by Id
+    /// </summary>
+    /// <param name="id">Status Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns> Status Infromation</returns>
+    Task<ResultDto<CodeMasterResponseDto>> GetStatusById(Guid id, Guid? customerId, CancellationToken ct);
 
 
         /// <summary>
@@ -65,7 +67,40 @@ namespace Retail.Services.Master;
         /// <param name="pageSize"></param>
         /// <param name="ct"></param>
         /// <returns></returns>
-        Task<PaginationResultDto<PagedList<CodeMasterResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
+        Task<PaginationResultDto<PagedList<CodeMasterResponseDto>>> GetAllStoreStatus(string keyword = null,Guid? customerId = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
+
+    #endregion
 
 
-    }
+    #region Customer region
+
+
+    /// <summary>
+    /// gets the Status details by Id
+    /// </summary>
+    /// <param name="id">Status Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns> Status Infromation</returns>
+    Task<ResultDto<CustomerCodeMasterResponseDto>> GetCustomerStatusById(Guid id, CancellationToken ct);
+
+    /// <summary>
+    /// Creates a new Status
+    /// </summary>
+    /// <param name="StatusDto">Status</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
+    Task<ResultDto<CodeMasterResponseDto>> InsertCustomerStatus(CustomerCodeMasterDto StatusDto, CancellationToken ct = default);
+
+    /// <summary>
+    /// Updates the existing Status
+    /// </summary>
+    /// <param name="id">StatusId</param>
+    /// <param name="StatusDto">Status</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
+    Task<ResultDto<CodeMasterResponseDto>> UpdateCustomerStatus(Guid customerStatusId, CustomerCodeMasterDto StatusDto, CancellationToken ct = default);
+
+    #endregion
+
+
+}

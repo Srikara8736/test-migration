@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Retail.DTOs.Master;
 
-public class CodeMasterResponseDto :CodeMasterDto
+public class CustomerCodeMasterResponseDto : CodeMasterDto
 {
     /// <summary>
     /// Gets or sets the Id
     /// </summary>
     public Guid Id { get; set; }
-
-    public CustomerCodeMasterResponseDto? customerCodeMaster { get; set; }
 }

@@ -54,6 +54,7 @@ public class RepositoryContext : DbContext
     public DbSet<GeneralListTypeData> GeneralListTypeDatas { get; set; }
     public DbSet<CadStoreCategory> CadStoreCategories { get; set; }
     public DbSet<CadStoreSpace> CadStoreSpaces { get; set; }
+    public DbSet<CustomerCodemaster> customerCodemasters { get; set; }
 
 
 

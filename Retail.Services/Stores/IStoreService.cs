@@ -155,6 +155,15 @@ public interface IStoreService
 
 
     /// <summary>
+    /// Update Data Status
+    /// </summary>
+    /// <param name="id">Store Data Id</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>True / False status of Store Data Update</returns>
+    Task<ResultDto<bool>> UpdateStoreDataStatus(Guid id,List<StoreDataStatusDto> storeData, CancellationToken ct = default);
+
+
+    /// <summary>
     /// Get all Stores By Customer
     /// </summary>
     /// <param name="customerId">customerId</param>
@@ -211,6 +220,17 @@ public interface IStoreService
     /// <param name="ct">CancellationToken</param>
     /// <returns>Get Store status with Pagination</returns>
     Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
+
+
+
+    /// <summary>
+    /// Get all StoreStatus
+    /// </summary>
+    /// <param name="pageIndex">PageIndex</param>
+    /// <param name="pageSize">PageSize</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Get Store status with Pagination</returns>
+    Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreDataStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default);
 
     /// <summary>
     /// Get Comparision chart data of Two versions

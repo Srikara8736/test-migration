@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Retail.Data.Repository;
 
@@ -11,9 +12,10 @@ using Retail.Data.Repository;
 namespace Retail.Data.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20240125062737_store-data-added")]
+    partial class storedataadded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -805,7 +807,7 @@ namespace Retail.Data.Migrations
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("StoreDataId")
+                    b.Property<Guid>("StoreDataId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("StoreId")
@@ -1429,7 +1431,8 @@ namespace Retail.Data.Migrations
 
                     b.HasOne("Retail.Data.Entities.Stores.StoreData", "StoreData")
                         .WithMany()
-                        .HasForeignKey("StoreDataId");
+                        .HasForeignKey("StoreDataId")
+                        .IsRequired();
 
                     b.HasOne("Retail.Data.Entities.Stores.Store", "Store")
                         .WithMany()

@@ -30,4 +30,12 @@ public class StoreDocument : BaseEntity
     public Guid DocumentId { get; set; }
     public virtual Document Document { get; set; }
 
+
+    /// <summary>
+    /// Gets or sets the reference of Store Data entity
+    /// </summary>
+    [ForeignKey(nameof(StoreData))]
+    public Guid? StoreDataId { get; set; }
+    public virtual StoreData StoreData { get; set; }
+
 }

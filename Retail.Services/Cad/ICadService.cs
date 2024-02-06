@@ -26,7 +26,7 @@ public interface ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="type">Store Type</param>
     /// <returns> True / False of Loading XMl Data Status</returns>
-    public Task<bool> LoadXMLData(Message message, Guid storeId,string type,Guid UploadHistoryId);
+    public Task<(bool status, Guid? storeDataId)> LoadXMLData(Message message, Guid storeId,string type,Guid UploadHistoryId);
 
 
     /// <summary>
@@ -62,7 +62,7 @@ public interface ICadService
     /// <param name="storeId">Store Document Identifier</param>
     /// <param name="documentId">Document Indetifier</param>
     /// <returns>Store Document Information</returns>
-    Task<Retail.Data.Entities.Stores.StoreDocument> InsertStoreDocument(Guid storeId, Guid documentId);
+    Task<Retail.Data.Entities.Stores.StoreDocument> InsertStoreDocument(Guid storeId, Guid documentId,  Guid? storeDataId);
 
 
     /// <summary>

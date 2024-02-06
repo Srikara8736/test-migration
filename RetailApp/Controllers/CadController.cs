@@ -15,7 +15,7 @@ using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController
@@ -200,7 +200,7 @@ namespace RetailApp.Controllers
                 return HttpStatusCode.UnsupportedMediaType;
             }
 
-
+            Guid? storeDataId = null;
             try
             {
 
@@ -258,6 +258,7 @@ namespace RetailApp.Controllers
                                 if (cadData != null)
                                 {
                                         var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId, "Space", caduploadHistory.Id);
+                                        storeDataId = loadXml.storeDataId;
                                 }
                         
                         }
@@ -311,7 +312,7 @@ namespace RetailApp.Controllers
                     var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
                     if(document != null)
                     {
-                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id);
+                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id,storeDataId);
                     }
 
 
@@ -324,7 +325,7 @@ namespace RetailApp.Controllers
                     var document = await _cadService.InsertDocument(cadpdfFileName,fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
                     if (document != null)
                     {
-                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id);
+                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id, storeDataId);
                     }
 
 
@@ -368,7 +369,7 @@ namespace RetailApp.Controllers
 
                 return HttpStatusCode.UnsupportedMediaType;
             }
-
+            Guid? storeDataId = null;
 
             try
             {
@@ -376,6 +377,7 @@ namespace RetailApp.Controllers
               var fileStream = await UploadCadFileAsync(CadFile, StoreId.ToString());
                 var caduploadHistory = await _cadService.InsertCadUploadHistory(StoreId, CadFile.FileName);
                 var stream = CadFile.OpenReadStream();
+
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
                 {
                     //Fetch Manifest.xml
@@ -424,6 +426,7 @@ namespace RetailApp.Controllers
                             if (cadData != null)
                             {
                                 var loadXml = await _cadService.LoadXMLData(cadData, StoreId,"Space", caduploadHistory.Id);
+                                storeDataId = loadXml.storeDataId;
                             }
 
                         }
@@ -450,7 +453,6 @@ namespace RetailApp.Controllers
                             }
                         }
 
-
                         else if (Type.ToLower() == "department")
                         {
                             DepartmentMessageDto cadData = new DepartmentMessageDto();
@@ -475,7 +477,6 @@ namespace RetailApp.Controllers
                                 var loadXml = await _cadService.LoadXMLData(messageModel, StoreId,"Department", caduploadHistory.Id);
                             }
                         }
-
 
                         else
                         {
@@ -505,9 +506,8 @@ namespace RetailApp.Controllers
                         var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
                         if (document != null)
                         {
-                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id,storeDataId);
                         }
-
 
                     }
 
@@ -518,7 +518,7 @@ namespace RetailApp.Controllers
                         var document = await _cadService.InsertDocument(cadpdfFileName, fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
                         if (document != null)
                         {
-                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id);
+                            var storeDocument = await _cadService.InsertStoreDocument(StoreId, document.Id, storeDataId);
                         }
 
 

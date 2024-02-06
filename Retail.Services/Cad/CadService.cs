@@ -116,7 +116,7 @@ public class CadService : ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="type">Store Type</param>
     /// <returns> True / False of Loading XMl Data Status</returns>
-    public async Task<bool> LoadXMLData(Message message, Guid storeId, string type, Guid UploadHistoryId)
+    public async Task<(bool status,Guid? storeDataId)> LoadXMLData(Message message, Guid storeId, string type, Guid UploadHistoryId)
     {
 
         //var storeInfo = await StoreInfoManagement(message);
@@ -130,13 +130,15 @@ public class CadService : ICadService
             var areaType = await StoreAreaTypeManagement(message);
             var category = await StoreCategoryManagement(message);
 
-            if (storeData != null)
-            {
-                var storeSpace = await StoreSpaceManagement(message, storeInfo.Id, storeData.Id, cadType.Id,UploadHistoryId);
-            }
+            if (storeData == null)
+                return (false, null);
+
+            var storeSpace = await StoreSpaceManagement(message, storeInfo.Id, storeData.Id, cadType.Id, UploadHistoryId);
+            return (true, storeData.Id);
+
 
         }
-        return true;
+        return (false,null);
 
     }
 
@@ -986,13 +988,14 @@ public class CadService : ICadService
     /// <param name="storeId">Store Document Identifier</param>
     /// <param name="documentId">Document Indetifier</param>
     /// <returns>Store Document Information</returns>
-    public async Task<Retail.Data.Entities.Stores.StoreDocument> InsertStoreDocument(Guid storeId, Guid documentId)
+    public async Task<Retail.Data.Entities.Stores.StoreDocument> InsertStoreDocument(Guid storeId, Guid documentId,Guid? storeDataId)
     {
         var docItem = new Retail.Data.Entities.Stores.StoreDocument
         {
             DocumentId = documentId,
             StoreId = storeId,
             UploadedOn = DateTime.UtcNow,
+            StoreDataId = storeDataId
 
         };
 

@@ -223,6 +223,14 @@ public class RepositoryContext : DbContext
             .OnDelete(DeleteBehavior.ClientSetNull);
 
 
+        builder.Entity<StoreDocument>()
+            .HasOne(x => x.StoreData)
+            .WithMany()
+            .HasForeignKey(x => x.StoreDataId)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .IsRequired(false);
+
+
         base.OnModelCreating(builder);
     }
 }

@@ -10,7 +10,7 @@ using RetailApp.Helpers;
 
 namespace RetailApp.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CodeMasterController : BaseController
@@ -42,10 +42,10 @@ public class CodeMasterController : BaseController
     /// <returns>Return Store Status optionally with paged List Response</returns>
     [HttpGet]
     [Route("GetAllStoreStatus")]
-    public async Task<IActionResult> GetAllStoreStatus([FromQuery] PagingParam parameters, CancellationToken ct = default)
+    public async Task<IActionResult> GetAllStoreStatus([FromQuery] CustomerParam param, CancellationToken ct = default)
     {
 
-        return this.Result(await _codeMasterService.GetAllStoreStatus(parameters.Keyword, parameters.PageIndex, parameters.PageSize, ct));
+        return this.Result(await _codeMasterService.GetAllStoreStatus(param.Keyword, param.CustomerId, param.PageIndex, param.PageSize, ct));
     }
 
 
@@ -57,10 +57,10 @@ public class CodeMasterController : BaseController
     /// <returns>Return Status Response</returns>
     [HttpGet]
     [Route("{id}")]
-    public async Task<IActionResult> GetStatusById(Guid id, CancellationToken ct)
+    public async Task<IActionResult> GetStatusById(Guid id,Guid? customerId, CancellationToken ct)
     {
 
-        return this.Result(await _codeMasterService.GetStatusById(id, ct));
+        return this.Result(await _codeMasterService.GetStatusById(id, customerId, ct));
 
     }
 
@@ -103,7 +103,7 @@ public class CodeMasterController : BaseController
     public async Task<IActionResult> InsertCustomerStatus([FromBody] CustomerCodeMasterDto codeMaster, CancellationToken ct = default)
     {
 
-        return this.Result(await _codeMasterService.InsertStatus(codeMaster, ct));
+        return this.Result(await _codeMasterService.InsertCustomerStatus(codeMaster, ct));
 
     }
 

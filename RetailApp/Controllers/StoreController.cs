@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RetailApp.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class StoreController : BaseController
@@ -88,6 +88,21 @@ public class StoreController : BaseController
     public async Task<IActionResult> UpdateStore(string id, [FromBody] StoreDto storeModel, CancellationToken ct)
     {
         return this.Result(await _storeService.UpdateStore(id, storeModel, ct));
+    }
+
+
+    /// <summary>
+    /// Update a Store Data Details
+    /// </summary>
+    /// <param name="id">Store Id</param>
+    /// <param name="storeModel">Store Model</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return updated Store Information</returns>
+    [HttpPut]
+    [Route("UpdateStoreDataStatus/{id}")]
+    public async Task<IActionResult> UpdateDataStoreStatus(Guid id, [FromBody] List<StoreDataStatusDto> storeStatusModel, CancellationToken ct)
+    {
+        return this.Result(await _storeService.DeleteStore(id.ToString()));
     }
 
 
@@ -222,6 +237,23 @@ public class StoreController : BaseController
 
         return this.Result(await _storeService.GetAllStoreStatus(parameters.Keyword, parameters.PageIndex, parameters.PageSize, ct));
     }
+
+
+
+    /// <summary>
+    /// Get all Store Data Status
+    /// </summary>
+    /// <param name="parameters">Search parameters</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return StoreStatus optionally with paged List Response</returns>
+    [HttpGet]
+    [Route("GetStoreDataStatus")]
+    public async Task<IActionResult> GetStoreDataStatus([FromQuery] PagingParam parameters, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.GetAllStoreDataStatus(parameters.Keyword, parameters.PageIndex, parameters.PageSize, ct));
+    }
+
 
 
     [HttpPost]

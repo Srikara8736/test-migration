@@ -10,7 +10,9 @@ using Retail.Data.Repository;
 using Retail.DTOs;
 using Retail.DTOs.Customers;
 using Retail.DTOs.Stores;
+using Retail.DTOs.XML;
 using Retail.Services.Common;
+using Retail.Services.Master;
 using System.Net;
 
 
@@ -24,17 +26,18 @@ public class StoreService : IStoreService
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
-
+    private readonly ICodeMasterService _codeMasterService;
 
     #endregion
 
     #region Ctor
-    public StoreService(RepositoryContext repositoryContext, IMapper mapper, IConfiguration configuration, IWebHostEnvironment environment)
+    public StoreService(RepositoryContext repositoryContext, IMapper mapper, IConfiguration configuration, IWebHostEnvironment environment,ICodeMasterService codeMasterService)
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
         _configuration = configuration;
         _environment = environment;
+        _codeMasterService = codeMasterService;
     }
     #endregion
 
@@ -175,6 +178,80 @@ public class StoreService : IStoreService
         await _repositoryContext.SaveChangesAsync();
 
         return true;
+
+
+    }
+
+
+
+    /// <summary>
+    /// Update store Data activity
+    /// </summary>
+    /// <param name="storeDataId">storeId</param>
+    /// <param name="statusId">storeId</param>
+    /// <returns>True / False to update store activity</returns>
+    public async Task<bool> UpdateStoreDataStatus(Guid storeDataId,Guid statusId)
+    {
+        if (storeDataId == null)
+            return false;
+
+        var store = await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.Id == storeDataId);
+
+        if(store == null) 
+            return false;
+
+        store.StatusId = statusId;
+
+        await _repositoryContext.SaveChangesAsync();
+
+        return true;
+
+
+    }
+
+    /// <summary>
+    /// Update store Data activity
+    /// </summary>
+    /// <param name="storeDataId">storeId</param>
+    /// <param name="storeData">storeData</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>True / False to update store activity</returns>
+    public async Task<ResultDto<bool>> UpdateStoreDataStatus(Guid id, List<StoreDataStatusDto> storeData, CancellationToken ct = default)
+    {
+
+        if (!storeData.Any())
+        {
+            var errorResponse = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.BadRequest,
+                IsSuccess = false
+            };
+            return errorResponse;
+        }
+
+
+        foreach (var item in storeData)
+        {
+
+            var store = await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.Id == item.StoreDataId);
+
+            if (store != null)
+            {
+                store.StatusId = item.StatusId;
+
+                await _repositoryContext.SaveChangesAsync();
+            }
+           
+        }
+
+        var successResponse = new ResultDto<bool>
+        {
+           Data= true,
+            IsSuccess = true
+        };
+        return successResponse;
+
+
 
 
     }
@@ -426,6 +503,76 @@ public class StoreService : IStoreService
 
 
     /// <summary>
+    /// Get File History of Versions
+    /// </summary>
+    /// <param name="storeId">storeId</param>
+    /// <returns>Store PDF Url</returns>
+    public async Task<List<StoreDataHistoryDto>> StoreDataFileHistoryByStoreId(Guid storeId)
+    {
+
+        var storeDataHistories = new List<StoreDataHistoryDto>();
+
+        var storeDataItems = _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId).OrderByDescending(x => x.CreatedOn);
+
+       
+        foreach (var item in storeDataItems)
+        {
+
+            var storeData = new StoreDataHistoryDto
+            {
+                StoreId = item.StoreId,
+                StoreDataId = item.Id,
+                Name = "Version " + item.VersionNumber.ToString()
+            };
+            var storeStatus = await _codeMasterService.GetStatusById(item.StatusId, null, default);
+            if(storeStatus.Data != null)
+            {
+                storeData.Status = storeStatus.Data.Value;
+                storeData.StatusId = storeStatus.Data.Id;
+            }
+
+            var storeUploadType = await _codeMasterService.GetStatusById(item.CadFileTypeId, null, default);
+            if (storeUploadType.Data != null)
+            {
+                storeData.UploadType = storeUploadType.Data.Value;
+                storeData.UploadTypeId = storeUploadType.Data.Id;
+            }
+
+            var storeDocuments = _repositoryContext.StoreDocuments.Where(x => x.StoreDataId == item.Id);            
+            foreach(var sDoc in storeDocuments)
+            {
+
+                var documentHistory = new DocumentHistoryDto
+                {
+                    StoreDocumentId = sDoc.Id
+                };
+
+                var docResult = _repositoryContext.Documents.Where(x => x.Id == sDoc.DocumentId).FirstOrDefault();
+                if(docResult != null)
+                {
+                    documentHistory.DocumentId = docResult.Id;
+                    documentHistory.Path = docResult.Path;
+
+                    var storeFileType = await _codeMasterService.GetStatusById(docResult.StatusId, null, default);
+                    if (storeFileType.Data != null)
+                    {
+                        documentHistory.FileType = storeFileType.Data.Value;
+                        documentHistory.FileTypeId = storeFileType.Data.Id;
+                    }
+                }
+
+                storeData.documentHistories.Add(documentHistory);
+            }
+
+            storeDataHistories.Add(storeData);
+        }
+
+        
+        return storeDataHistories;
+    }
+
+
+    /// <summary>
     /// Get PDF Url By store Id
     /// </summary>
     /// <param name="storeId">storeId</param>
@@ -505,7 +652,8 @@ public class StoreService : IStoreService
 
         foreach (var store in storeResponse)
         {
-            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id).ToListAsync();
+            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == Guid.Parse
+            ("496AD282-71A1-4688-BA81-0A1EA6C9021E")).ToListAsync();
             if (storeData != null)
             {
                 foreach (var item in storeData)
@@ -2157,7 +2305,9 @@ public class StoreService : IStoreService
         var path = _configuration["AssetLocations:StoreImages"];
 
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id).ToListAsync();
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == Guid.Parse
+                   ("496AD282-71A1-4688-BA81-0A1EA6C9021E")).ToListAsync();
+        
         if (storeData != null)
         {
             foreach (var item in storeData)
@@ -2263,6 +2413,9 @@ public class StoreService : IStoreService
             store.cadUploadHistory = cadResponse;
         }
 
+        var storeDataHistory = await StoreDataFileHistoryByStoreId(storeId);
+        store.StoreDataHistories = storeDataHistory;
+
         store.PdfLink = await PdfFileUrlByStoreId(store.Id);
 
         var response = new ResultDto<StoreResponseDto>
@@ -2320,6 +2473,50 @@ public class StoreService : IStoreService
         return response;
     }
 
+
+
+    /// <summary>
+    /// Get all StoreDataStatus
+    /// </summary>
+    /// <param name="pageIndex">PageIndex</param>
+    /// <param name="pageSize">PageSize</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Get Store status with Pagination</returns>
+    public virtual async Task<PaginationResultDto<PagedList<StoreStatusResponseDto>>> GetAllStoreDataStatus(string keyword = null, int pageIndex = 0, int pageSize = 0, CancellationToken ct = default)
+    {
+
+        var query = from p in _repositoryContext.CodeMasters
+                    where p.Type == "StoreDataStatus"
+                    select p;
+
+        if (keyword != null)
+        {
+            query = query.Where(x => x.Value.Contains(keyword));
+        }
+
+        var StoreStatus = await PagedList<CodeMaster>.ToPagedList(query.OrderBy(on => on.Order), pageIndex, pageSize);
+        if (StoreStatus == null)
+        {
+            var errorResponse = new PaginationResultDto<PagedList<StoreStatusResponseDto>>
+            {
+                ErrorMessage = StringResources.NoResultsFound
+            };
+            return errorResponse;
+        }
+
+        var StoreStatusResponse = _mapper.Map<PagedList<StoreStatusResponseDto>>(StoreStatus);
+
+
+
+        var response = new PaginationResultDto<PagedList<StoreStatusResponseDto>>
+        {
+            IsSuccess = true,
+            Data = StoreStatusResponse,
+            TotalCount = StoreStatus.TotalCount,
+            TotalPages = StoreStatus.TotalPages
+        };
+        return response;
+    }
 
 
     /// <summary>

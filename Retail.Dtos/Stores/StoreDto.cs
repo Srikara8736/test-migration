@@ -71,3 +71,13 @@ public class StoreStatusDto
     public int NumberOfStore { get; set; }    
     public string? Property { get; set; }    
 }
+
+
+public class StoreDataStatusDto
+{
+    [Required]
+    public Guid StoreDataId { get; set;}
+
+    [Required]
+    public Guid StatusId { get; set;}
+}

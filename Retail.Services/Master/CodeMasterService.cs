@@ -454,11 +454,12 @@ public class CodeMasterService : ICodeMasterService
         }
 
         var customerCodeMaster = _mapper.Map<CustomerCodemaster>(StatusDto);
+        //customerCodeMaster.CreatedOn = DateTime.UtcNow;
 
         await _repositoryContext.customerCodemasters.AddAsync(customerCodeMaster, ct);
         await _repositoryContext.SaveChangesAsync(ct);
 
-        var customerMaster = await GetStatusById(customerCodeMaster.Id, customerCodeMaster.CustomerId,new CancellationToken());
+        var customerMaster = await GetStatusById(customerCodeMaster.StatusId, customerCodeMaster.CustomerId, ct);
 
         var result = new ResultDto<CodeMasterResponseDto>
         {

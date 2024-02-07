@@ -318,6 +318,7 @@ public class StoreService : IStoreService
             address.Country = addressDto.Country;
             address.Latitude = addressDto.Latitude;
             address.Longitude = addressDto.Longitude;
+            address.FullAddress = addressDto.FullAddress;
 
 
             await _repositoryContext.SaveChangesAsync(ct);
@@ -512,7 +513,7 @@ public class StoreService : IStoreService
 
         var storeDataHistories = new List<StoreDataHistoryDto>();
 
-        var storeDataItems = _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId).OrderByDescending(x => x.CreatedOn);
+        var storeDataItems = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId).OrderByDescending(x => x.CreatedOn).ToListAsync();
 
        
         foreach (var item in storeDataItems)
@@ -538,7 +539,7 @@ public class StoreService : IStoreService
                 storeData.UploadTypeId = storeUploadType.Data.Id;
             }
 
-            var storeDocuments = _repositoryContext.StoreDocuments.Where(x => x.StoreDataId == item.Id);            
+            var storeDocuments = await _repositoryContext.StoreDocuments.Where(x => x.StoreDataId == item.Id).ToListAsync();            
             foreach(var sDoc in storeDocuments)
             {
 
@@ -547,7 +548,7 @@ public class StoreService : IStoreService
                     StoreDocumentId = sDoc.Id
                 };
 
-                var docResult = _repositoryContext.Documents.Where(x => x.Id == sDoc.DocumentId).FirstOrDefault();
+                var docResult =await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId);
                 if(docResult != null)
                 {
                     documentHistory.DocumentId = docResult.Id;

@@ -50,4 +50,9 @@ public class Address : BaseEntity
     /// </summary>
     [StringLength(50)]
     public string? Longitude { get; set; }
+
+    /// <summary>
+    /// Gets or sets the FullAddress
+    /// </summary>
+    public string? FullAddress { get; set; }
 }

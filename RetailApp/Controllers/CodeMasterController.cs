@@ -99,7 +99,7 @@ public class CodeMasterController : BaseController
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Return newly added status</returns>
     [HttpPost]
-    [Route("{InsertCustomerStatus}")]
+    [Route("InsertCustomerStatus")]
     public async Task<IActionResult> InsertCustomerStatus([FromBody] CustomerCodeMasterDto codeMaster, CancellationToken ct = default)
     {
 

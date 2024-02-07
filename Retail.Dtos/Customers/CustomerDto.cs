@@ -110,4 +110,11 @@ public class AddressDto
     /// </summary>
     [StringLength(50)]
     public string? Longitude { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the ZipCode
+    /// </summary>
+    [Required]
+    public string FullAddress { get; set; }
 }

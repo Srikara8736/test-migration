@@ -28,9 +28,14 @@ public class StoreDto
 
 
     /// <summary>
-    /// Gets or sets the TotalArea
+    /// Gets or sets the IndoorSalesArea
     /// </summary>
     public decimal? IndoorSalesArea { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Store Comments
+    /// </summary>
+    public string? Comments { get; set; }
 
     /// <summary>
     /// Gets or sets the CustomerId
@@ -76,8 +81,12 @@ public class StoreStatusDto
 public class StoreDataStatusDto
 {
     [Required]
-    public Guid StoreDataId { get; set;}
+    public Guid StatusId { get; set;}
 
     [Required]
-    public Guid StatusId { get; set;}
+    public string VersionName { get; set;}
+
+    [Required]
+    public int VersionNumber { get; set;}
+    public string? Comments { get; set;}
 }

@@ -1,5 +1,6 @@
 ﻿using Retail.Data.Entities.Common;
 using Retail.Data.Entities.FileSystem;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Retail.Data.Entities.Stores;
@@ -15,6 +16,18 @@ public class StoreData : BaseEntity
     /// Gets or sets the VersionNumber
     /// </summary>
     public int VersionNumber { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the VersionName
+    /// </summary>
+    [StringLength(255)]
+    public string VersionName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Store Comments
+    /// </summary>
+    public string? Comments { get; set; }
 
 
     /// <summary>

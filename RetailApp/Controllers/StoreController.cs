@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RetailApp.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class StoreController : BaseController
@@ -94,15 +94,15 @@ public class StoreController : BaseController
     /// <summary>
     /// Update a Store Data Details
     /// </summary>
-    /// <param name="id">Store Id</param>
+    /// <param name="id">Store Data Id</param>
     /// <param name="storeModel">Store Model</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Return updated Store Information</returns>
     [HttpPut]
-    [Route("UpdateStoreDataStatus/{id}")]
+    [Route("UpdateStoreData/{id}")]
     public async Task<IActionResult> UpdateDataStoreStatus(Guid id, [FromBody] List<StoreDataStatusDto> storeStatusModel, CancellationToken ct)
     {
-        return this.Result(await _storeService.DeleteStore(id.ToString()));
+        return this.Result(await _storeService.UpdateStoreDataStatus(id, storeStatusModel,ct));
     }
 
 

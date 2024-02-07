@@ -38,6 +38,12 @@ public class Store : BaseEntity
 
 
     /// <summary>
+    /// Gets or sets the Store Comments
+    /// </summary>
+    public string? Comments { get; set; }
+
+
+    /// <summary>
     /// Gets or sets the IndoorSalesArea
     /// </summary>
     [Column(TypeName = "decimal(18,2)")]

@@ -233,6 +233,7 @@ public class CadService : ICadService
             CreatedOn = DateTime.UtcNow,
             StatusId = new Guid("6E9EC88C-3537-11EE-BE56-0242AC120002"),
             CadFileTypeId = typeId,
+            VersionName = "Version"
 
         };
 

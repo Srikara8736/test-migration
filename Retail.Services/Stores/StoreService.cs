@@ -233,11 +233,14 @@ public class StoreService : IStoreService
         foreach (var item in storeData)
         {
 
-            var store = await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.Id == item.StoreDataId);
+            var store = await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.Id == id);
 
             if (store != null)
             {
                 store.StatusId = item.StatusId;
+                store.VersionNumber = item.VersionNumber;
+                store.VersionName = item.VersionName;
+                store.Comments = item.Comments;
 
                 await _repositoryContext.SaveChangesAsync();
             }
@@ -397,7 +400,7 @@ public class StoreService : IStoreService
                     var storeDataVersion = new StoreDataVersion()
                     {
                         Id = item.Id,
-                        Version = "Version "+ item.VersionNumber
+                        Version = item.VersionName + " " + item.VersionNumber
 
                     };
                     store.storeDataVersions.Add(storeDataVersion);
@@ -523,7 +526,7 @@ public class StoreService : IStoreService
             {
                 StoreId = item.StoreId,
                 StoreDataId = item.Id,
-                Name = "Version " + item.VersionNumber.ToString()
+                Name = item.VersionName+ " " + item.VersionNumber.ToString()
             };
             var storeStatus = await _codeMasterService.GetStatusById(item.StatusId, null, default);
             if(storeStatus.Data != null)
@@ -662,7 +665,7 @@ public class StoreService : IStoreService
                     var storeDataVersion = new StoreDataVersion()
                     {
                         Id = item.Id,
-                        Version = "Version " + item.VersionNumber
+                        Version = item.VersionName + " " + item.VersionNumber
 
                     };
                     store.storeDataVersions.Add(storeDataVersion);
@@ -2316,7 +2319,7 @@ public class StoreService : IStoreService
                 var storeDataVersion = new StoreDataVersion()
                 {
                     Id = item.Id,
-                    Version = "Version " + item.VersionNumber
+                    Version = item.VersionName + " " + item.VersionNumber
 
                 };
                 store.storeDataVersions.Add(storeDataVersion);

@@ -41,4 +41,5 @@ public class CadUploadHistoryDto
     /// Gets or sets the reference of Store entity
     /// </summary>
     public Guid StoreId { get; set; }
+    public Guid? StoreDataId { get; set; }
 }

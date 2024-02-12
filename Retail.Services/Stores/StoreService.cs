@@ -495,7 +495,7 @@ public class StoreService : IStoreService
             var storeDataHistory = await StoreDataFileHistoryByStoreId(store.Id);
             store.StoreDataHistories = storeDataHistory;
 
-            var storeLiveData = storeData?.Where(x => x.StatusId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();          
+            var storeLiveData = storeData?.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();          
 
             if (storeLiveData != null)
             {
@@ -768,7 +768,7 @@ public class StoreService : IStoreService
             store.StoreDataHistories = storeDataHistory;
 
 
-            var storeLiveData = storeData?.Where(x => x.StatusId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();
+            var storeLiveData = storeData?.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();
 
             if(storeLiveData != null)
             {
@@ -2456,7 +2456,7 @@ public class StoreService : IStoreService
         var storeDataHistory = await StoreDataFileHistoryByStoreId(storeId);
         store.StoreDataHistories = storeDataHistory;
 
-        var storeLiveData = storeData?.Where(x => x.StatusId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();
+        var storeLiveData = storeData?.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();
 
             if(storeLiveData != null)
             {

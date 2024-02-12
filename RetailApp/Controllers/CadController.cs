@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Retail.Data.Entities.Stores;
 using Retail.DTOs.Cad;
 using Retail.DTOs.UserAccounts;
 using Retail.DTOs.XML;
@@ -331,8 +332,12 @@ namespace RetailApp.Controllers
 
                 }
 
+                    if (storeDataId != null)
+                    {
+                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, cadUpload.StoreId, storeDataId);
+                    }
 
-            }
+                }
 
         
 

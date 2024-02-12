@@ -127,4 +127,10 @@ app.UseStaticFiles();
 
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<RepositoryContext>();
+    db.Database.Migrate();
+}
+
 app.Run();

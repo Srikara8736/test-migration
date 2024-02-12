@@ -524,7 +524,11 @@ namespace RetailApp.Controllers
 
                     }
 
-
+                    if(storeDataId != null)
+                    {
+                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, StoreId, storeDataId);
+                    }
+                       
                 }
 
               

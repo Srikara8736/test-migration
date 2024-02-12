@@ -75,6 +75,15 @@ public interface ICadService
 
 
     /// <summary>
+    /// Update Cad Upload History for Store
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="fileName">File Name</param>
+    /// <returns> Upload History Information</returns>
+    Task<Retail.Data.Entities.Cad.CadUploadHistory?> UpdateCadUploadHistory(Guid Id, Guid storeId, Guid? storeDataId);
+
+
+    /// <summary>
     /// Load Order Type XML Data
     /// </summary>
     /// <param name="storeId">Store Identifier</param>

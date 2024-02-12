@@ -84,10 +84,7 @@ public class StoreService : IStoreService
     /// <returns> Image items</returns>
     public async Task<List<StoreImage>> GetStoreImagesByStoreId(Guid storeId)
     {
-        if (storeId == null)
-            return null;
-
-        return await _repositoryContext.StoreImages.Where(x => x.StoreId == storeId).AsNoTracking().ToListAsync();
+         return await _repositoryContext.StoreImages.Where(x => x.StoreId == storeId).AsNoTracking().ToListAsync();
     }
 
 
@@ -99,9 +96,6 @@ public class StoreService : IStoreService
     /// <returns>Image Information</returns>
     public async Task<Data.Entities.FileSystem.Image> GetImageById(Guid id, CancellationToken ct = default)
     {
-        if (id == null)
-            return null;
-
         return await _repositoryContext.Images.FirstOrDefaultAsync(x => x.Id == id, cancellationToken: ct);
     }
 
@@ -117,7 +111,9 @@ public class StoreService : IStoreService
     {
         if (image == null)
             return null;
-         await _repositoryContext.Images.AddAsync(image);
+
+
+        await _repositoryContext.Images.AddAsync(image);
         await _repositoryContext.SaveChangesAsync();
         return image;
 
@@ -152,6 +148,7 @@ public class StoreService : IStoreService
     {
         if (image == null)
             return null;
+
         await _repositoryContext.StoreImages.AddAsync(image);
         await _repositoryContext.SaveChangesAsync();
         return image;
@@ -270,6 +267,7 @@ public class StoreService : IStoreService
     {
         if (image == null)
             return null;
+
         await _repositoryContext.CustomerImages.AddAsync(image);
         await _repositoryContext.SaveChangesAsync();
         return image;
@@ -368,11 +366,11 @@ public class StoreService : IStoreService
 
 
     /// <summary>
-    /// Get all Stores
+    /// Get all Stores by CustomerId
     /// </summary>
     /// <param name="customerId">customerId</param>
     /// <param name="ct">cancellation token</param>
-    /// <returns>Store List By customer</returns>
+    /// <returns>Store List belongs customer</returns>
     public async Task<List<StoreResponseDto>> GetStoresByCustomerId(Guid customerId, CancellationToken ct = default)
     {
 
@@ -384,6 +382,13 @@ public class StoreService : IStoreService
             return null;
         }
 
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+
+        if (codeMaster == null)        {
+            
+            return null;
+        }
+
         var storeResponse = _mapper.Map<List<StoreResponseDto>>(stores);
         var path = _configuration["AssetLocations:StoreImages"];
 
@@ -392,7 +397,7 @@ public class StoreService : IStoreService
 
         foreach (var store in storeResponse)
         {
-            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id).ToListAsync();
+            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id).ToListAsync();
             if(storeData != null)
             {
                 foreach(var item in storeData)
@@ -486,16 +491,26 @@ public class StoreService : IStoreService
 
             //cad upload History
 
-            var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == store.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+           
+            var storeDataHistory = await StoreDataFileHistoryByStoreId(store.Id);
+            store.StoreDataHistories = storeDataHistory;
 
-            if (uploadHistory != null)
+            var storeLiveData = storeData?.Where(x => x.StatusId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();          
+
+            if (storeLiveData != null)
             {
-                var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
-                store.cadUploadHistory = cadResponse;
+
+                store.PdfLink = await PdfFileUrlByStoreId(store.Id, storeLiveData.Id);
+
+                var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == store.Id && x.StoreDataId == storeLiveData.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+
+                if (uploadHistory != null)
+                {
+                    var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
+                    store.cadUploadHistory = cadResponse;
+                }
+
             }
-
-
-            store.PdfLink = await PdfFileUrlByStoreId(store.Id);
 
         }
 
@@ -581,29 +596,19 @@ public class StoreService : IStoreService
     /// </summary>
     /// <param name="storeId">storeId</param>
     /// <returns>Store PDF Url</returns>
-    public async Task<string> PdfFileUrlByStoreId(Guid storeId)
+    public async Task<string> PdfFileUrlByStoreId(Guid storeId,Guid storeDataId)
     {
         var path = string.Empty;
 
 
         var result = from at in _repositoryContext.StoreDocuments
                      join cat in _repositoryContext.Documents on at.DocumentId equals cat.Id
-                     where cat.StatusId == Guid.Parse("8AE98FB5-16ED-429E-AF96-83B6CAEC15A5") && at.StoreId == storeId
+                     where cat.StatusId == Guid.Parse(_configuration["StatusValues:PDFDefault"]) && at.StoreId == storeId && at.StoreDataId == storeDataId
                      orderby at.UploadedOn descending
                      select cat.Path;
 
         path = await result.FirstOrDefaultAsync();
 
-
-        //var storeDocument = await _repositoryContext.StoreDocuments.Where(x => x.StoreId == storeId).Select(x=>x .DocumentId).ToListAsync();
-
-        //if(storeDocument != null)
-        //{
-        //    var document = await _repositoryContext.Documents.Where(x =>  storeDocument.Contains(x.Id)  && x.StatusId == Guid.Parse("8AE98FB5-16ED-429E-AF96-83B6CAEC15A5")).FirstOrDefaultAsync();
-
-        //    if (document != null)
-        //        path = document.Path;
-        //}
         return path;
     }
 
@@ -649,6 +654,18 @@ public class StoreService : IStoreService
             return errorResponse;
         }
 
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+
+        if (codeMaster == null)
+        {
+            var storeResult = new PaginationResultDto<PagedList<StoreResponseDto>>
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
         var storeResponse = _mapper.Map<PagedList<StoreResponseDto>>(stores);
 
         var path = _configuration["AssetLocations:StoreImages"];
@@ -656,9 +673,9 @@ public class StoreService : IStoreService
 
         foreach (var store in storeResponse)
         {
-            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == Guid.Parse
-            ("496AD282-71A1-4688-BA81-0A1EA6C9021E")).ToListAsync();
-            if (storeData != null)
+            var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id).ToListAsync();
+
+              if (storeData != null)
             {
                 foreach (var item in storeData)
                 {
@@ -746,14 +763,29 @@ public class StoreService : IStoreService
                 }
             }
 
-            var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == store.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+            
+            var storeDataHistory = await StoreDataFileHistoryByStoreId(store.Id);
+            store.StoreDataHistories = storeDataHistory;
 
-            if (uploadHistory != null)
+
+            var storeLiveData = storeData?.Where(x => x.StatusId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();
+
+            if(storeLiveData != null)
             {
-                var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
-                store.cadUploadHistory = cadResponse;
+
+                store.PdfLink = await PdfFileUrlByStoreId(store.Id, storeLiveData.Id);
+
+                var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == store.Id && x.StoreDataId == storeLiveData.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+
+                if (uploadHistory != null)
+                {
+                    var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
+                    store.cadUploadHistory = cadResponse;
+                }
+
             }
-            store.PdfLink = await PdfFileUrlByStoreId(store.Id);
+            
+
 
         }
 
@@ -1237,7 +1269,7 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
 
         if (storeData == null )
         {
@@ -1592,7 +1624,7 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
 
         if (storeData == null)
         {
@@ -2300,6 +2332,18 @@ public class StoreService : IStoreService
             return errorResponse;
         }
 
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+
+        if (codeMaster == null)
+        {
+            var storeResult = new ResultDto<StoreResponseDto>
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
 
         var updateActivityResult = await UpdateStoreActivity(storeId);
 
@@ -2309,8 +2353,7 @@ public class StoreService : IStoreService
         var path = _configuration["AssetLocations:StoreImages"];
 
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == Guid.Parse
-                   ("496AD282-71A1-4688-BA81-0A1EA6C9021E")).ToListAsync();
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id).ToListAsync();
         
         if (storeData != null)
         {
@@ -2409,18 +2452,26 @@ public class StoreService : IStoreService
 
         //cad upload History
 
-        var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == storeId && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
-
-        if(uploadHistory != null)
-        {
-            var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
-            store.cadUploadHistory = cadResponse;
-        }
 
         var storeDataHistory = await StoreDataFileHistoryByStoreId(storeId);
         store.StoreDataHistories = storeDataHistory;
 
-        store.PdfLink = await PdfFileUrlByStoreId(store.Id);
+        var storeLiveData = storeData?.Where(x => x.StatusId == store.Id && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefault();
+
+            if(storeLiveData != null)
+            {
+
+                store.PdfLink = await PdfFileUrlByStoreId(store.Id, storeLiveData.Id);
+
+                var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == store.Id && x.StoreDataId == storeLiveData.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+
+                if (uploadHistory != null)
+                {
+                    var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
+                    store.cadUploadHistory = cadResponse;
+                }
+
+            }
 
         var response = new ResultDto<StoreResponseDto>
         {

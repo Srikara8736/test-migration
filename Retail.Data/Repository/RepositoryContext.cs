@@ -231,6 +231,15 @@ public class RepositoryContext : DbContext
             .IsRequired(false);
 
 
+        builder.Entity<CadUploadHistory>()
+            .HasOne(x => x.StoreData)
+            .WithMany()
+            .HasForeignKey(x => x.StoreDataId)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .IsRequired(false);
+
+
+
         base.OnModelCreating(builder);
     }
 }

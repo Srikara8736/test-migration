@@ -10,7 +10,7 @@ using RetailApp.Helpers;
 
 namespace RetailApp.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CodeMasterController : BaseController
@@ -86,7 +86,7 @@ public class CodeMasterController : BaseController
     /// <returns>Return updated Status Information</returns>
     [HttpPut]
     [Route("{id}")]
-    public async Task<IActionResult> UpdateStatus(Guid id,[BindRequired]Guid CustomerId, [FromBody] CodeMasterDto codeMaster, CancellationToken ct)
+    public async Task<IActionResult> UpdateStatus(Guid id,Guid CustomerId, [FromBody] CodeMasterDto codeMaster, CancellationToken ct)
     {
         return this.Result(await _codeMasterService.UpdateStatus(id, codeMaster, ct));
     }

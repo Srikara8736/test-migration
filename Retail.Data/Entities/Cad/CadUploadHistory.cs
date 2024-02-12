@@ -51,5 +51,13 @@ public class CadUploadHistory : BaseEntity
     [ForeignKey(nameof(Store))]
     public Guid StoreId { get; set; }
     public virtual Store Store { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the reference of StoreData entity
+    /// </summary>
+    [ForeignKey(nameof(StoreData))]
+    public Guid? StoreDataId { get; set; }
+    public virtual StoreData StoreData { get; set; }
 }
 

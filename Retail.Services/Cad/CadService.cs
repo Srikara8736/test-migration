@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Retail.Data.Entities.Common;
 using Retail.Data.Entities.Customers;
 using Retail.Data.Entities.Stores;
@@ -25,15 +26,16 @@ public class CadService : ICadService
 
     private readonly RepositoryContext _repositoryContext;
     private readonly IMapper _mapper;
-
+    private readonly IConfiguration _configuration;
     #endregion
 
 
     #region Ctor
-    public CadService(RepositoryContext repositoryContext, IMapper mapper)
+    public CadService(RepositoryContext repositoryContext, IMapper mapper,IConfiguration configuration)
     {
         _repositoryContext = repositoryContext;
         _mapper = mapper;
+        _configuration = configuration;
     }
 
     #endregion
@@ -231,7 +233,7 @@ public class CadService : ICadService
             StoreId = storeId,
             VersionNumber = versionNo,
             CreatedOn = DateTime.UtcNow,
-            StatusId = new Guid("6E9EC88C-3537-11EE-BE56-0242AC120002"),
+            StatusId = new Guid(_configuration["StatusValues:StoreDataDefault"]),
             CadFileTypeId = typeId,
             VersionName = "Version"
 
@@ -1031,6 +1033,29 @@ public class CadService : ICadService
         await _repositoryContext.SaveChangesAsync();
 
         return docItem;
+
+    }
+
+
+
+    /// <summary>
+    /// Update Cad Upload History for Store
+    /// </summary>
+    /// <param name="storeId">Store Identifier</param>
+    /// <param name="fileName">File Name</param>
+    /// <returns> Upload History Information</returns>
+    public async Task<Retail.Data.Entities.Cad.CadUploadHistory?> UpdateCadUploadHistory(Guid Id,Guid storeId, Guid? storeDataId)
+    {
+        var cadUploadHistory = await _repositoryContext.CadUploadHistories.FirstOrDefaultAsync(x => x.Id == Id && x.StoreId == storeId);
+
+        if (cadUploadHistory == null)
+            return null;
+
+        cadUploadHistory.StoreDataId = storeDataId;
+     
+        await _repositoryContext.SaveChangesAsync();
+
+        return cadUploadHistory;
 
     }
 

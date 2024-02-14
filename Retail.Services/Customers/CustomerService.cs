@@ -195,7 +195,7 @@ public class CustomerService : ICustomerService
 
                 foreach (var store in stores)
                 {
-                    var areaDetails = await _storeService.GetGridData(store.Id);
+                    var areaDetails = await _storeService.GetGridData(store.Id,null);
                     if (areaDetails.Data != null)
                     {
                         //customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);
@@ -357,7 +357,7 @@ public class CustomerService : ICustomerService
 
             foreach (var store in stores)
             {
-                var areaDetails = await _storeService.GetGridData(store.Id);
+                var areaDetails = await _storeService.GetGridData(store.Id,null);
                 if (areaDetails.Data != null)
                 {
                    // customerStore.TotalStoreArea = customerStore.TotalStoreArea + areaDetails.Data.Sum(x => x.TotalArea);

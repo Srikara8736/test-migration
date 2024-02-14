@@ -15,7 +15,8 @@ public class StoreData : BaseEntity
     /// <summary>
     /// Gets or sets the VersionNumber
     /// </summary>
-    public int VersionNumber { get; set; }
+    [StringLength(255)]
+    public string VersionNumber { get; set; }
 
 
     /// <summary>

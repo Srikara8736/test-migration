@@ -405,7 +405,8 @@ public class StoreService : IStoreService
                     var storeDataVersion = new StoreDataVersion()
                     {
                         Id = item.Id,
-                        Version = item.VersionName + " " + item.VersionNumber
+                        Version = item.VersionName ,
+                        VersionNumber = item.VersionNumber
 
                     };
                     store.storeDataVersions.Add(storeDataVersion);
@@ -541,7 +542,8 @@ public class StoreService : IStoreService
             {
                 StoreId = item.StoreId,
                 StoreDataId = item.Id,
-                Name = item.VersionName+ " " + item.VersionNumber.ToString()
+                Name = item.VersionName,
+                VersionNumber = item.VersionNumber.ToString()
             };
             var storeStatus = await _codeMasterService.GetStatusById(item.StatusId, null, default);
             if(storeStatus.Data != null)
@@ -682,7 +684,8 @@ public class StoreService : IStoreService
                     var storeDataVersion = new StoreDataVersion()
                     {
                         Id = item.Id,
-                        Version = item.VersionName + " " + item.VersionNumber
+                        Version = item.VersionName ,
+                        VersionNumber = item.VersionNumber.ToString()
 
                     };
                     store.storeDataVersions.Add(storeDataVersion);
@@ -811,7 +814,7 @@ public class StoreService : IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Grid Data</returns>
-    public async Task<ResultDto<List<ChartGridDto>>> GetGridData(Guid StoreId, CancellationToken ct = default)
+    public async Task<ResultDto<List<ChartGridDto>>> GetGridData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
@@ -837,9 +840,10 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        //var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
 
-        
+        var storeData = await GetStoreData(StoreId, codeMaster.Id, StoreDataId);
+
         if (storeData == null )
         {
             var storeResult = new ResultDto<List<ChartGridDto>>()
@@ -1244,7 +1248,7 @@ public class StoreService : IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Chart Data</returns>
-    public async Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, CancellationToken ct = default)
+    public async Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
@@ -1269,7 +1273,9 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+       // var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+
+        var storeData = await GetStoreData(StoreId, codeMaster.Id, StoreDataId);
 
         if (storeData == null )
         {
@@ -1592,13 +1598,26 @@ public class StoreService : IStoreService
     }
 
 
+    public async Task<StoreData?> GetStoreData(Guid storeId,Guid CadFileTypeId, Guid? storeDataId)
+    {
+       
+        if (storeDataId != null)
+        {
+            return await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.StoreId == storeId && x.CadFileTypeId == CadFileTypeId && x.Id == storeDataId);
+        }
+
+        return await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == CadFileTypeId && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+
+
+    }
+
     /// <summary>
     /// Get Store Chart Data
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Chart Data</returns>
-    public async Task<ResultDto<List<StoreChartGraphDto>>> GetStoreChartData(Guid StoreId, CancellationToken ct = default)
+    public async Task<ResultDto<List<StoreChartGraphDto>>> GetStoreChartData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
@@ -1624,7 +1643,14 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        //var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+
+        //if(StoreDataId != null)
+        //{
+        //    storeData = await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.Id == StoreDataId);
+        //}
+
+        var storeData = await GetStoreData(StoreId, codeMaster.Id, StoreDataId);
 
         if (storeData == null)
         {
@@ -2362,7 +2388,8 @@ public class StoreService : IStoreService
                 var storeDataVersion = new StoreDataVersion()
                 {
                     Id = item.Id,
-                    Version = item.VersionName + " " + item.VersionNumber
+                    Version = item.VersionName ,
+                    VersionNumber = item.VersionNumber
 
                 };
                 store.storeDataVersions.Add(storeDataVersion);

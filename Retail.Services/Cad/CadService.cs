@@ -223,17 +223,17 @@ public class CadService : ICadService
     public async Task<Retail.Data.Entities.Stores.StoreData> InsertStoreData(Guid storeId, Guid typeId)
     {
         int versionNo = 1;
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == typeId).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == typeId).ToListAsync();
 
-        if (storeData != null)
-            versionNo = storeData.VersionNumber + 1;
+        if (storeData.Count > 0)
+             versionNo = storeData.Count + 1;
 
         var storeDataItem = new Retail.Data.Entities.Stores.StoreData
         {
             StoreId = storeId,
-            VersionNumber = versionNo,
+            VersionNumber = versionNo.ToString(),
             CreatedOn = DateTime.UtcNow,
-            StatusId = new Guid(_configuration["StatusValues:StoreDataDefault"]),
+            StatusId = new Guid("6E9EC422-3537-11EE-BE56-0242AC120002"),
             CadFileTypeId = typeId,
             VersionName = "Version"
 
@@ -294,7 +294,7 @@ public class CadService : ICadService
     {
         var areaTypeGroupItem = new Retail.Data.Entities.Stores.AreaTypeGroup
         {
-            Name = areaTypeGroup
+            Name = areaTypeGroup.Trim(),
         };
 
         await _repositoryContext.AreaTypeGroups.AddAsync(areaTypeGroupItem);
@@ -365,7 +365,7 @@ public class CadService : ICadService
 
         var areaTypeItem = new Retail.Data.Entities.Stores.AreaType
         {
-            Name = areaTypeGroup
+            Name = areaTypeGroup.Trim(),
         };
 
         await _repositoryContext.AreaTypes.AddAsync(areaTypeItem);
@@ -467,7 +467,7 @@ public class CadService : ICadService
             var guid = areaType.Id;
             var categoryItem = new Retail.Data.Entities.Stores.Category
             {
-                Name = category.Name,
+                Name = category.Name.Trim(),
                 CategoryId = category.Id,
                 CadServiceNumber = category.Number,
                 AreaTypeId = guid,

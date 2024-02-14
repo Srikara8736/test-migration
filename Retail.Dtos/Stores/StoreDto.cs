@@ -87,6 +87,6 @@ public class StoreDataStatusDto
     public string VersionName { get; set;}
 
     [Required]
-    public int VersionNumber { get; set;}
+    public string VersionNumber { get; set;}
     public string? Comments { get; set;}
 }

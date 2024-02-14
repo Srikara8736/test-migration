@@ -191,7 +191,7 @@ public interface IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Grid Data</returns>
-    Task<ResultDto<List<ChartGridDto>>> GetGridData(Guid StoreId, CancellationToken ct = default);
+    Task<ResultDto<List<ChartGridDto>>> GetGridData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default);
 
     /// <summary>
     /// Get all Chart Data
@@ -199,7 +199,7 @@ public interface IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Chart Data</returns>
-    Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, CancellationToken ct = default);
+    Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default);
 
 
     /// <summary>
@@ -266,7 +266,7 @@ public interface IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Chart Data</returns>
-    Task<ResultDto<List<StoreChartGraphDto>>> GetStoreChartData(Guid StoreId, CancellationToken ct = default);
+    Task<ResultDto<List<StoreChartGraphDto>>> GetStoreChartData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default);
 
 
     /// <summary>

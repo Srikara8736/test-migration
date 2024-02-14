@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Retail.DTOs.Roles;
 using Retail.DTOs.Stores;
 using Retail.Services.Stores;
 using RetailApp.Helpers;
@@ -95,7 +94,7 @@ public class StoreController : BaseController
     /// Update a Store Data Details
     /// </summary>
     /// <param name="id">Store Data Id</param>
-    /// <param name="storeModel">Store Model</param>
+    /// <param name="storeStatusModel">Store Model</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Return updated Store Information</returns>
     [HttpPut]
@@ -129,10 +128,10 @@ public class StoreController : BaseController
     /// <returns>Store Grid Data</returns>
     [HttpGet]
     [Route("GetGridData")]
-    public async Task<IActionResult> GetGridData([Required]Guid StoreId, CancellationToken ct = default)
+    public async Task<IActionResult> GetGridData([Required]Guid StoreId,Guid? StoreDataId, CancellationToken ct = default)
     {
 
-        return this.Result(await _storeService.GetGridData(StoreId, ct));
+        return this.Result(await _storeService.GetGridData(StoreId, StoreDataId, ct));
     }
 
     /// <summary>
@@ -143,10 +142,10 @@ public class StoreController : BaseController
     /// <returns>Store Chart Data</returns>
     [HttpGet]
     [Route("GetChartData")]
-    public async Task<IActionResult> GetChartData([Required] Guid StoreId, CancellationToken ct = default)
+    public async Task<IActionResult> GetChartData([Required] Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
-        return this.Result(await _storeService.GetChartData(StoreId, ct));
+        return this.Result(await _storeService.GetChartData(StoreId, StoreDataId, ct));
     }
 
 
@@ -159,10 +158,9 @@ public class StoreController : BaseController
     /// <returns>Store Chart Data</returns>
     [HttpGet]
     [Route("GetChartDataByStore")]
-    public async Task<IActionResult> GetChartDataByStore([Required] Guid StoreId, CancellationToken ct = default)
+    public async Task<IActionResult> GetChartDataByStore([Required] Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
-
-        return this.Result(await _storeService.GetStoreChartData(StoreId, ct));
+        return this.Result(await _storeService.GetStoreChartData(StoreId, StoreDataId, ct));
     }
 
 

@@ -34,6 +34,7 @@ public class StoreDataVersion
 {
     public Guid Id { get; set; }
     public string Version { get; set; }
+    public string VersionNumber { get; set; }
 }
 
 

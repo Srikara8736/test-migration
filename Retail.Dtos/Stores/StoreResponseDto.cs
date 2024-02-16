@@ -11,6 +11,8 @@ public class StoreResponseDto : StoreDto
     public Guid Id { get; set; }
 
 
+    public string StoreSearchkey { get; set; }
+
     public string StoreStatus { get; set; }
     public string PdfLink { get; set; }
 

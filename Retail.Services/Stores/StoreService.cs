@@ -397,6 +397,8 @@ public class StoreService : IStoreService
 
         foreach (var store in storeResponse)
         {
+            store.StoreSearchkey = store.Name + "-" + store.StoreNumber;
+
             var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id).ToListAsync();
             if(storeData != null)
             {
@@ -669,12 +671,15 @@ public class StoreService : IStoreService
         }
 
         var storeResponse = _mapper.Map<PagedList<StoreResponseDto>>(stores);
+        
 
         var path = _configuration["AssetLocations:StoreImages"];
 
 
         foreach (var store in storeResponse)
         {
+            store.StoreSearchkey = store.Name + "-" + store.StoreNumber;
+
             var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id).ToListAsync();
 
               if (storeData != null)
@@ -2374,7 +2379,9 @@ public class StoreService : IStoreService
         var updateActivityResult = await UpdateStoreActivity(storeId);
 
         var store = _mapper.Map<StoreResponseDto>(storeItem);
-               
+
+        store.StoreSearchkey = store.Name + "-" + store.StoreNumber;
+
 
         var path = _configuration["AssetLocations:StoreImages"];
 

@@ -10,7 +10,7 @@ using RetailApp.Helpers;
 
 namespace RetailApp.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CodeMasterController : BaseController
@@ -96,7 +96,7 @@ public class CodeMasterController : BaseController
     ///Add a new Customer Status item
     /// </summary>
     /// <param name="codeMaster">codeMasters</param>
-    /// <param name="ct">Cancellation Token</param>
+    /// <param name="ct">Cancellation Token</para.m>
     /// <returns>Return newly added status</returns>
     [HttpPost]
     [Route("InsertCustomerStatus")]
@@ -104,6 +104,22 @@ public class CodeMasterController : BaseController
     {
 
         return this.Result(await _codeMasterService.InsertCustomerStatus(codeMaster, ct));
+
+    }
+
+
+    /// <summary>
+    ///Update a Customer Status item
+    /// </summary>
+    /// <param name="codeMaster">codeMasters</param>
+    /// <param name="ct">Cancellation Token</para.m>
+    /// <returns>Return newly added status</returns>
+    [HttpPut]
+    [Route("UpdateCustomerStatus")]
+    public async Task<IActionResult> UpdateCustomerStatus([BindRequired]Guid customerStatusId,[FromBody] CustomerCodeMasterDto codeMaster, CancellationToken ct = default)
+    {
+
+        return this.Result(await _codeMasterService.UpdateCustomerStatus(customerStatusId,codeMaster, ct));
 
     }
 

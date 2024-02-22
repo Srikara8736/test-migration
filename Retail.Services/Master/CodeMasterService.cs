@@ -62,15 +62,10 @@ public class CodeMasterService : ICodeMasterService
     /// <param name="customerId">Customer Id</param>
     /// <param name="statusId">Status Id</param>
     /// <returns>Return Frue / False</returns>
-    public bool ValidateCustomerStatus(string status, Guid customerId, Guid statusId)
+    public bool ValidateCustomerStatus(Guid customerId, Guid statusId)
     {
-        bool isExists = false;
-
-        if (status != null && status != "")
-            isExists = _repositoryContext.customerCodemasters.Any(x => (x.StatusName.ToLower().Trim() == status.ToLower().Trim()) && (x.CustomerId == customerId) && (x.StatusId == statusId));
-
-        return isExists;
-
+       
+       return _repositoryContext.customerCodemasters.Any(x =>  (x.CustomerId == customerId) && (x.StatusId == statusId));
 
     }
 
@@ -210,11 +205,12 @@ public class CodeMasterService : ICodeMasterService
         }
         var roleResult = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Id == StatusId, ct);
 
-        var role = _mapper.Map(StatusDto, roleResult);
-        await _repositoryContext.SaveChangesAsync(ct);
+        roleResult.Value = StatusDto.Value;
+        roleResult.Order = StatusDto.Order;
+         await _repositoryContext.SaveChangesAsync(ct);
 
 
-        var roleResponse = _mapper.Map<CodeMasterResponseDto>(role);
+        var roleResponse = _mapper.Map<CodeMasterResponseDto>(roleResult);
 
 
         var result = new ResultDto<CodeMasterResponseDto>
@@ -248,7 +244,7 @@ public class CodeMasterService : ICodeMasterService
 
         }
 
-        _repositoryContext.CodeMasters.Remove(codeMaster);
+        //_repositoryContext.CodeMasters.Remove(codeMaster);
         await _repositoryContext.SaveChangesAsync(ct);
 
 
@@ -440,7 +436,7 @@ public class CodeMasterService : ICodeMasterService
             return errorResponse;
         }
 
-        var isExists = ValidateCustomerStatus(StatusDto.StatusName, StatusDto.CustomerId, StatusDto.StatusId);
+        var isExists = ValidateCustomerStatus(StatusDto.CustomerId, StatusDto.StatusId);
 
         if (isExists)
         {

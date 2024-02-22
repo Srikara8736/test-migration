@@ -12,9 +12,9 @@ public class CodeMasterDto
     /// <summary>
     /// Gets or sets the Type
     /// </summary>
-    [Required]
+    //[Required]
     [StringLength(256)]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     [Required]
     /// <summary>

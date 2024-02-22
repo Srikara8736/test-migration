@@ -1465,7 +1465,7 @@ public class StoreService : IStoreService
                         };
                         spaceData.chartItems.Add(spaceChartItem);
                     }
-                    chartItems.Add(spaceData);
+                   // chartItems.Add(spaceData);
                 }
 
 
@@ -1517,6 +1517,46 @@ public class StoreService : IStoreService
 
                 chartItems.Add(chartData);
             }
+
+
+            foreach (var categories in categoriesItems)
+            {
+                var totalAreacategoriesItem = categories.Sum(x => x.TotalArea);
+
+                
+                foreach (var category in categories)
+                {                    
+
+                    var spaceData = new ChartGraphDto();
+                    spaceData.ChartTitle = category.Category;
+                    spaceData.ChartCategory = "Space";
+                    spaceData.ChartType = "Pie";
+
+                    var totalspaceArea = category.Spaces.Sum(x => x.Area);
+
+
+                    foreach (var spaceItem in category.Spaces)
+                    {
+                        var spaceChartItem = new ChartItemDto
+                        {
+                            CategoryId = spaceItem.SpaceId,
+                            ParentCategoryId = category.CategoryId,
+                            Key = spaceItem.Space,
+                            Value = spaceItem.Area,
+                            TotalPercentage = Math.Round((spaceItem.Area / totalspaceArea) * 100, 0),
+                            Unit = spaceItem.Unit
+                        };
+                        spaceData.chartItems.Add(spaceChartItem);
+                    }
+                    chartItems.Add(spaceData);
+                }
+
+
+
+               
+            }
+
+
 
 
 

@@ -201,18 +201,17 @@ public class CadService : ICadService
 
         var versionName = mandProp.Header.Name;
 
-        int versionNo = 1;
-        //var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == typeId).ToListAsync();
+       
+        var isExitstoreData = _repositoryContext.StoreDatas.Any(x => x.StoreId == storeId && x.CadFileTypeId == typeId);
 
-        //if (storeData.Count > 0)
-        //     versionNo = storeData.Count + 1;
+     
 
         var storeDataItem = new Retail.Data.Entities.Stores.StoreData
         {
             StoreId = storeId,
             VersionNumber = versionName,
             CreatedOn = DateTime.UtcNow,
-            StatusId = new Guid("6E9EC422-3537-11EE-BE56-0242AC120002"),
+            StatusId = !isExitstoreData ? new Guid("6E9EC88C-3537-11EE-BE56-0242AC120002") : new Guid("6E9EC422-3537-11EE-BE56-0242AC120002"),
             CadFileTypeId = typeId,
             VersionName = versionName
 

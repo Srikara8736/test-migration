@@ -819,7 +819,7 @@ public class StoreService : IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Grid Data</returns>
-    public async Task<ResultDto<List<ChartGridDto>>> GetGridData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
+    public async Task<ResultDto<List<ChartGridDto>>> GetGridData(Guid StoreId, Guid? StoreDataId, bool IsGroup = false, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
@@ -833,7 +833,12 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+        var fileterValue = "Space";
+
+        if (IsGroup)
+            fileterValue = "Grouping";
+
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == fileterValue);
 
         if (codeMaster == null)
         {
@@ -1253,7 +1258,7 @@ public class StoreService : IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Chart Data</returns>
-    public async Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
+    public async Task<ResultDto<List<ChartGraphDto>>> GetChartData(Guid StoreId, Guid? StoreDataId, string? type = null, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
@@ -1266,8 +1271,14 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value == "Space");
+        var fileterValue = "Space";
 
+        if (type != null)
+            fileterValue = type;
+
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value.ToLower().Trim() == fileterValue.ToLower().Trim());
+
+      
         if (codeMaster == null)
         {
             var storeResult = new ResultDto<List<ChartGraphDto>>()
@@ -1278,7 +1289,7 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-       // var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
+      
 
         var storeData = await GetStoreData(StoreId, codeMaster.Id, StoreDataId);
 

@@ -124,28 +124,32 @@ public class StoreController : BaseController
     /// Gets all Grid Data of Store
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
+    /// <param name="StoreDataId">Store Data Identifier</param>
+    /// <param name="IsGroup">Group Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Grid Data</returns>
     [HttpGet]
     [Route("GetGridData")]
-    public async Task<IActionResult> GetGridData([Required]Guid StoreId,Guid? StoreDataId, CancellationToken ct = default)
+    public async Task<IActionResult> GetGridData([Required]Guid StoreId,Guid? StoreDataId, bool IsGroup = false, CancellationToken ct = default)
     {
 
-        return this.Result(await _storeService.GetGridData(StoreId, StoreDataId, ct));
+        return this.Result(await _storeService.GetGridData(StoreId, StoreDataId, IsGroup, ct));
     }
 
     /// <summary>
     /// Gets all Chart Data of Store
     /// </summary>
     /// <param name="StoreId">Store Identifier</param>
+    /// <param name="StoreDataId">Store Data Identifier</param>
+    /// <param name="type">Space / Department / Grouping</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Chart Data</returns>
     [HttpGet]
     [Route("GetChartData")]
-    public async Task<IActionResult> GetChartData([Required] Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
+    public async Task<IActionResult> GetChartData([Required] Guid StoreId, Guid? StoreDataId, string? type = null, CancellationToken ct = default)
     {
 
-        return this.Result(await _storeService.GetChartData(StoreId, StoreDataId, ct));
+        return this.Result(await _storeService.GetChartData(StoreId, StoreDataId, type, ct));
     }
 
 

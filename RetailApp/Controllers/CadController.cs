@@ -12,11 +12,12 @@ using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-    [Authorize]
+   [Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController
@@ -425,6 +426,21 @@ namespace RetailApp.Controllers
 
 
                         byte[] CADContent = ZipStreamReader(zip, cadFileName);
+
+
+                        //string xmlStr = Encoding.UTF8.GetString(CADContent);
+                        //string _byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+
+                        //if (xmlStr.StartsWith(_byteOrderMarkUtf8))
+                        //{
+                        //    xmlStr = xmlStr.Remove(0, _byteOrderMarkUtf8.Length);
+                        //}
+
+
+                        //XDocument xdoc = XDocument.Parse(xmlStr);
+
+                        //var cadXml = xdoc.Element("Message").Element("MetaData").Element("MandatoryProperties").Element("CADXml");
+                        //var cadType = cadXml?.Attribute("Type").Value;
 
 
                         if (Type.ToLower() == "space")

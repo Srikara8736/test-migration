@@ -1649,8 +1649,7 @@ public class StoreService : IStoreService
         if (storeDataId != null)
         {
             return await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.StoreId == storeId && x.CadFileTypeId == CadFileTypeId && x.Id == storeDataId);
-        }
-
+        }        
         return await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == CadFileTypeId && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
 
 

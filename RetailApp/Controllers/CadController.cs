@@ -181,6 +181,10 @@ namespace RetailApp.Controllers
         //}
 
 
+        /// <summary>
+        ///Get Stores using CustomerNo
+        /// </summary>
+        /// <returns>Customer Stores </returns>
 
         [HttpGet]
         [Route("External/Customers/GetStoresByCustomerNo")]
@@ -191,6 +195,11 @@ namespace RetailApp.Controllers
         }
 
 
+        /// <summary>
+        ///Cad File Upload Version 1
+        /// </summary>
+        /// <param name="cadUpload">Cad Upload</param>
+        /// <returns>Return Cad Upload  Status Response</returns>
         [HttpPost]
         [Route("Cad/UploadCad")]
         public async Task<object> UploadCad([FromForm]CadUploadDto cadUpload)
@@ -365,6 +374,14 @@ namespace RetailApp.Controllers
 
 
 
+
+        /// <summary>
+        ///Cad File Upload Version 2
+        /// </summary>
+        /// <param name="StoreId">Store Identifier</param>
+        /// <param name="CadFile">Cad zip File</param>
+        /// <param name="Type">Space / Department / Drawing / Grouping / Order</param>
+        /// <returns>Return Cad Upload  Status Response</returns>
         [HttpPost]
         [Route("Cad/UploadCadAlt")]
         public async Task<object> UploadCadAlt([Required] Guid StoreId , [Required] IFormFile CadFile, [Required] string Type)
@@ -483,6 +500,32 @@ namespace RetailApp.Controllers
                             }
                         }
 
+                        else if (Type.ToLower() == "grouping")
+                        {
+
+                            Message cadData = new Message();
+                            XmlSerializer serializer = new XmlSerializer(typeof(Message));
+                            try
+                            {
+                                cadData = (Message)serializer.Deserialize(new MemoryStream(CADContent));
+                            }
+                            catch (Exception ex)
+                            {
+                                return new
+                                {
+                                    IsSuccess = false,
+                                    statusCode = HttpStatusCode.InternalServerError,
+                                    message = "XML may not be valid format"
+                                };
+                            }
+                            if (cadData != null)
+                            {
+                                var loadXml = await _cadService.LoadXMLData(cadData, StoreId, "Grouping", caduploadHistory.Id);
+                                storeDataId = loadXml.storeDataId;
+                            }
+
+                        }
+
                         else
                         {
                             CADData cadData = new CADData();
@@ -565,7 +608,7 @@ namespace RetailApp.Controllers
         /// </summary>
         /// <param name="id">Identifier</param>
         /// <param name="ct">Cancellation Token</param>
-        /// <returns>Return Role Response</returns>
+        /// <returns>Return Cad Upload History Response</returns>
         [HttpGet]
         [Route("CadHistoryByStore/{id}")]
         public async Task<IActionResult> CadHistoryByStore(Guid id, CancellationToken ct)

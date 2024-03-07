@@ -1025,7 +1025,7 @@ public class CadService : ICadService
             StoreId = storeId,
             Status = true,
             UploadOn = DateTime.UtcNow,
-            CreatedOn = DateTime.UtcNow
+            CreatedOn = DateTime.UtcNow,
 
         };
 

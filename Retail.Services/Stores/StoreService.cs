@@ -14,6 +14,8 @@ using Retail.DTOs.XML;
 using Retail.Services.Common;
 using Retail.Services.Master;
 using System.Net;
+using Customer = Retail.Data.Entities.Customers.Customer;
+using Store = Retail.Data.Entities.Stores.Store;
 
 
 namespace Retail.Services.Stores;
@@ -1012,9 +1014,10 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == StoreId && x.CadFileTypeId == codeMaster.Id).OrderByDescending(x => x.VersionNumber).FirstOrDefaultAsync();
-
        
+
+        var storeData = await GetStoreData(StoreId, codeMaster.Id, null);
+             
 
         if (storeData == null)
         {
@@ -1397,7 +1400,7 @@ public class StoreService : IStoreService
 
             var areachartData = new ChartGraphDto();
             areachartData.ChartTitle = "Total Area";
-            areachartData.ChartCategory = "Space";
+            areachartData.ChartCategory = fileterValue;
             areachartData.ChartType = "Pie";
 
             var totalArea = areaTypeGrid.Sum(x => x.TotalArea);
@@ -1439,7 +1442,7 @@ public class StoreService : IStoreService
 
                 var chartData = new ChartGraphDto();
                 chartData.ChartTitle = "Sales Area";
-                chartData.ChartCategory = "Space";
+                chartData.ChartCategory = fileterValue;
                 chartData.ChartType = "Pie";
                 foreach (var category in categories)
                 {
@@ -1457,7 +1460,7 @@ public class StoreService : IStoreService
 
                     var spaceData = new ChartGraphDto();
                     spaceData.ChartTitle = category.Category;
-                    spaceData.ChartCategory = "Space";
+                    spaceData.ChartCategory = fileterValue;
                     spaceData.ChartType = "Pie";
 
                     var totalspaceArea = category.Spaces.Sum(x => x.Area);
@@ -1500,7 +1503,7 @@ public class StoreService : IStoreService
 
                 var chartData = new ChartGraphDto();
                 chartData.ChartTitle = mainItem.AreaType;
-                chartData.ChartCategory = "Space";
+                chartData.ChartCategory = fileterValue;
                 chartData.ChartType = "Pie";
 
           
@@ -1540,7 +1543,7 @@ public class StoreService : IStoreService
 
                     var spaceData = new ChartGraphDto();
                     spaceData.ChartTitle = category.Category;
-                    spaceData.ChartCategory = "Space";
+                    spaceData.ChartCategory = fileterValue;
                     spaceData.ChartType = "Pie";
 
                     var totalspaceArea = category.Spaces.Sum(x => x.Area);
@@ -2771,7 +2774,7 @@ public class StoreService : IStoreService
 
                 if (itemVersion2 != null)
                 {
-                    if (itemVersion2.chartItems.Count > 0 && item.chartItems.Count > 0)
+                    if(itemVersion2.chartItems.Count > 0 && item.chartItems.Count > 0)
                     {
                         var UpdatedChartItem = itemVersion2.chartItems.Where(s2 => !item.chartItems.Any(s1 => s1.Key == s2.Key)).ToList();
                         foreach(var chartItem in UpdatedChartItem)
@@ -2830,7 +2833,7 @@ public class StoreService : IStoreService
     /// <param name="storeDataId">Store Data ID</param>
     /// <param name="ct">CancellationToken</param>
     /// <returns></returns>
-    public async Task<List<ChartGraphDto>> GetChartDataItem(Guid storeId, Guid storeDataId)
+    public async Task<List<ChartGraphDto>> GetChartDataItem(Guid storeId, Guid storeDataId,string? type = null)
     {
         var query = (from at in _repositoryContext.AreaTypes
                      join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
@@ -2853,6 +2856,10 @@ public class StoreService : IStoreService
 
                      }).ToList();
 
+        var fileterValue = "Space";
+
+        if (type != null)
+            fileterValue = type;
 
 
         var areaTypeGrid = new List<ChartGridDto>();
@@ -2920,7 +2927,7 @@ public class StoreService : IStoreService
         //Chart Total Area
         var areachartData = new ChartGraphDto();
         areachartData.ChartTitle = "Total Area";
-        areachartData.ChartCategory = "Space";
+        areachartData.ChartCategory = fileterValue;
         areachartData.ChartType = "Pie";
 
         var totalArea = areaTypeGrid.Sum(x => x.TotalArea);
@@ -2957,7 +2964,7 @@ public class StoreService : IStoreService
 
             var chartData = new ChartGraphDto();
             chartData.ChartTitle = "Sales Area";
-            chartData.ChartCategory = "Space";
+            chartData.ChartCategory = fileterValue;
             chartData.ChartType = "Pie";
             foreach (var category in categories)
             {
@@ -2973,7 +2980,7 @@ public class StoreService : IStoreService
 
                 var spaceData = new ChartGraphDto();
                 spaceData.ChartTitle = category.Category;
-                spaceData.ChartCategory = "Space";
+                spaceData.ChartCategory = fileterValue;
                 spaceData.ChartType = "Pie";
 
                 var totalspaceArea = category.Spaces.Sum(x => x.Area);
@@ -3010,7 +3017,7 @@ public class StoreService : IStoreService
 
             var chartData = new ChartGraphDto();
             chartData.ChartTitle = mainItem.AreaType;
-            chartData.ChartCategory = "Space";
+            chartData.ChartCategory = fileterValue;
             chartData.ChartType = "Pie";
 
 

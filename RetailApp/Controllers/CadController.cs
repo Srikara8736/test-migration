@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-   [Authorize]
+    [Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController
@@ -92,6 +92,27 @@ namespace RetailApp.Controllers
 
             return (fileLocpath, Filepath + "\\" + Filename);
         }
+
+
+        private string? GetXmlType(byte[] CADContent)
+        {
+            string xmlStr = Encoding.UTF8.GetString(CADContent);
+            string _byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+
+            if (xmlStr.StartsWith(_byteOrderMarkUtf8))
+            {
+                xmlStr = xmlStr.Remove(0, _byteOrderMarkUtf8.Length);
+            }
+
+            XDocument xdoc = XDocument.Parse(xmlStr);
+
+            var cadXml = xdoc.Element("Message")?.Element("MetaData")?.Element("MandatoryProperties")?.Element("CADXml");
+            var cadType = cadXml?.Attribute("Type")?.Value;
+
+            return cadType;
+
+        }
+
 
         private string GetFilePath(string storeId)
         {
@@ -427,23 +448,22 @@ namespace RetailApp.Controllers
 
                         byte[] CADContent = ZipStreamReader(zip, cadFileName);
 
+                        var xmlType = GetXmlType(CADContent);
 
-                        //string xmlStr = Encoding.UTF8.GetString(CADContent);
-                        //string _byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+                        if(xmlType == null)
+                        {
+                            return new
+                            {
+                                IsSuccess = false,
+                                statusCode = HttpStatusCode.InternalServerError,
+                                message = "Could not identify the XML type"
+                            };
 
-                        //if (xmlStr.StartsWith(_byteOrderMarkUtf8))
-                        //{
-                        //    xmlStr = xmlStr.Remove(0, _byteOrderMarkUtf8.Length);
-                        //}
-
-
-                        //XDocument xdoc = XDocument.Parse(xmlStr);
-
-                        //var cadXml = xdoc.Element("Message").Element("MetaData").Element("MandatoryProperties").Element("CADXml");
-                        //var cadType = cadXml?.Attribute("Type").Value;
+                        }
+                          
 
 
-                        if (Type.ToLower() == "space")
+                        if (xmlType.ToLower() == "spacelist")
                         {
 
                             Message cadData = new Message();
@@ -468,7 +488,7 @@ namespace RetailApp.Controllers
                             }
 
                         }
-                        else if(Type.ToLower() == "order")
+                        else if(xmlType.ToLower() == "order")
                         {
                             CADOrder cadData = new CADOrder();
                             XmlSerializer serializer = new XmlSerializer(typeof(CADOrder));
@@ -491,7 +511,7 @@ namespace RetailApp.Controllers
                             }
                         }
 
-                        else if (Type.ToLower() == "department")
+                        else if (xmlType.ToLower() == "departmentlist")
                         {
                             DepartmentMessageDto cadData = new DepartmentMessageDto();
                             XmlSerializer serializer = new XmlSerializer(typeof(DepartmentMessageDto));
@@ -516,7 +536,7 @@ namespace RetailApp.Controllers
                             }
                         }
 
-                        else if (Type.ToLower() == "grouping")
+                        else if (xmlType.ToLower() == "group1list")
                         {
 
                             Message cadData = new Message();

@@ -126,7 +126,7 @@ public class CadService : ICadService
         var cadType = await GetCodeMasterByName(type);
         if (storeInfo != null && cadType != null)
         {
-            var storeData = await InsertStoreData(storeInfo.Id,cadType.Id);
+            var storeData = await InsertStoreData(storeInfo.Id,cadType.Id, message.MetaData);
 
             var areaTypeGroup = await StoreAreaTypeGroupManagement(message);
             var areaType = await StoreAreaTypeManagement(message);
@@ -146,31 +146,6 @@ public class CadService : ICadService
 
 
     #region Store Info Section
-
-
-    /// <summary>
-    /// Create Store 
-    /// </summary>
-    /// <param name="message">Deserialized XML Model</param>
-    /// <returns> Store Information</returns>
-    public async Task<Retail.Data.Entities.Stores.Store> StoreInfoManagement(Message message)
-    {
-
-
-        var cadStore = message.Info;
-        if (cadStore == null)
-            return null;
-
-        cadStore.StoreName.Value = "Store 1";
-
-        var storeItem = await _repositoryContext.Stores.Where(x => x.Name.ToLower().Trim() == cadStore.StoreName.Value.ToLower().Trim()).FirstOrDefaultAsync();
-
-        if (storeItem != null)
-            return storeItem;
-        else
-            return await InsertStore(cadStore);
-
-    }
 
     /// <summary>
     /// Insert Store model
@@ -220,22 +195,26 @@ public class CadService : ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="typeId">XML Type</param>
     /// <returns> Store Data Information</returns>
-    public async Task<Retail.Data.Entities.Stores.StoreData> InsertStoreData(Guid storeId, Guid typeId)
+    public async Task<Retail.Data.Entities.Stores.StoreData> InsertStoreData(Guid storeId, Guid typeId,MetaData metaData)
     {
-        int versionNo = 1;
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == typeId).ToListAsync();
+        var mandProp = metaData.MandatoryProperties;
 
-        if (storeData.Count > 0)
-             versionNo = storeData.Count + 1;
+        var versionName = mandProp.Header.Name;
+
+        int versionNo = 1;
+        //var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == typeId).ToListAsync();
+
+        //if (storeData.Count > 0)
+        //     versionNo = storeData.Count + 1;
 
         var storeDataItem = new Retail.Data.Entities.Stores.StoreData
         {
             StoreId = storeId,
-            VersionNumber = versionNo.ToString(),
+            VersionNumber = versionName,
             CreatedOn = DateTime.UtcNow,
             StatusId = new Guid("6E9EC422-3537-11EE-BE56-0242AC120002"),
             CadFileTypeId = typeId,
-            VersionName = "Version"
+            VersionName = versionName
 
         };
 

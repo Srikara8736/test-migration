@@ -212,12 +212,16 @@ public class Data
 [XmlRoot(ElementName = "Message")]
 public class Message
 {
-    [XmlElement(ElementName = "Info")]
-    public Info Info { get; set; }
+    [XmlElement(ElementName = "MetaData")]
+    public MetaData MetaData { get; set; }
+
+
     [XmlElement(ElementName = "Data")]
     public Data Data { get; set; }
+
     [XmlAttribute(AttributeName = "xsi", Namespace = "http://www.w3.org/2000/xmlns/")]
     public string Xsi { get; set; }
+
     [XmlAttribute(AttributeName = "xsd", Namespace = "http://www.w3.org/2000/xmlns/")]
     public string Xsd { get; set; }
 }

@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-    [Authorize]
+   [Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController
@@ -533,6 +533,7 @@ namespace RetailApp.Controllers
                                 var messageModel = _mapper.Map<Message>(cadData);
 
                                 var loadXml = await _cadService.LoadXMLData(messageModel, StoreId,"Department", caduploadHistory.Id);
+                                storeDataId = loadXml.storeDataId;
                             }
                         }
 

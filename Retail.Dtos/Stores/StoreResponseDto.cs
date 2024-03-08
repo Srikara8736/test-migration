@@ -37,6 +37,8 @@ public class StoreDataVersion
     public Guid Id { get; set; }
     public string Version { get; set; }
     public string VersionNumber { get; set; }
+    public Guid CadTypeId { get; set; }
+    public string CadTypeName { get; set; }
 }
 
 

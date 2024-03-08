@@ -275,5 +275,5 @@ public interface IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Department List Grid Data</returns>
-    Task<ResultDto<DaparmentListDto>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default);
+    Task<ResultDto<DaparmentListDto>> GetDepartmentGridData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default);
 }

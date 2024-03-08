@@ -218,10 +218,10 @@ public class StoreController : BaseController
 
     [HttpGet]
     [Route("GetDepartmentListGridData")]
-    public async Task<IActionResult> GetDepartmentListGridData([Required] Guid StoreId, CancellationToken ct = default)
+    public async Task<IActionResult> GetDepartmentListGridData([Required] Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
-        return this.Result(await _storeService.GetDepartmentGridData(StoreId, ct));
+        return this.Result(await _storeService.GetDepartmentGridData(StoreId, StoreDataId, ct));
     }
 
 

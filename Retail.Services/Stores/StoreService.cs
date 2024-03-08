@@ -413,6 +413,12 @@ public class StoreService : IStoreService
                         VersionNumber = item.VersionNumber
 
                     };
+                    var storeUploadType = await _codeMasterService.GetStatusById(item.CadFileTypeId, null, default);
+                    if (storeUploadType.Data != null)
+                    {
+                        storeDataVersion.CadTypeId = storeUploadType.Data.Id;
+                        storeDataVersion.CadTypeName = storeUploadType.Data.Value;
+                    }
                     store.storeDataVersions.Add(storeDataVersion);
                 }
             }
@@ -566,17 +572,17 @@ public class StoreService : IStoreService
             var storeDocuments = await _repositoryContext.StoreDocuments.Where(x => x.StoreDataId == item.Id).ToListAsync();            
             foreach(var sDoc in storeDocuments)
             {
-
-                var documentHistory = new DocumentHistoryDto
-                {
-                    StoreDocumentId = sDoc.Id
-                };
-
-                var docResult =await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId);
+                var docResult = await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId);
+                               
                 if(docResult != null)
                 {
-                    documentHistory.DocumentId = docResult.Id;
-                    documentHistory.Path = docResult.Path;
+                    var documentHistory = new DocumentHistoryDto
+                    {
+                        StoreDocumentId = sDoc.Id,
+                        DocumentId = docResult.Id,
+                        Path = docResult.Path,
+                        FileName = docResult.Name
+                    };
 
                     var storeFileType = await _codeMasterService.GetStatusById(docResult.StatusId, null, default);
                     if (storeFileType.Data != null)
@@ -584,9 +590,11 @@ public class StoreService : IStoreService
                         documentHistory.FileType = storeFileType.Data.Value;
                         documentHistory.FileTypeId = storeFileType.Data.Id;
                     }
+                    storeData.documentHistories.Add(documentHistory);
+
                 }
 
-                storeData.documentHistories.Add(documentHistory);
+               
             }
 
             storeDataHistories.Add(storeData);
@@ -695,6 +703,12 @@ public class StoreService : IStoreService
                         VersionNumber = item.VersionNumber.ToString()
 
                     };
+                    var storeUploadType = await _codeMasterService.GetStatusById(item.CadFileTypeId, null, default);
+                    if (storeUploadType.Data != null)
+                    {
+                        storeDataVersion.CadTypeId = storeUploadType.Data.Id;
+                        storeDataVersion.CadTypeName = storeUploadType.Data.Value;
+                    }
                     store.storeDataVersions.Add(storeDataVersion);
                 }
             }
@@ -987,7 +1001,7 @@ public class StoreService : IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Department List Grid Data</returns>
-    public async Task<ResultDto<DaparmentListDto>> GetDepartmentGridData(Guid StoreId, CancellationToken ct = default)
+    public async Task<ResultDto<DaparmentListDto>> GetDepartmentGridData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
@@ -1016,7 +1030,7 @@ public class StoreService : IStoreService
 
        
 
-        var storeData = await GetStoreData(StoreId, codeMaster.Id, null);
+        var storeData = await GetStoreData(StoreId, codeMaster.Id, StoreDataId);
              
 
         if (storeData == null)
@@ -2439,9 +2453,9 @@ public class StoreService : IStoreService
         var path = _configuration["AssetLocations:StoreImages"];
 
 
-        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id && x.CadFileTypeId == codeMaster.Id).ToListAsync();
+        var storeData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.Id).ToListAsync();
         
-        if (storeData != null)
+        if (storeData.Count > 0)
         {
             foreach (var item in storeData)
             {
@@ -2452,6 +2466,13 @@ public class StoreService : IStoreService
                     VersionNumber = item.VersionNumber
 
                 };
+
+                var storeUploadType = await _codeMasterService.GetStatusById(item.CadFileTypeId, null, default);
+                if (storeUploadType.Data != null)
+                {
+                    storeDataVersion.CadTypeId = storeUploadType.Data.Id;
+                    storeDataVersion.CadTypeName = storeUploadType.Data.Value;
+                }
                 store.storeDataVersions.Add(storeDataVersion);
             }
         }

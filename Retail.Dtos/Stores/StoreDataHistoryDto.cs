@@ -23,6 +23,7 @@ public class DocumentHistoryDto
     public Guid DocumentId { get; set;}
 
     public string FileType { get; set;}
+    public string FileName { get; set;}
 
     public Guid FileTypeId { get; set;}
 

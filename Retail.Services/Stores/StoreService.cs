@@ -8,6 +8,7 @@ using Retail.Data.Entities.Stores;
 using Retail.Data.Entities.UserAccount;
 using Retail.Data.Repository;
 using Retail.DTOs;
+using Retail.DTOs.Cad;
 using Retail.DTOs.Customers;
 using Retail.DTOs.Stores;
 using Retail.DTOs.XML;
@@ -593,8 +594,16 @@ public class StoreService : IStoreService
                     storeData.documentHistories.Add(documentHistory);
 
                 }
+            }
 
-               
+
+
+            var uploadHistory = await _repositoryContext.CadUploadHistories.Where(x => x.StoreId == item.StoreId && x.StoreDataId == item.Id && x.Status).OrderByDescending(y => y.UploadOn).FirstOrDefaultAsync();
+
+            if (uploadHistory != null)
+            {
+                var cadResponse = _mapper.Map<DTOs.Cad.CadUploadHistoryResponseDto>(uploadHistory);
+                storeData.cadUploadHistory = cadResponse;
             }
 
             storeDataHistories.Add(storeData);

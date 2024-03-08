@@ -1,4 +1,6 @@
-﻿namespace Retail.DTOs.Stores;
+﻿using Retail.DTOs.Cad;
+
+namespace Retail.DTOs.Stores;
 
 public class StoreDataHistoryDto
 {
@@ -14,6 +16,8 @@ public class StoreDataHistoryDto
     public Guid UploadTypeId { get; set;}
 
     public List<DocumentHistoryDto> documentHistories { get; set; } = new();
+
+    public CadUploadHistoryResponseDto cadUploadHistory { get; set; }
 }
 
 public class DocumentHistoryDto

@@ -1022,7 +1022,7 @@ public class CadService : ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="fileName">File Name</param>
     /// <returns> Upload History Information</returns>
-    public async Task<Retail.Data.Entities.Cad.CadUploadHistory?> UpdateCadUploadHistory(Guid Id,Guid storeId, Guid? storeDataId)
+    public async Task<Retail.Data.Entities.Cad.CadUploadHistory?> UpdateCadUploadHistory(Guid Id,Guid storeId, Guid? storeDataId, string? cadPackage)
     {
         var cadUploadHistory = await _repositoryContext.CadUploadHistories.FirstOrDefaultAsync(x => x.Id == Id && x.StoreId == storeId);
 
@@ -1030,7 +1030,10 @@ public class CadService : ICadService
             return null;
 
         cadUploadHistory.StoreDataId = storeDataId;
-     
+
+        if (!string.IsNullOrEmpty(cadPackage))
+            cadUploadHistory.Name = cadPackage;
+
         await _repositoryContext.SaveChangesAsync();
 
         return cadUploadHistory;

@@ -114,6 +114,26 @@ namespace RetailApp.Controllers
         }
 
 
+        private string? GetCadPackage(byte[] CADContent)
+        {
+            string xmlStr = Encoding.UTF8.GetString(CADContent);
+            string _byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+
+            if (xmlStr.StartsWith(_byteOrderMarkUtf8))
+            {
+                xmlStr = xmlStr.Remove(0, _byteOrderMarkUtf8.Length);
+            }
+
+            XDocument xdoc = XDocument.Parse(xmlStr);
+
+            var cadXml = xdoc.Element("Message")?.Element("MetaData")?.Element("MandatoryProperties")?.Element("CadPackage");
+            var cadPacakge = cadXml?.Attribute("Name")?.Value;
+
+            return cadPacakge;
+
+        }
+
+
         private string GetFilePath(string storeId)
         {
             return this._environment.WebRootPath + "\\StoreAssets\\StoreFiles\\" + storeId;
@@ -365,7 +385,7 @@ namespace RetailApp.Controllers
 
                     if (storeDataId != null)
                     {
-                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, cadUpload.StoreId, storeDataId);
+                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, cadUpload.StoreId, storeDataId,null);
                     }
 
                 }
@@ -422,6 +442,8 @@ namespace RetailApp.Controllers
                 var caduploadHistory = await _cadService.InsertCadUploadHistory(StoreId, CadFile.FileName);
                 var stream = CadFile.OpenReadStream();
 
+                var pacakgeName = string.Empty;
+
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
                 {
                     //Fetch Manifest.xml
@@ -460,8 +482,11 @@ namespace RetailApp.Controllers
                             };
 
                         }
-                          
 
+                        var cadPacakage = GetCadPackage(CADContent);
+
+                        if (cadPacakage != null)
+                            pacakgeName = cadPacakage;
 
                         if (xmlType.ToLower() == "spacelist")
                         {
@@ -611,7 +636,7 @@ namespace RetailApp.Controllers
 
                     if(storeDataId != null)
                     {
-                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, StoreId, storeDataId);
+                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, StoreId, storeDataId,pacakgeName);
                     }
                        
                 }

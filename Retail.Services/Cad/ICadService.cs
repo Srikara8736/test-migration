@@ -80,7 +80,7 @@ public interface ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="fileName">File Name</param>
     /// <returns> Upload History Information</returns>
-    Task<Retail.Data.Entities.Cad.CadUploadHistory?> UpdateCadUploadHistory(Guid Id, Guid storeId, Guid? storeDataId);
+    Task<Retail.Data.Entities.Cad.CadUploadHistory?> UpdateCadUploadHistory(Guid Id, Guid storeId, Guid? storeDataId,string? cadPackage);
 
 
     /// <summary>

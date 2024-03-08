@@ -99,9 +99,9 @@ public class StoreController : BaseController
     /// <returns>Return updated Store Information</returns>
     [HttpPut]
     [Route("UpdateStoreData/{id}")]
-    public async Task<IActionResult> UpdateDataStoreStatus(Guid id, [FromBody] List<StoreDataStatusDto> storeStatusModel, CancellationToken ct)
+    public async Task<IActionResult> UpdateStoreData(Guid id, [FromBody] StoreDataStatusDto storeStatusModel, CancellationToken ct)
     {
-        return this.Result(await _storeService.UpdateStoreDataStatus(id, storeStatusModel,ct));
+        return this.Result(await _storeService.UpdateStoreData(id, storeStatusModel,ct));
     }
 
 

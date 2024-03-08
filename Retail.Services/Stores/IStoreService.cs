@@ -160,7 +160,7 @@ public interface IStoreService
     /// <param name="id">Store Data Id</param>
     /// <param name="ct">CancellationToken</param>
     /// <returns>True / False status of Store Data Update</returns>
-    Task<ResultDto<bool>> UpdateStoreDataStatus(Guid id,List<StoreDataStatusDto> storeData, CancellationToken ct = default);
+    Task<ResultDto<bool>> UpdateStoreData(Guid id,StoreDataStatusDto storeData, CancellationToken ct = default);
 
 
     /// <summary>

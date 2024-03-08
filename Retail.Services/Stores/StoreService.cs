@@ -216,10 +216,10 @@ public class StoreService : IStoreService
     /// <param name="storeData">storeData</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>True / False to update store activity</returns>
-    public async Task<ResultDto<bool>> UpdateStoreDataStatus(Guid id, List<StoreDataStatusDto> storeData, CancellationToken ct = default)
+    public async Task<ResultDto<bool>> UpdateStoreData(Guid id, StoreDataStatusDto storeData, CancellationToken ct = default)
     {
 
-        if (!storeData.Any())
+        if (storeData == null)
         {
             var errorResponse = new ResultDto<bool>
             {
@@ -229,23 +229,38 @@ public class StoreService : IStoreService
             return errorResponse;
         }
 
+       var store = await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.Id == id);
 
-        foreach (var item in storeData)
+        if (store == null)
         {
-
-            var store = await _repositoryContext.StoreDatas.FirstOrDefaultAsync(x => x.Id == id);
-
-            if (store != null)
+            var errorResponse = new ResultDto<bool>
             {
-                store.StatusId = item.StatusId;
-                store.VersionNumber = item.VersionNumber;
-                store.VersionName = item.VersionName;
-                store.Comments = item.Comments;
-
-                await _repositoryContext.SaveChangesAsync();
-            }
-           
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return errorResponse;
         }
+
+
+        if (storeData.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"]))
+        {
+            var existingData = await _repositoryContext.StoreDatas.Where(x => x.StoreId == store.StoreId && x.CadFileTypeId == store.CadFileTypeId && x.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])).ToListAsync();
+
+           foreach(var item in existingData)
+            {
+                await UpdateStoreDataStatus(item.Id, Guid.Parse("6E9EC422-3537-11EE-BE56-0242AC120002"));
+            }
+
+        }
+        
+
+
+        store.StatusId = storeData.StatusId;
+        store.VersionNumber = storeData.VersionNumber;
+        store.VersionName = storeData.VersionName;
+        store.Comments = storeData.Comments;
+        await _repositoryContext.SaveChangesAsync();
+            
 
         var successResponse = new ResultDto<bool>
         {

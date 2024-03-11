@@ -16,6 +16,5 @@ public class CadUploadDto
     [Required]
     public IFormFile CadFile { get; set; }
 
-    [Required]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 }

@@ -263,7 +263,7 @@ public class StoreController : BaseController
     public async Task<IActionResult> StoreComparision([FromBody] StoreComparisionRequestDto storeComparision, CancellationToken ct = default)
     {
 
-        return this.Result(await _storeService.CompareStoreVersionData(storeComparision.FirstStoreId, storeComparision.FirstVersionId, storeComparision.SecondStoreId,storeComparision.SecondVersionId, ct));
+        return this.Result(await _storeService.CompareStoreVersionData(storeComparision.FirstStoreId, storeComparision.FirstVersionId, storeComparision.SecondStoreId,storeComparision.SecondVersionId, storeComparision.Type, ct));
     }
 
     #endregion

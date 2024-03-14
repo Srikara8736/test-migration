@@ -20,5 +20,6 @@ public class StoreComparisionRequestDto
 
     [Required]
     public Guid SecondVersionId { get; set; }
+    public string? Type { get; set; }
 }
 

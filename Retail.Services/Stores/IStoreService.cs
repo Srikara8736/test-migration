@@ -241,7 +241,7 @@ public interface IStoreService
     /// <param name="SecondVersionId">Second Version ID</param>
     /// <param name="ct">CancellationToken</param>
     /// <returns>Comparision chart data</returns>
-    Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId, CancellationToken ct = default);
+    Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId, string? type = null,CancellationToken ct = default);
 
     /// <summary>
     /// Get all Order Grid Data

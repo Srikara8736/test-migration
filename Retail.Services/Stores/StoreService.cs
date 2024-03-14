@@ -2715,7 +2715,7 @@ public class StoreService : IStoreService
     /// <param name="SecondVersionId">Second Version ID</param>
     /// <param name="ct">CancellationToken</param>
     /// <returns>Comparision chart data</returns>
-    public async Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId, CancellationToken ct = default)
+    public async Task<ResultDto<List<ComparisionChartGraphDto>>> CompareStoreVersionData(Guid FirstStoreId, Guid FirstVersionId, Guid SecondStoreId, Guid SecondVersionId,string? type, CancellationToken ct = default)
     {
 
         var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == FirstStoreId, ct);
@@ -2724,7 +2724,7 @@ public class StoreService : IStoreService
             var storeResult = new ResultDto<List<ComparisionChartGraphDto>>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.OK,
+                StatusCode = HttpStatusCode.NotFound,
                 Data = null
             };
             return storeResult;
@@ -2736,7 +2736,7 @@ public class StoreService : IStoreService
             var storeResult = new ResultDto<List<ComparisionChartGraphDto>>()
             {
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.OK,
+                StatusCode = HttpStatusCode.NotFound,
                 Data = null
             };
             return storeResult;
@@ -2772,9 +2772,9 @@ public class StoreService : IStoreService
         try
         {
         
-            var version1 = await GetChartDataItem(FirstStoreId, storeDataV1.Id);
+            var version1 = await GetChartDataItem(FirstStoreId, storeDataV1.Id, type);
 
-            var version2 = await GetChartDataItem(SecondStoreId, storeDataV2.Id);
+            var version2 = await GetChartDataItem(SecondStoreId, storeDataV2.Id, type);
 
             var comparisionList = new List<ComparisionChartGraphDto>();
 
@@ -2860,7 +2860,7 @@ public class StoreService : IStoreService
         {
             var storeResult = new ResultDto<List<ComparisionChartGraphDto>>()
             {
-                ErrorMessage = StringResources.InvalidArgument,
+                ErrorMessage = ex.Message,
                 StatusCode = HttpStatusCode.InternalServerError
             };
             return storeResult;

@@ -13,7 +13,7 @@ public class DrawingListDto
     /// <summary>
     /// Gets or sets the Drawing List Id
     /// </summary> 
-    public string DrawingListId { get; set; }
+    public string Pno { get; set; }
 
     /// <summary>
     /// Gets or sets the StartDate
@@ -45,7 +45,12 @@ public class DrawingListDto
     /// </summary> 
     public string? Note { get; set; }
 
+    /// <summary>
+    /// Gets or sets Status
+    /// </summary>
+    public string Status { get; set; }
+
     public Guid StoreId { get; set; }
 
-    public Guid StatusId { get; set; }
+    public Guid StoreDataId { get; set; }
 }

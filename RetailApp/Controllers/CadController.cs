@@ -107,12 +107,20 @@ namespace RetailApp.Controllers
             XDocument xdoc = XDocument.Parse(xmlStr);
 
             var cadXml = xdoc.Element("Message")?.Element("MetaData")?.Element("MandatoryProperties")?.Element("CADXml");
+           
+            //cad Xml null becasue we are using diffarent xml for Drawing, the below code to identify the drawing type
+            if (cadXml == null)
+            {
+                cadXml = xdoc.Element("CADData")?.Element("MessageBlock")?.Element("MandatoryPoperties")?.Element("CADXml");
+
+            }
+
             var cadType = cadXml?.Attribute("Type")?.Value;
+
 
             return cadType;
 
         }
-
 
         private string? GetCadPackage(byte[] CADContent)
         {
@@ -127,7 +135,17 @@ namespace RetailApp.Controllers
             XDocument xdoc = XDocument.Parse(xmlStr);
 
             var cadXml = xdoc.Element("Message")?.Element("MetaData")?.Element("MandatoryProperties")?.Element("CadPackage");
+            
+
+            //for drawing
+            if(cadXml == null) {
+
+                cadXml = xdoc.Element("CADData")?.Element("MessageBlock")?.Element("MandatoryPoperties")?.Element("CadPackageName");
+            }
+
             var cadPacakge = cadXml?.Attribute("Name")?.Value;
+            if (cadPacakge == null)
+                cadPacakge= cadXml?.Attribute("Value")?.Value;
 
             return cadPacakge;
 
@@ -242,185 +260,185 @@ namespace RetailApp.Controllers
         /// </summary>
         /// <param name="cadUpload">Cad Upload</param>
         /// <returns>Return Cad Upload  Status Response</returns>
-       // [HttpPost]
+        // [HttpPost]
         //[Route("Cad/UploadCad")]
-//        public async Task<object> UploadCad([FromForm]CadUploadDto cadUpload)
-//        {
-//            if (cadUpload.CadFile.ContentType != "application/x-zip-compressed")
-//            {        
+        //        public async Task<object> UploadCad([FromForm]CadUploadDto cadUpload)
+        //        {
+        //            if (cadUpload.CadFile.ContentType != "application/x-zip-compressed")
+        //            {        
 
-//                return HttpStatusCode.UnsupportedMediaType;
-//            }
+        //                return HttpStatusCode.UnsupportedMediaType;
+        //            }
 
-//            Guid? storeDataId = null;
-//            try
-//            {
-
-
-//                var fileStream = await UploadCadFileAsync(cadUpload.CadFile, cadUpload.StoreId.ToString());
-//                var caduploadHistory = await _cadService.InsertCadUploadHistory(cadUpload.StoreId, cadUpload.CadFile.FileName);
-//                var stream = cadUpload.CadFile.OpenReadStream();
+        //            Guid? storeDataId = null;
+        //            try
+        //            {
 
 
-//            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
-//            {
-//                //Fetch Manifest.xml
-//                //Extract the Manifest file
-//                string manifestContent = Encoding.UTF8.GetString(ZipStreamReader(zip, "Manifest.xml"));
+        //                var fileStream = await UploadCadFileAsync(cadUpload.CadFile, cadUpload.StoreId.ToString());
+        //                var caduploadHistory = await _cadService.InsertCadUploadHistory(cadUpload.StoreId, cadUpload.CadFile.FileName);
+        //                var stream = cadUpload.CadFile.OpenReadStream();
 
 
-//                List<string> cadFileNames = null;
-//                List<string> cadPDFFileNames = null;
-
-//                if (manifestContent != string.Empty)
-//                {
-//                    string xPath = "//cad:CADXML/@name";
-//                    cadFileNames = ManifestReader(manifestContent, xPath);
-
-//                    string xpdfPath = "//cad:CADPDF/@name";
-//                    cadPDFFileNames = ManifestReader(manifestContent, xpdfPath);
-//                }
+        //            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+        //            {
+        //                //Fetch Manifest.xml
+        //                //Extract the Manifest file
+        //                string manifestContent = Encoding.UTF8.GetString(ZipStreamReader(zip, "Manifest.xml"));
 
 
-//                foreach (string cadFileName in cadFileNames)
-//                {
+        //                List<string> cadFileNames = null;
+        //                List<string> cadPDFFileNames = null;
+
+        //                if (manifestContent != string.Empty)
+        //                {
+        //                    string xPath = "//cad:CADXML/@name";
+        //                    cadFileNames = ManifestReader(manifestContent, xPath);
+
+        //                    string xpdfPath = "//cad:CADPDF/@name";
+        //                    cadPDFFileNames = ManifestReader(manifestContent, xpdfPath);
+        //                }
 
 
-//                    byte[] CADContent = ZipStreamReader(zip, cadFileName);
-
-                    
-//                    if(cadUpload.Type.ToLower() == "space")
-//                        {
-                       
-//                            Message cadData = new Message();
-//                            XmlSerializer serializer = new XmlSerializer(typeof(Message));
-//                                try
-//                                {
-//                                     cadData = (Message)serializer.Deserialize(new MemoryStream(CADContent));
-//                                }
-//                                catch (Exception ex)
-//                                {
-//                                    return new
-//                                    {
-//                                        IsSuccess = false,
-//                                        statusCode = HttpStatusCode.InternalServerError,
-//                                        message = "XML may not be valid format"
-//                                    };
-//                                }
-//                                if (cadData != null)
-//                                {
-//                                        var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId, "Space", caduploadHistory.Id);
-//                                        storeDataId = loadXml.storeDataId;
-//                                }
-                        
-//                        }
-//                        else if (cadUpload.Type.ToLower() == "order")
-//                        {
-//                            CADOrder cadData = new CADOrder();
-//                            XmlSerializer serializer = new XmlSerializer(typeof(CADOrder));
-//                            try
-//                            {
-//                                cadData = (CADOrder)serializer.Deserialize(new MemoryStream(CADContent));
-//                            }
-//                            catch (Exception ex)
-//                            {
-//                                return new
-//                                {
-//                                    IsSuccess = false,
-//                                    statusCode = HttpStatusCode.InternalServerError,
-//                                    message = "Order XML may not be valid, "
-//                                };
-//                            }
-//                            if (cadData != null)
-//                            {
-//                                var loadXml = await _cadService.LoadOrderListData(cadUpload.StoreId, cadData.MessageBlock);
-//                            }
-//                        }
-//                        else if(cadUpload.Type.ToLower() == "drawing")
-//                        {
-//                            CADData cadData = new CADData();
-//                            XmlSerializer serializer = new XmlSerializer(typeof(CADData));
-//                            try
-//                            {
-//                                cadData = (CADData)serializer.Deserialize(new MemoryStream(CADContent));
-//                            }
-//                            catch (Exception ex)
-//                            {
-//                                return new
-//                                {
-//                                    IsSuccess = false,
-//                                    statusCode = HttpStatusCode.InternalServerError,
-//                                    message = "XML may not be valid, "
-//                                };
-//                            }
-//                        if (cadData != null)
-//                            {
-//                                 var loadXml = await _cadService.LoadDrawingData(cadUpload.StoreId, cadData.MessageBlock.Messages.MessageData);
-//                            }
-//                        }
-
-//                        else
-//                        {
-//                            return new
-//                            {
-//                                IsSuccess = false,
-//                                statusCode = HttpStatusCode.InternalServerError,
-//                                message = "CAD XML type is not match."
-//                            };
-//                        }
-
-//                    var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
-//                    if(document != null)
-//                    {
-//                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id,storeDataId);
-//                    }
+        //                foreach (string cadFileName in cadFileNames)
+        //                {
 
 
-//                }
+        //                    byte[] CADContent = ZipStreamReader(zip, cadFileName);
 
 
-//                foreach (string cadpdfFileName in cadPDFFileNames)
-//                {
+        //                    if(cadUpload.Type.ToLower() == "space")
+        //                        {
 
-//                    var document = await _cadService.InsertDocument(cadpdfFileName,fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
-//                    if (document != null)
-//                    {
-//                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id, storeDataId);
-//                    }
+        //                            Message cadData = new Message();
+        //                            XmlSerializer serializer = new XmlSerializer(typeof(Message));
+        //                                try
+        //                                {
+        //                                     cadData = (Message)serializer.Deserialize(new MemoryStream(CADContent));
+        //                                }
+        //                                catch (Exception ex)
+        //                                {
+        //                                    return new
+        //                                    {
+        //                                        IsSuccess = false,
+        //                                        statusCode = HttpStatusCode.InternalServerError,
+        //                                        message = "XML may not be valid format"
+        //                                    };
+        //                                }
+        //                                if (cadData != null)
+        //                                {
+        //                                        var loadXml = await _cadService.LoadXMLData(cadData, cadUpload.StoreId, "Space", caduploadHistory.Id);
+        //                                        storeDataId = loadXml.storeDataId;
+        //                                }
+
+        //                        }
+        //                        else if (cadUpload.Type.ToLower() == "order")
+        //                        {
+        //                            CADOrder cadData = new CADOrder();
+        //                            XmlSerializer serializer = new XmlSerializer(typeof(CADOrder));
+        //                            try
+        //                            {
+        //                                cadData = (CADOrder)serializer.Deserialize(new MemoryStream(CADContent));
+        //                            }
+        //                            catch (Exception ex)
+        //                            {
+        //                                return new
+        //                                {
+        //                                    IsSuccess = false,
+        //                                    statusCode = HttpStatusCode.InternalServerError,
+        //                                    message = "Order XML may not be valid, "
+        //                                };
+        //                            }
+        //                            if (cadData != null)
+        //                            {
+        //                                var loadXml = await _cadService.LoadOrderListData(cadUpload.StoreId, cadData.MessageBlock);
+        //                            }
+        //                        }
+        //                        else if(cadUpload.Type.ToLower() == "drawing")
+        //                        {
+        //                            CADData cadData = new CADData();
+        //                            XmlSerializer serializer = new XmlSerializer(typeof(CADData));
+        //                            try
+        //                            {
+        //                                cadData = (CADData)serializer.Deserialize(new MemoryStream(CADContent));
+        //                            }
+        //                            catch (Exception ex)
+        //                            {
+        //                                return new
+        //                                {
+        //                                    IsSuccess = false,
+        //                                    statusCode = HttpStatusCode.InternalServerError,
+        //                                    message = "XML may not be valid, "
+        //                                };
+        //                            }
+        //                        if (cadData != null)
+        //                            {
+        //                                 var loadXml = await _cadService.LoadDrawingData(cadUpload.StoreId, cadData.MessageBlock.Messages.MessageData);
+        //                            }
+        //                        }
+
+        //                        else
+        //                        {
+        //                            return new
+        //                            {
+        //                                IsSuccess = false,
+        //                                statusCode = HttpStatusCode.InternalServerError,
+        //                                message = "CAD XML type is not match."
+        //                            };
+        //                        }
+
+        //                    var document = await _cadService.InsertDocument(cadFileName, fileStream.filepath + "\\" + cadFileName, Guid.Parse("bdfb90b9-3dd3-4347-aeb8-3c5d7be6ec6a"));
+        //                    if(document != null)
+        //                    {
+        //                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id,storeDataId);
+        //                    }
 
 
-//                }
+        //                }
 
-//                    if (storeDataId != null)
-//                    {
-//                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, cadUpload.StoreId, storeDataId,null);
-//                    }
 
-//                }
+        //                foreach (string cadpdfFileName in cadPDFFileNames)
+        //                {
 
-        
+        //                    var document = await _cadService.InsertDocument(cadpdfFileName,fileStream.filepath + "\\" + cadpdfFileName, Guid.Parse("8ae98fb5-16ed-429e-af96-83b6caec15a5"));
+        //                    if (document != null)
+        //                    {
+        //                        var storeDocument = await _cadService.InsertStoreDocument(cadUpload.StoreId, document.Id, storeDataId);
+        //                    }
 
-//                return new
-//                {
 
-//                    IsSuccess = true,
-//                    StatusCode = HttpStatusCode.OK
+        //                }
 
-//                };
+        //                    if (storeDataId != null)
+        //                    {
+        //                        await _cadService.UpdateCadUploadHistory(caduploadHistory.Id, cadUpload.StoreId, storeDataId,null);
+        //                    }
 
-//        }
-//            catch (Exception ex)
-//            {
+        //                }
 
-//                return new
-//                {
-//                    IsSuccess = false,
-//                    statusCode = HttpStatusCode.InternalServerError,
-//                    message = ex.Message
-//                };
-//}
 
-//        }
+
+        //                return new
+        //                {
+
+        //                    IsSuccess = true,
+        //                    StatusCode = HttpStatusCode.OK
+
+        //                };
+
+        //        }
+        //            catch (Exception ex)
+        //            {
+
+        //                return new
+        //                {
+        //                    IsSuccess = false,
+        //                    statusCode = HttpStatusCode.InternalServerError,
+        //                    message = ex.Message
+        //                };
+        //}
+
+        //        }
 
 
 
@@ -428,9 +446,7 @@ namespace RetailApp.Controllers
         /// <summary>
         ///Cad File Upload Version 2
         /// </summary>
-        /// <param name="StoreId">Store Identifier</param>
-        /// <param name="CadFile">Cad zip File</param>
-        /// <param name="Type">Space / Department / Drawing / Grouping / Order</param>
+        /// <param name="cadUpload">Cad Object</param>
         /// <returns>Return Cad Upload  Status Response</returns>
         [HttpPost]
         [Route("Cad/UploadCad")]
@@ -482,12 +498,15 @@ namespace RetailApp.Controllers
 
                         if(xmlType == null)
                         {
-                            return new
-                            {
-                                IsSuccess = false,
-                                statusCode = HttpStatusCode.InternalServerError,
-                                message = "Could not identify the XML type"
-                            };
+                           
+                                return new
+                                {
+                                    IsSuccess = false,
+                                    statusCode = HttpStatusCode.InternalServerError,
+                                    message = "Could not identify the XML type"
+                                };
+
+
 
                         }
 
@@ -615,7 +634,20 @@ namespace RetailApp.Controllers
                             }
                             if (cadData != null)
                             {
-                                var loadXml = await _cadService.LoadDrawingData(cadUpload.StoreId, cadData.MessageBlock.Messages.MessageData);
+                                var loadXml = await _cadService.LoadDrawingData(cadUpload.StoreId, cadData.MessageBlock,"Drawing");
+
+                                if(!loadXml.status)
+                                {
+                                    return new
+                                    {
+                                        IsSuccess = false,
+                                        statusCode = HttpStatusCode.InternalServerError,
+                                        message = "Data not Imported "
+                                    };
+
+                                }
+
+                                storeDataId = loadXml.storeDataId;
                             }
                         }
 

@@ -796,17 +796,15 @@ public class CadService : ICadService
             versionNo = storeDataItem.Count + 1;
 
 
-        var val = messageData.MandatoryPoperties?.CadPackageName?.Value;
-        if (val != null)
+      
+        var mandatoryProperties = new MandatoryProperties();
+        var header = new Header
         {
-            var mandatoryProperties = new MandatoryProperties();
-            var header = new Header
-            {
-                Name = "Version " + versionNo
-            };
-            mandatoryProperties.Header = header;
-            metaData.MandatoryProperties = mandatoryProperties;
-        }
+            Name = "Version " + versionNo
+        };
+        mandatoryProperties.Header = header;
+        metaData.MandatoryProperties = mandatoryProperties;
+        
 
       
 
@@ -847,7 +845,7 @@ public class CadService : ICadService
             var dateProperty = dataItems.Find(x => x.PropertyName.ToLower() == "date");
             if (dateProperty != null)
             {
-                drawingListItem.StartDate = DateTime.Parse(dateProperty.PropertyValue);
+                drawingListItem.Date = DateTime.Parse(dateProperty.PropertyValue);
             }
 
 
@@ -880,7 +878,7 @@ public class CadService : ICadService
 
             if (statusProperty != null)
             {
-                drawingListItem.Sign = statusProperty.PropertyValue;
+                drawingListItem.Status = statusProperty.PropertyValue;
             }
 
 

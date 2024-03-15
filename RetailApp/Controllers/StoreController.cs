@@ -176,10 +176,10 @@ public class StoreController : BaseController
     /// <returns>Store Grid Data</returns>
     [HttpGet]
     [Route("GetDrawingGridData")]
-    public async Task<IActionResult> GetDrawingGridData([Required] Guid StoreId, CancellationToken ct = default)
+    public async Task<IActionResult> GetDrawingGridData([Required] Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
-        return this.Result(await _storeService.GetDrawingGridData(StoreId, ct));
+        return this.Result(await _storeService.GetDrawingGridData(StoreId,StoreDataId, ct));
     }
 
 

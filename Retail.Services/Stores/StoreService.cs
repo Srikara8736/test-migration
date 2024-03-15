@@ -2129,10 +2129,51 @@ public class StoreService : IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Drawing Tye Grid Data</returns>
-    public async Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, CancellationToken ct = default)
+    public async Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default)
     {
 
-        var storeDrawingList = await _repositoryContext.DrawingLists.Where(x => x.StoreId == StoreId).ToListAsync();
+        var store = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == StoreId, ct);
+        if (store == null)
+        {
+            var storeResult = new ResultDto<List<DrawingListResponseDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var filterValue = "Drawing";
+
+
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value.ToLower().Trim() == filterValue.ToLower().Trim());
+
+
+        if (codeMaster == null)
+        {
+            var storeResult = new ResultDto<List<DrawingListResponseDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+
+
+        var storeData = await GetStoreData(StoreId, codeMaster.Id, StoreDataId);
+
+        if (storeData == null)
+        {
+            var storeResult = new ResultDto<List<DrawingListResponseDto>>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+
+        var storeDrawingList = await _repositoryContext.DrawingLists.Where(x => x.StoreId == StoreId && x.StoreDataId == storeData.Id).ToListAsync();
 
         if (storeDrawingList.Count <= 0)
         {
@@ -2147,17 +2188,7 @@ public class StoreService : IStoreService
         var storeDrawingResponse = _mapper.Map<List<DrawingListResponseDto>>(storeDrawingList);
 
 
-        foreach (var store in storeDrawingResponse)
-        {
-            if (store.StatusId != null)
-            {
-
-                var result = _repositoryContext.CodeMasters.Where(x => x.Id == store.StatusId).FirstOrDefault();
-                if (result != null)
-                    store.StoreStatus = result.Value;
-            }
-
-        }
+      
 
         var response = new ResultDto<List<DrawingListResponseDto>>()
         {

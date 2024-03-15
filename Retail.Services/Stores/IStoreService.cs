@@ -208,7 +208,7 @@ public interface IStoreService
     /// <param name="StoreId">Store Identifier</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Store Drawing Tye Grid Data</returns>
-    Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, CancellationToken ct = default);
+    Task<ResultDto<List<DrawingListResponseDto>>> GetDrawingGridData(Guid StoreId, Guid? StoreDataId, CancellationToken ct = default);
 
 
 

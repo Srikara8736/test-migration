@@ -239,6 +239,12 @@ public class RepositoryContext : DbContext
             .IsRequired(false);
 
 
+        builder.Entity<DrawingList>()
+            .HasOne(x => x.StoreData)
+            .WithMany()
+            .HasForeignKey(x => x.StoreDataId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
 
         base.OnModelCreating(builder);
     }

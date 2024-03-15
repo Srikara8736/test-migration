@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Retail.Data.Repository;
 
@@ -11,9 +12,10 @@ using Retail.Data.Repository;
 namespace Retail.Data.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20240314114507_store-data-id-drawing")]
+    partial class storedataiddrawing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,7 +61,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("CadUploadHistory", (string)null);
+                    b.ToTable("CadUploadHistory");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Common.CodeMaster", b =>
@@ -87,7 +89,7 @@ namespace Retail.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CodeMaster", (string)null);
+                    b.ToTable("CodeMaster");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Common.CustomerCodemaster", b =>
@@ -116,7 +118,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("customerCodemasters", (string)null);
+                    b.ToTable("customerCodemasters");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Customers.Customer", b =>
@@ -175,7 +177,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("LogoImageId");
 
-                    b.ToTable("Customer", (string)null);
+                    b.ToTable("Customer");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Customers.CustomerImage", b =>
@@ -196,7 +198,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("ImageId");
 
-                    b.ToTable("CustomerImage", (string)null);
+                    b.ToTable("CustomerImage");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.FileSystem.Document", b =>
@@ -221,7 +223,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("Document", (string)null);
+                    b.ToTable("Document");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.FileSystem.Image", b =>
@@ -254,7 +256,7 @@ namespace Retail.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Image", (string)null);
+                    b.ToTable("Image");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Projects.CustomerProject", b =>
@@ -275,7 +277,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("CustomerProject", (string)null);
+                    b.ToTable("CustomerProject");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Projects.Project", b =>
@@ -300,7 +302,7 @@ namespace Retail.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Project", (string)null);
+                    b.ToTable("Project");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Projects.StoreProject", b =>
@@ -321,7 +323,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreProject", (string)null);
+                    b.ToTable("StoreProject");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.AreaType", b =>
@@ -337,7 +339,7 @@ namespace Retail.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AreaType", (string)null);
+                    b.ToTable("AreaType");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.AreaTypeGroup", b =>
@@ -353,7 +355,7 @@ namespace Retail.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AreaTypeGroup", (string)null);
+                    b.ToTable("AreaTypeGroup");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.CadStoreCategory", b =>
@@ -392,7 +394,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("UploadHistoryId");
 
-                    b.ToTable("CadStoreCategory", (string)null);
+                    b.ToTable("CadStoreCategory");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.CadStoreSpace", b =>
@@ -431,7 +433,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("UploadHistoryId");
 
-                    b.ToTable("CadStoreSpace", (string)null);
+                    b.ToTable("CadStoreSpace");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.Category", b =>
@@ -462,7 +464,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("AreaTypeId");
 
-                    b.ToTable("Category", (string)null);
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.DrawingList", b =>
@@ -520,7 +522,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("DrawingList", (string)null);
+                    b.ToTable("DrawingList");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.GeneralListTypeData", b =>
@@ -548,7 +550,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("GeneralListTypeData", (string)null);
+                    b.ToTable("GeneralListTypeData");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.OrderList", b =>
@@ -596,7 +598,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("OrderList", (string)null);
+                    b.ToTable("OrderList");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.PackageData", b =>
@@ -663,7 +665,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("PackageData", (string)null);
+                    b.ToTable("PackageData");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.Space", b =>
@@ -687,7 +689,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Space", (string)null);
+                    b.ToTable("Space");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.Store", b =>
@@ -735,7 +737,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("Store", (string)null);
+                    b.ToTable("Store");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.StoreCategoryAreaTypeGroup", b =>
@@ -766,7 +768,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreCategoryAreaTypeGroup", (string)null);
+                    b.ToTable("StoreCategoryAreaTypeGroup");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.StoreData", b =>
@@ -816,7 +818,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreData", (string)null);
+                    b.ToTable("StoreData");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.StoreDocument", b =>
@@ -845,7 +847,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreDocument", (string)null);
+                    b.ToTable("StoreDocument");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.StoreImage", b =>
@@ -866,7 +868,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreImage", (string)null);
+                    b.ToTable("StoreImage");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Stores.StoreSpace", b =>
@@ -916,7 +918,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreSpace", (string)null);
+                    b.ToTable("StoreSpace");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.UserAccount.Address", b =>
@@ -958,7 +960,7 @@ namespace Retail.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Address", (string)null);
+                    b.ToTable("Address");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.UserAccount.Role", b =>
@@ -980,7 +982,7 @@ namespace Retail.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role", (string)null);
+                    b.ToTable("Role");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.UserAccount.User", b =>
@@ -1045,7 +1047,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.UserAccount.UserRole", b =>
@@ -1067,7 +1069,7 @@ namespace Retail.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserRole", (string)null);
+                    b.ToTable("UserRole");
                 });
 
             modelBuilder.Entity("Retail.Data.Entities.Cad.CadUploadHistory", b =>

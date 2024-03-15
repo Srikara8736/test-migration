@@ -61,6 +61,13 @@ public class DrawingList : BaseEntity
     public string? Note { get; set; }
 
 
+    /// <summary>
+    /// Gets or sets the Status
+    /// </summary>    
+    [StringLength(256)]
+    public string? Status { get; set; }
+
+
 
     /// <summary>
     /// Gets or sets the reference of Store entity
@@ -73,7 +80,10 @@ public class DrawingList : BaseEntity
     /// <summary>
     /// Gets or sets the reference of Store entity
     /// </summary>
-    [ForeignKey(nameof(Status))]
-    public Guid StatusId { get; set; }
-    public virtual CodeMaster Status { get; set; }
+    [ForeignKey(nameof(StoreData))]
+    public Guid StoreDataId { get; set; }
+    public virtual StoreData StoreData { get; set; }
+
+
+
 }

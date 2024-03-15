@@ -35,7 +35,7 @@ public interface ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="messageData">Store Data Identifier</param>
     /// <returns>Drawing Type Information</returns>
-    Task<Retail.Data.Entities.Stores.DrawingList> LoadDrawingData(Guid storeId, MessageData messageData);
+    Task<(bool status, Guid? storeDataId)> LoadDrawingData(Guid storeId, MessageBlock messageData, string type);
 
 
     /// <summary>

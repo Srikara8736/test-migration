@@ -569,7 +569,8 @@ public class StoreService : IStoreService
                 StoreId = item.StoreId,
                 StoreDataId = item.Id,
                 Name = item.VersionName,
-                VersionNumber = item.VersionNumber.ToString()
+                VersionNumber = item.VersionNumber,
+                Comments = item.Comments
             };
             var storeStatus = await _codeMasterService.GetStatusById(item.StatusId, null, default);
             if(storeStatus.Data != null)

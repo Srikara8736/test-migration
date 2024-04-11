@@ -7,6 +7,7 @@ public class StoreDataHistoryDto
     public string Name { get; set; }
     public string VersionNumber { get; set; }
     public Guid StoreId { get; set;}
+    public string? Comments { get; set;}
 
     public Guid StoreDataId { get; set;}
 

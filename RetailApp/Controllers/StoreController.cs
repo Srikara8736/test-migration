@@ -266,6 +266,22 @@ public class StoreController : BaseController
         return this.Result(await _storeService.CompareStoreVersionData(storeComparision.FirstStoreId, storeComparision.FirstVersionId, storeComparision.SecondStoreId,storeComparision.SecondVersionId, storeComparision.Type, ct));
     }
 
+
+    /// <summary>
+    /// Gets Store List By Customer
+    /// </summary>
+    /// <param name="CustomerId">Customer Identifier</param>
+    /// <param name="type">Space / Department / Grouping</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store List By Customer</returns>
+    [HttpGet]
+    [Route("GetStoreListByCustomer")]
+    public async Task<IActionResult> GetStoreListByCustomer([Required] Guid CustomerId, string? type = null, CancellationToken ct = default)
+    {
+
+        return this.Result(await _storeService.StoreDataByCustomerId(CustomerId, type, ct));
+    }
+
     #endregion
 
 }

@@ -55,3 +55,42 @@ public class DaparmentListDto
 
     public List<ChartGridDto> chartGrids { get; set; } = new();
 }
+public class CustomerStoresDto
+{
+    public List<StoreDataDto> StoreData { get; set; } = new();
+    public List<CoulmnListDto> ColumnList { get; set; } = new();
+
+}
+
+
+
+public class StoreDataDto
+{
+    public Guid StoreId { get; set; }
+    public string StoreName { get; set; }  
+
+    public List<CoulmnDataDto> CoulmnData { get; set; } = new();
+
+}
+
+
+public class CoulmnDataDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public decimal Value { get; set; }
+}
+
+
+public class CoulmnListDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public bool IsParent { get; set; }
+    public bool IsSuperParent { get; set; }
+}
+
+
+
+
+

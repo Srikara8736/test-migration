@@ -15,6 +15,7 @@ using Retail.DTOs.XML;
 using Retail.Services.Common;
 using Retail.Services.Master;
 using System.Net;
+using System.Xml.Linq;
 using Customer = Retail.Data.Entities.Customers.Customer;
 using Store = Retail.Data.Entities.Stores.Store;
 
@@ -3178,6 +3179,212 @@ public class StoreService : IStoreService
 
         return chartItems;
     }
+
+
+    /// <summary>
+    /// Get all Chart Data
+    /// </summary>
+    /// <param name="StoreId">Store Identifier</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Store Chart Data</returns>
+    public async Task<ResultDto<CustomerStoresDto>> StoreDataByCustomerId(Guid CustomerId, string? type = null, CancellationToken ct = default)
+    {      
+
+        var fileterValue = "Space";
+
+        if (type != null)
+            fileterValue = type;
+
+        var codeMaster = await _repositoryContext.CodeMasters.FirstOrDefaultAsync(x => x.Type == "CadType" && x.Value.ToLower().Trim() == fileterValue.ToLower().Trim());
+
+
+        if (codeMaster == null)
+        {
+            var storeResult = new ResultDto<CustomerStoresDto>()
+            {
+                ErrorMessage = StringResources.NoResultsFound,
+                IsSuccess = false
+            };
+            return storeResult;
+        }
+       
+
+        try
+        {
+            var customerStores = new CustomerStoresDto();
+
+            var stores = _repositoryContext.StoreDatas
+           .AsNoTracking()
+           .Include(p => p.Store)
+           .Where(sd => sd.Store.CustomerId == CustomerId && sd.CadFileTypeId == codeMaster.Id && sd.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"]));
+
+           
+
+
+            //var query = (from at in _repositoryContext.AreaTypes
+            //             join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
+            //             join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
+            //             join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
+            //             join st in _repositoryContext.Stores on stsp.StoreId equals st.Id
+            //             join sd in _repositoryContext.StoreDatas on st.Id equals sd.StoreId
+            //             where sd.CadFileTypeId == codeMaster.Id && st.CustomerId == CustomerId && sd.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"])
+            //             select new
+            //             {
+            //                 CategoryId = cat.Id,
+            //                 CategoryName = cat.Name,
+            //                 AreaTypeId = at.Id,
+            //                 AreaTypeName = at.Name,
+            //                 SpaceId = sp.Id,
+            //                 SpaceName = sp.Name,
+            //                 SpaceUnit = stsp.Unit,
+            //                 SpaceAtricles = stsp.Articles,
+            //                 SpaceArea = stsp.Area,
+            //                 SpacePieces = stsp.Pieces,
+            //                 SpaceCadNumber = sp.CadServiceNumber,
+            //                 StoreId = st.Id,
+            //                 StoreName = st.Name,
+            //                 StoreDataId = sd.Id
+
+            //             }).ToList();
+
+
+
+
+
+
+            var storeItems = new List<StoreDataDto>();
+            var columnList = new List<CoulmnListDto>();
+
+            foreach (var storeItem in stores)
+            {
+
+                var query = (from at in _repositoryContext.AreaTypes
+                             join cat in _repositoryContext.Categories on at.Id equals cat.AreaTypeId
+                             join sp in _repositoryContext.Spaces on cat.Id equals sp.CategoryId
+                             join stsp in _repositoryContext.StoreSpaces on sp.Id equals stsp.SpaceId
+                             where stsp.StoreId == storeItem.Store.Id && stsp.StoreDataId == storeItem.Id
+                             select new
+                             {
+                                 CategoryId = cat.Id,
+                                 CategoryName = cat.Name,
+                                 AreaTypeId = at.Id,
+                                 AreaTypeName = at.Name,
+                                 SpaceName = sp.Name,
+                                 SpaceUnit = stsp.Unit,
+                                 SpaceAtricles = stsp.Articles,
+                                 SpaceArea = stsp.Area,
+                                 SpacePieces = stsp.Pieces,
+                                 SpaceId = sp.Id
+
+                             }).ToList();
+                    
+                    var storeInfo = new StoreDataDto();
+
+                   
+                    
+
+                    var areaTypeGroups = query.GroupBy(x => x.AreaTypeId).ToList();
+
+                    foreach (var item in areaTypeGroups)
+                    {
+                        var areaItem = new CoulmnDataDto();
+                        areaItem.Value = (decimal)item.Sum(x => x.SpaceArea);
+
+                        var areaColumn = new CoulmnListDto();
+                        areaColumn.IsParent = true;
+                        areaColumn.IsSuperParent = true;
+
+
+                    var categoryGroup = item.GroupBy(x => x.CategoryId).ToList();
+                        foreach (var categoryResult in categoryGroup)
+                        {
+                            var categoryItem = new CoulmnDataDto();
+                            categoryItem.Value = (decimal)categoryResult.Sum(x => x.SpaceArea);
+
+
+                        var categoryColumn = new CoulmnListDto();
+                        categoryColumn.IsParent = true;
+
+                        foreach (var result in categoryResult)
+                            {
+
+                                categoryItem.Id = result.CategoryId;
+                                categoryItem.Name = result.CategoryName;
+
+                                areaItem.Id = result.AreaTypeId;
+                                areaItem.Name = result.AreaTypeName;
+
+
+                                categoryColumn.Id = result.CategoryId;
+                                categoryColumn.Name = result.CategoryName;
+
+                                areaColumn.Id = result.AreaTypeId;
+                                areaColumn.Name = result.AreaTypeName;
+
+                                var spaceColumn = new CoulmnListDto();
+                                spaceColumn.Name = result.SpaceName.Trim();
+                                spaceColumn.Id = result.SpaceId;
+
+
+
+                                var spaceItem = new CoulmnDataDto
+                                {
+                                        Id = result.SpaceId,
+                                        Name = result.SpaceName.Trim(),
+                                        Value = (decimal)result.SpaceArea,
+                                };
+
+                                storeInfo.CoulmnData.Add(spaceItem);
+
+                            if (!columnList.Exists(x => x.Id == spaceColumn.Id))
+                                columnList.Add(spaceColumn);
+
+
+                            }
+
+                            storeInfo.CoulmnData.Add(categoryItem);
+
+                        if (!columnList.Exists(x => x.Id == categoryColumn.Id))
+                            columnList.Add(categoryColumn);
+
+                    }
+
+                    storeInfo.CoulmnData.Add(areaItem);
+
+                    if (!columnList.Exists(x => x.Id == areaColumn.Id))
+                        columnList.Add(areaColumn);
+                }
+                    storeInfo.StoreName = storeItem.Store.Name;
+                    storeInfo.StoreId = storeItem.Store.Id;
+                    storeItems.Add(storeInfo);
+            }
+
+            customerStores.StoreData = storeItems;
+            customerStores.ColumnList = columnList;
+
+            var successResponse = new ResultDto<CustomerStoresDto>
+            {
+                IsSuccess = true,
+                Data = customerStores
+            };
+
+            return successResponse;
+
+        }
+        catch (Exception ex)
+        {
+            var storeResult = new ResultDto<CustomerStoresDto>()
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.InternalServerError,
+                IsSuccess= false
+            };
+            return storeResult;
+        }
+
+
+    }
+
 
     #endregion
 

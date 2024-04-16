@@ -606,7 +606,7 @@ public class CadService : ICadService
 
                     foreach (var spaceitem in category.Spaces.Space)
                     {
-                        var item = await GetSpace(spaceitem);
+                        var item = await GetSpace(spaceitem, catergoryItem.Id);
                         if (item != null)
                         {
 
@@ -679,9 +679,9 @@ public class CadService : ICadService
     /// </summary>
     /// <param name="space">Space Model Name</param>
     /// <returns>space Information</returns>
-    public async Task<Retail.Data.Entities.Stores.Space?> GetSpace(DTOs.XML.Space space)
+    public async Task<Retail.Data.Entities.Stores.Space?> GetSpace(DTOs.XML.Space space, Guid categoryId)
     {
-        return await _repositoryContext.Spaces.Where(x => x.Name.ToLower().Trim() == space.Name.ToLower().Trim()).FirstOrDefaultAsync();
+        return await _repositoryContext.Spaces.Where(x => x.Name.ToLower().Trim() == space.Name.ToLower().Trim() && x.CategoryId == categoryId).FirstOrDefaultAsync();
     }
 
     /// <summary>

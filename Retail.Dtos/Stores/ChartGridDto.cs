@@ -67,6 +67,7 @@ public class CustomerStoresDto
 public class StoreDataDto
 {
     public Guid StoreId { get; set; }
+    public string StoreNumber { get; set; }
     public string StoreName { get; set; }  
 
     public List<CoulmnDataDto> CoulmnData { get; set; } = new();
@@ -87,7 +88,6 @@ public class CoulmnListDto
     public Guid Id { get; set; }
     public string Name { get; set; }
     public bool IsParent { get; set; }
-    public bool IsSuperParent { get; set; }
 }
 
 

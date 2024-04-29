@@ -53,4 +53,5 @@ public class DrawingListDto
     public Guid StoreId { get; set; }
 
     public Guid StoreDataId { get; set; }
+    public string? PdfLink { get; set; }
 }

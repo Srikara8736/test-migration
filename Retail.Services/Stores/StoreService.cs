@@ -2190,7 +2190,27 @@ public class StoreService : IStoreService
         var storeDrawingResponse = _mapper.Map<List<DrawingListResponseDto>>(storeDrawingList);
 
 
-      
+        var storeDocuments = await _repositoryContext.StoreDocuments.Where(x => x.StoreDataId == storeData.Id).ToListAsync();
+
+        var fileLocation = string.Empty;
+        foreach (var sDoc in storeDocuments)
+        {
+            var docResult = await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId);
+
+            if(docResult != null)
+                fileLocation = Path.GetDirectoryName(docResult.Path);
+        }
+
+        if (!string.IsNullOrEmpty( fileLocation))
+        {
+            foreach (var item in storeDrawingResponse)
+            {
+                item.PdfLink = fileLocation + "/" + item.No + " " + item.Name + ".pdf";
+
+            }
+        }
+
+       
 
         var response = new ResultDto<List<DrawingListResponseDto>>()
         {

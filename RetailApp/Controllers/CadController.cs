@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 
 namespace RetailApp.Controllers
 {
-   [Authorize]
+    [Authorize]
     [Route("api/")]
     [ApiController]
     public class CadController : BaseController

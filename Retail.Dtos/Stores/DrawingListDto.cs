@@ -33,7 +33,7 @@ public class DrawingListDto
     /// <summary>
     /// Gets or sets the No
     /// </summary>
-    public int? No { get; set; }
+    public string? No { get; set; }
 
     /// <summary>
     /// Gets or sets the Sign

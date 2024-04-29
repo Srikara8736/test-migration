@@ -202,8 +202,8 @@ using System.Collections.Generic;
     [XmlRoot(ElementName = "Messages")]
     public class Messages
     {
-        [XmlElement(ElementName = "MessageData")]
-        public MessageData MessageData { get; set; }
+    [XmlElement(ElementName = "MessageData")]
+    public List<MessageData> MessageData { get; set; } = new();
     }
 
     [XmlRoot(ElementName = "MessageBlock")]

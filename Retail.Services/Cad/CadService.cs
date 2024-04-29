@@ -777,7 +777,7 @@ public class CadService : ICadService
         if(messageData == null)
             return(false,null);
 
-        var dataItems = messageData.Messages?.MessageData?.Properties;
+        var messageDataList = messageData.Messages.MessageData;
 
 
         var storeInfo = await _repositoryContext.Stores.FirstOrDefaultAsync(x => x.Id == storeId);
@@ -804,89 +804,96 @@ public class CadService : ICadService
         };
         mandatoryProperties.Header = header;
         metaData.MandatoryProperties = mandatoryProperties;
-        
 
-      
 
         var storeData = await InsertStoreData(storeInfo.Id, cadType.Id, metaData);
 
         if (storeData == null)
             return (false, null);
 
-
-        if (dataItems != null)
+        foreach (var message in messageDataList)
         {
-            var drawingListItem = new Retail.Data.Entities.Stores.DrawingList
+
+            var dataItems = message?.Properties;
+
+            if (dataItems != null)
             {
-                StoreId = storeId,
-                StoreDataId = storeData.Id
-            };
+                var drawingListItem = new Retail.Data.Entities.Stores.DrawingList
+                {
+                    StoreId = storeId,
+                    StoreDataId = storeData.Id
+                };
 
 
 
-            var propertyName = dataItems.Find(x => x.PropertyName.ToLower() == "name");
-            if (propertyName != null)
-            {
-                drawingListItem.Name = propertyName.PropertyValue;
+                var propertyName = dataItems.Find(x => x.PropertyName.ToLower() == "name");
+                if (propertyName != null)
+                {
+                    drawingListItem.Name = propertyName.PropertyValue;
+                }
+
+                var propertyId = dataItems.Find(x => x.PropertyName.ToLower() == "pno");
+                if (propertyId != null)
+                {
+                    drawingListItem.DrawingListId = propertyId.PropertyValue;
+                }
+
+                var startDateProperty = dataItems.Find(x => x.PropertyName.ToLower() == "startdate");
+                if (startDateProperty != null)
+                {
+                    drawingListItem.StartDate = DateTime.Parse(startDateProperty.PropertyValue);
+                }
+
+                var dateProperty = dataItems.Find(x => x.PropertyName.ToLower() == "date");
+                if (dateProperty != null)
+                {
+                    drawingListItem.Date = DateTime.Parse(dateProperty.PropertyValue);
+                }
+
+
+                var revProperty = dataItems.Find(x => x.PropertyName.ToLower() == "rev");
+                if (revProperty != null)
+                {
+                    drawingListItem.Rev = revProperty.PropertyValue;
+                }
+
+                var noProperty = dataItems.Find(x => x.PropertyName.ToLower() == "no");
+                if (noProperty != null)
+                {
+                    drawingListItem.No =noProperty.PropertyValue;
+                }
+
+
+                var noteProperty = dataItems.Find(x => x.PropertyName.ToLower() == "note");
+                if (noteProperty != null)
+                {
+                    drawingListItem.Note = noteProperty.PropertyValue;
+                }
+
+                var signProperty = dataItems.Find(x => x.PropertyName.ToLower() == "sign");
+                if (signProperty != null)
+                {
+                    drawingListItem.Sign = signProperty.PropertyValue;
+                }
+
+                var statusProperty = dataItems.Find(x => x.PropertyName.ToString().ToLower() == "status");
+
+                if (statusProperty != null)
+                {
+                    drawingListItem.Status = statusProperty.PropertyValue;
+                }
+
+
+                await _repositoryContext.DrawingLists.AddAsync(drawingListItem);
+                await _repositoryContext.SaveChangesAsync();
+
+
             }
-
-            var propertyId = dataItems.Find(x => x.PropertyName.ToLower() == "pno");
-            if (propertyId != null)
-            {
-                drawingListItem.DrawingListId = propertyId.PropertyValue;
-            }
-
-            var startDateProperty = dataItems.Find(x => x.PropertyName.ToLower() == "startdate");
-            if (startDateProperty != null)
-            {
-                drawingListItem.StartDate = DateTime.Parse(startDateProperty.PropertyValue);
-            }
-
-            var dateProperty = dataItems.Find(x => x.PropertyName.ToLower() == "date");
-            if (dateProperty != null)
-            {
-                drawingListItem.Date = DateTime.Parse(dateProperty.PropertyValue);
-            }
-
-
-            var revProperty = dataItems.Find(x => x.PropertyName.ToLower() == "rev");
-            if (revProperty != null)
-            {
-                drawingListItem.Rev = revProperty.PropertyValue;
-            }
-
-            //var noProperty = dataItems.Find(x => x.PropertyName.ToLower() == "no");
-            //if (noProperty != null)
-            //{
-            //    drawingListItem.No = Int32.Parse(noProperty.PropertyValue);
-            //}
-
-
-            var noteProperty = dataItems.Find(x => x.PropertyName.ToLower() == "note");
-            if (noteProperty != null)
-            {
-                drawingListItem.Note = noteProperty.PropertyValue;
-            }
-
-            var signProperty = dataItems.Find(x => x.PropertyName.ToLower() == "sign");
-            if (signProperty != null)
-            {
-                drawingListItem.Sign = signProperty.PropertyValue;
-            }
-
-            var statusProperty = dataItems.Find(x => x.PropertyName.ToString().ToLower() == "status");
-
-            if (statusProperty != null)
-            {
-                drawingListItem.Status = statusProperty.PropertyValue;
-            }
-
-
-            await _repositoryContext.DrawingLists.AddAsync(drawingListItem);
-            await _repositoryContext.SaveChangesAsync();
 
 
         }
+
+       
 
 
 

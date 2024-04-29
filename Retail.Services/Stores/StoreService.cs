@@ -3213,10 +3213,8 @@ public class StoreService : IStoreService
         {
             var customerStores = new CustomerStoresDto();
 
-            var allStores = _repositoryContext.StoreDatas
-           .AsNoTracking()
-           .Include(p => p.Store)
-           .Where(sd => sd.Store.CustomerId == CustomerId && sd.CadFileTypeId == codeMaster.Id && sd.StatusId == Guid.Parse(_configuration["StatusValues:StoreDataDefault"]));
+            var allStores = _repositoryContext.Stores
+           .Where(sd => sd.CustomerId == CustomerId);
 
 
 
@@ -3356,13 +3354,13 @@ public class StoreService : IStoreService
             foreach (var item in allStores)
             {              
 
-                if(!storeItems.Exists(x => x.StoreId == item.StoreId))
+                if(!storeItems.Exists(x => x.StoreId == item.Id))
                 {
                     var storeInfo = new StoreDataDto
                     {
-                        StoreId = item.StoreId,
-                        StoreName = item.Store.Name,
-                         StoreNumber = item.Store.StoreNumber
+                        StoreId = item.Id,
+                        StoreName = item.Name,
+                         StoreNumber = item.StoreNumber
                 };
 
                     storeItems.Add(storeInfo) ;

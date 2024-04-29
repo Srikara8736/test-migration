@@ -45,8 +45,8 @@ public class DrawingList : BaseEntity
     /// <summary>
     /// Gets or sets the No
     /// </summary>
-     [StringLength(10)]
-    public int? No { get; set; }
+     [StringLength(255)]
+    public string? No { get; set; }
 
     /// <summary>
     /// Gets or sets the Sign

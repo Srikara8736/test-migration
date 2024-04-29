@@ -883,6 +883,13 @@ public class CadService : ICadService
                     drawingListItem.Status = statusProperty.PropertyValue;
                 }
 
+                var archProperty = dataItems.Find(x => x.PropertyName.ToString().ToLower() == "architect");
+
+                if (archProperty != null)
+                {
+                    drawingListItem.Architect = archProperty.PropertyValue;
+                }
+
 
                 await _repositoryContext.DrawingLists.AddAsync(drawingListItem);
                 await _repositoryContext.SaveChangesAsync();

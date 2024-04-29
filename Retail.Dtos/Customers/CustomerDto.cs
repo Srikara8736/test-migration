@@ -92,6 +92,13 @@ public class AddressDto
     [StringLength(256)]
     public string Country { get; set; }
 
+
+    /// <summary>
+    /// Gets or sets the Region
+    /// </summary>
+    [StringLength(256)]
+    public string? Region { get; set; }
+
     /// <summary>
     /// Gets or sets the ZipCode
     /// </summary>

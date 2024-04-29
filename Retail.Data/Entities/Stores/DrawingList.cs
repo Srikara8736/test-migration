@@ -67,6 +67,12 @@ public class DrawingList : BaseEntity
     [StringLength(256)]
     public string? Status { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Architect
+    /// </summary>    
+    [StringLength(256)]
+    public string? Architect { get; set; }
+
 
 
     /// <summary>

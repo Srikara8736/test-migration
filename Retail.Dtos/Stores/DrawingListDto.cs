@@ -46,6 +46,11 @@ public class DrawingListDto
     public string? Note { get; set; }
 
     /// <summary>
+    /// Gets or sets the Note
+    /// </summary> 
+    public string? Architect { get; set; }
+
+    /// <summary>
     /// Gets or sets Status
     /// </summary>
     public string Status { get; set; }

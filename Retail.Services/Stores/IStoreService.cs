@@ -279,4 +279,21 @@ public interface IStoreService
 
 
     Task<ResultDto<CustomerStoresDto>> StoreDataByCustomerId(Guid CustomerId, string? type = null, CancellationToken ct = default);
+
+
+    /// <summary>
+    /// Get all Countries
+    /// </summary>
+    /// <param name="keyword">keyword</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Country List</returns>
+    Task<ResultDto<List<string>>> GetAllCountries(string? keyword = null, CancellationToken ct = default);
+
+
+    /// <summary>
+    /// Get all Region by country
+    /// </summary>
+    /// <param name="keyword">keyword</param>
+    /// <returns>Region List</returns>
+    Task<ResultDto<List<string>>> GetAllRegionByCountry(string country, string? keyword = null, CancellationToken ct = default);
 }

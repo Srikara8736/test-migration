@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.DTOs.Stores;
 using Retail.Services.Stores;
 using RetailApp.Helpers;
@@ -282,6 +283,39 @@ public class StoreController : BaseController
         return this.Result(await _storeService.StoreDataByCustomerId(CustomerId, type, ct));
     }
 
+    #endregion
+
+
+    #region Country & Region
+
+    /// <summary>
+    /// Get all Countries
+    /// </summary>
+    /// <param name="keyword">keyword</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Country List</returns>
+    [HttpGet]
+    [Route("GetAllCountries")]
+    public async Task<IActionResult> GetAllCountries(string? keyword = null, CancellationToken ct = default)
+    {
+        return this.Result(await _storeService.GetAllCountries(keyword, ct));
+    }
+
+
+
+    /// <summary>
+    /// Get all Region
+    /// </summary>
+    /// <param name="country">country</param>
+    /// <param name="keyword">keyword</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Country List</returns>
+    [HttpGet]
+    [Route("GetAllRegionByCountry")]
+    public async Task<IActionResult> GetAllRegionByCountry([BindRequired] string country, string? keyword = null, CancellationToken ct = default)
+    {
+        return this.Result(await _storeService.GetAllRegionByCountry(country, keyword, ct));
+    }
     #endregion
 
 }

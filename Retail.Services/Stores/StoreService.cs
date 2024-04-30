@@ -15,6 +15,7 @@ using Retail.DTOs.XML;
 using Retail.Services.Common;
 using Retail.Services.Master;
 using System.Net;
+using System.Threading;
 using System.Xml.Linq;
 using Customer = Retail.Data.Entities.Customers.Customer;
 using Store = Retail.Data.Entities.Stores.Store;
@@ -393,7 +394,8 @@ public class StoreService : IStoreService
     public async Task<List<StoreResponseDto>> GetStoresByCustomerId(Guid customerId, CancellationToken ct = default)
     {
 
-       var stores = await _repositoryContext.Stores.Where(x => x.CustomerId == customerId).OrderByDescending(t => t.LastActivityDate).ToListAsync();
+       var stores = await _repositoryContext.Stores
+          .Where(x => x.CustomerId == customerId).OrderByDescending(t => t.LastActivityDate).ToListAsync();
 
     
         if (stores == null)
@@ -3234,11 +3236,13 @@ public class StoreService : IStoreService
             var customerStores = new CustomerStoresDto();
 
             var allStores = _repositoryContext.Stores
+            .Include(x => x.Address)
            .Where(sd => sd.CustomerId == CustomerId);
 
 
 
             var query = (from st in _repositoryContext.Stores
+                         join ad in _repositoryContext.Addresses on st.AddressId equals ad.Id
                         join sd in _repositoryContext.StoreDatas on st.Id equals sd.StoreId
                         join stsp in _repositoryContext.StoreSpaces on sd.Id equals stsp.StoreDataId
                         join sp in _repositoryContext.Spaces on stsp.SpaceId equals sp.Id
@@ -3261,7 +3265,9 @@ public class StoreService : IStoreService
                             StoreId = st.Id,
                             StoreName = st.Name,
                             StoreDataId = sd.Id,
-                            StoreNumber = st.StoreNumber
+                            StoreNumber = st.StoreNumber,
+                            Country = ad.Country,
+                            Region = ad.Region
 
                         }).ToList();
 
@@ -3343,6 +3349,8 @@ public class StoreService : IStoreService
                                 storeInfo.StoreName = result.StoreName;
                                 storeInfo.StoreId = result.StoreId;
                                 storeInfo.StoreNumber = result.StoreNumber;
+                                storeInfo.Country = result.Country;
+                                storeInfo.Region = result.Region;
 
                                 var spaceItem = new CoulmnDataDto
                                     {
@@ -3380,7 +3388,10 @@ public class StoreService : IStoreService
                     {
                         StoreId = item.Id,
                         StoreName = item.Name,
-                         StoreNumber = item.StoreNumber
+                         StoreNumber = item.StoreNumber,
+                         Country = item.Address.Country,
+                         Region = item.Address.Region
+
                 };
 
                     storeItems.Add(storeInfo) ;
@@ -3412,6 +3423,96 @@ public class StoreService : IStoreService
             return storeResult;
         }
 
+
+    }
+
+
+    #endregion
+
+    #region country
+
+    /// <summary>
+    /// Get all Countries
+    /// </summary>
+    /// <param name="keyword">keyword</param>
+    /// <param name="ct">cancellation token</param>
+    /// <returns>Country List</returns>
+    public async Task<ResultDto<List<string>>> GetAllCountries(string? keyword = null, CancellationToken ct = default)
+    {
+        var query = _repositoryContext.Addresses
+            .AsNoTracking()
+            .Select(x => x.Country).Distinct();
+
+        if (keyword != null)
+        {
+            query = query.Where(x => x.Contains(keyword));
+        }
+
+       var countries = await query.ToListAsync();
+
+        if (countries.Count <= 0)
+        {
+            var errorResponse = new ResultDto<List<string>>
+            {
+                IsSuccess = false,
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NoContent
+            };
+
+            return errorResponse;
+        }
+
+        var response = new ResultDto<List<string>>
+        {
+            IsSuccess = true,
+            Data = countries,
+        };
+        return response;
+
+    }
+
+
+
+    /// <summary>
+    /// Get all Region by country
+    /// </summary>
+    /// <param name="country">country</param>
+    /// <param name="keyword">keyword</param>
+    /// <param name="ct">ct</param>
+    /// <returns>Region List</returns>
+    public async Task<ResultDto<List<string>>> GetAllRegionByCountry(string country, string? keyword = null, CancellationToken ct = default)
+    {
+        var query = _repositoryContext.Addresses
+        .AsNoTracking()
+        .Where(x => x.Country == country && x.Region != null)
+        .Select(x => x.Region).Distinct();
+
+
+        if (keyword != null)
+        {
+            query = query.Where(x => x.Contains(keyword));
+        }
+
+        var regions = await query.ToListAsync();
+
+        if (regions.Count <= 0)
+        {
+            var errorResponse = new ResultDto<List<string>>
+            {
+                IsSuccess = false,
+                ErrorMessage = StringResources.NoResultsFound,
+                StatusCode = HttpStatusCode.NoContent
+            };
+
+            return errorResponse;
+        }
+
+        var response = new ResultDto<List<string>>
+        {
+            IsSuccess = true,
+            Data = regions,
+        };
+        return response;
 
     }
 

@@ -68,6 +68,8 @@ public class StoreDataDto
 {
     public Guid StoreId { get; set; }
     public string StoreNumber { get; set; }
+    public string Country { get; set; }  
+    public string? Region { get; set; }  
     public string StoreName { get; set; }  
 
     public List<CoulmnDataDto> CoulmnData { get; set; } = new();

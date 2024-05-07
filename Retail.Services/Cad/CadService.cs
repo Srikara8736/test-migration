@@ -201,17 +201,13 @@ public class CadService : ICadService
 
         var versionName = mandProp.Header.Name;
 
-       
-        var isExitstoreData = _repositoryContext.StoreDatas.Any(x => x.StoreId == storeId && x.CadFileTypeId == typeId);
-
-     
 
         var storeDataItem = new Retail.Data.Entities.Stores.StoreData
         {
             StoreId = storeId,
             VersionNumber = versionName,
             CreatedOn = DateTime.UtcNow,
-            StatusId = !isExitstoreData ? new Guid("6E9EC88C-3537-11EE-BE56-0242AC120002") : new Guid("6E9EC422-3537-11EE-BE56-0242AC120002"),
+            StatusId =  new Guid("6E9EC422-3537-11EE-BE56-0242AC120002"),
             CadFileTypeId = typeId,
             VersionName = versionName
 
@@ -772,9 +768,13 @@ public class CadService : ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="messageData">Store Data Identifier</param>
     /// <returns>Drawing Type Information</returns>
-    public async Task<(bool status, Guid? storeDataId)> LoadDrawingData(Guid storeId, MessageBlock messageData,string type)
+    public async Task<(bool status, Guid? storeDataId)> LoadDrawingData(Guid storeId, CADData cADData,string type)
     {
-        if(messageData == null)
+        var messageData = cADData.MessageBlock;
+
+        var fileHeader = cADData.FileHeader;
+
+        if (messageData == null)
             return(false,null);
 
         var messageDataList = messageData.Messages.MessageData;
@@ -789,18 +789,10 @@ public class CadService : ICadService
 
         var metaData = new MetaData();
 
-        var storeDataItem = await _repositoryContext.StoreDatas.Where(x => x.StoreId == storeId && x.CadFileTypeId == cadType.Id).ToListAsync();
-        var versionNo = 1;
-
-        if (storeDataItem.Count > 0)
-            versionNo = storeDataItem.Count + 1;
-
-
-      
         var mandatoryProperties = new MandatoryProperties();
         var header = new Header
         {
-            Name = "Version " + versionNo
+            Name = fileHeader.FileHeaderText
         };
         mandatoryProperties.Header = header;
         metaData.MandatoryProperties = mandatoryProperties;

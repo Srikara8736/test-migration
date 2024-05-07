@@ -35,7 +35,7 @@ public interface ICadService
     /// <param name="storeId">Store Identifier</param>
     /// <param name="messageData">Store Data Identifier</param>
     /// <returns>Drawing Type Information</returns>
-    Task<(bool status, Guid? storeDataId)> LoadDrawingData(Guid storeId, MessageBlock messageData, string type);
+    Task<(bool status, Guid? storeDataId)> LoadDrawingData(Guid storeId, CADData cADData, string type);
 
 
     /// <summary>

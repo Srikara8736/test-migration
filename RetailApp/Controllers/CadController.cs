@@ -441,7 +441,7 @@ namespace RetailApp.Controllers
                             }
                             if (cadData != null)
                             {
-                                var loadXml = await _cadService.LoadDrawingData(cadUpload.StoreId, cadData.MessageBlock,"Drawing");
+                                var loadXml = await _cadService.LoadDrawingData(cadUpload.StoreId, cadData,"Drawing");
 
                                 if(!loadXml.status)
                                 {

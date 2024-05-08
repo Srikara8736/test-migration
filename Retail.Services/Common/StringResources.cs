@@ -32,7 +32,9 @@ public static class StringResources
 
     public const string TokenExpired = "Token Expired";
 
-    public const string NotSupported = "The file format is not supported.";
+    public const string WrongPassword = "The current password you entered is incorrect.";
+
+    public const string PasswordWrong = "The file format is not supported.";
 
     public const string SomeRecordExists = "Might Some Record Already Exists";
 

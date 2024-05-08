@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Retail.DTOs.UserAccounts;
 using Retail.Services.UserAccounts;
 using RetailApp.Helpers;
@@ -95,10 +96,26 @@ public class UserController : BaseController
     /// <returns>Return Success Statement</returns>
     [HttpPost]
     [Route("UpdatePassword/{id}")]
-    public async Task<IActionResult> UpdateApprovedStatus(string id, [FromBody] PasswordDto Password, CancellationToken ct = default)
+    public async Task<IActionResult> UpdateApprovedStatus(Guid id, [BindRequired] string Password, CancellationToken ct = default)
     {
 
-        return this.Result(await _userService.UpdateUserPassword(new Guid(id), Password, ct));
+        return this.Result(await _userService.UpdateUserPassword(id, Password, ct));
+
+    }
+
+    /// <summary>
+    /// ChangePassword a User Password
+    /// </summary>
+    /// <param name="id">id</param>
+    /// <param name="Password">User Password Details</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Return Success Statement</returns>
+    [HttpPost]
+    [Route("ChangePassword/{id}")]
+    public async Task<IActionResult> ChangePassword(Guid id, [FromBody] PasswordDto Password, CancellationToken ct = default)
+    {
+
+        return this.Result(await _userService.ChangeUserPassword(id, Password, ct));
 
     }
 

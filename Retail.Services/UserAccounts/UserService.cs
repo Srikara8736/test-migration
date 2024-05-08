@@ -487,12 +487,12 @@ public class UserService : IUserService
     /// <param name="id">Id</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Response User Password updated status</returns>
-    public virtual async Task<ResultDto<UserResponseDto>> UpdateUserPassword(Guid id, PasswordDto password, CancellationToken ct = default)
+    public virtual async Task<ResultDto<bool>> UpdateUserPassword(Guid id, string password, CancellationToken ct = default)
     {
 
         if (password == null)
         {
-            var response = new ResultDto<UserResponseDto>
+            var response = new ResultDto<bool>
             {
                 ErrorMessage = StringResources.InvalidArgument,
                 StatusCode = HttpStatusCode.NotFound
@@ -503,7 +503,7 @@ public class UserService : IUserService
         var client = await _repositoryContext.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (client == null)
         {
-            var response = new ResultDto<UserResponseDto>
+            var response = new ResultDto<bool>
             {
                 ErrorMessage = StringResources.RecordNotFound,
                 StatusCode = HttpStatusCode.NotFound
@@ -512,11 +512,12 @@ public class UserService : IUserService
 
         }
 
-        client.PasswordHash = HashPassword(password.Password);
+        client.PasswordHash = HashPassword(password);
         await _repositoryContext.SaveChangesAsync(ct);
 
-        var successResponse = new ResultDto<UserResponseDto>
+        var successResponse = new ResultDto<bool>
         {
+            Data= true,
             IsSuccess = true,
             StatusCode = HttpStatusCode.OK
         };
@@ -525,6 +526,70 @@ public class UserService : IUserService
 
 
     }
+
+
+
+
+    /// <summary>
+    /// ChangeUserPassword
+    /// </summary>
+    /// <param name="id">Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Response User Password updated status</returns>
+    public virtual async Task<ResultDto<bool>> ChangeUserPassword(Guid id, PasswordDto password, CancellationToken ct = default)
+    {
+
+        if (password == null)
+        {
+            var response = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.InvalidArgument,
+                StatusCode = HttpStatusCode.NotFound
+                
+            };
+            return response;
+        }
+
+        var client = await _repositoryContext.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (client == null)
+        {
+            var response = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.RecordNotFound,
+                IsSuccess = false
+            };
+            return response;
+
+        }
+
+        var oldPassword = HashPassword(password.CurrentPassword);
+      
+        if(client.PasswordHash != oldPassword)
+        {
+            var response = new ResultDto<bool>
+            {
+                ErrorMessage = StringResources.WrongPassword,
+                IsSuccess= false
+            };
+            return response;
+        }
+
+
+        client.PasswordHash = HashPassword(password.NewPassword);
+        await _repositoryContext.SaveChangesAsync(ct);
+
+        var successResponse = new ResultDto<bool>
+        {
+            Data= true,
+            IsSuccess = true,
+            StatusCode = HttpStatusCode.OK
+        };
+        return successResponse;
+
+
+
+    }
+
 
 
     /// <summary>

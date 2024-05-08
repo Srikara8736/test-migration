@@ -30,6 +30,7 @@
     <Folder Include="wwwroot\ClientAssets\CustomerImage\" />
     <Folder Include="wwwroot\StoreAssets\StoreBackground\" />
     <Folder Include="wwwroot\StoreAssets\StoreFiles\" />
+    <Folder Include="wwwroot\StoreAssets\StoreImages\65e3db1e-a5f2-4865-a4d9-7d8b5339ef9a\" />
   </ItemGroup>
 
 </Project>

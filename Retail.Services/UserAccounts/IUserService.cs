@@ -60,7 +60,16 @@ public interface IUserService
     /// <param name="id">Id</param>
     /// <param name="ct">Cancellation Token</param>
     /// <returns>Response User Password updated status</returns>
-    Task<ResultDto<UserResponseDto>> UpdateUserPassword(Guid id, PasswordDto password, CancellationToken ct = default);
+    Task<ResultDto<bool>> UpdateUserPassword(Guid id, string password, CancellationToken ct = default);
+
+
+    /// <summary>
+    /// ChangeUserPassword
+    /// </summary>
+    /// <param name="id">Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns>Response User Password updated status</returns>
+    Task<ResultDto<bool>> ChangeUserPassword(Guid id, PasswordDto password, CancellationToken ct = default);
 
     /// <summary>
     /// Delete Users

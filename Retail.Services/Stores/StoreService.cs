@@ -598,7 +598,7 @@ public class StoreService : IStoreService
             var storeDocuments = await _repositoryContext.StoreDocuments.Where(x => x.StoreDataId == item.Id).ToListAsync();            
             foreach(var sDoc in storeDocuments)
             {
-                var docResult = await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId);
+                var docResult = await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId && x.StatusId == Guid.Parse(_configuration["StatusValues:PDFDefault"]));
                                
                 if(docResult != null)
                 {
@@ -2209,7 +2209,7 @@ public class StoreService : IStoreService
         var fileLocation = string.Empty;
         foreach (var sDoc in storeDocuments)
         {
-            var docResult = await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId);
+            var docResult = await _repositoryContext.Documents.FirstOrDefaultAsync(x => x.Id == sDoc.DocumentId  && x.StatusId == Guid.Parse(_configuration["StatusValues:PDFDefault"]));
 
             if(docResult != null)
                 fileLocation = Path.GetDirectoryName(docResult.Path);

@@ -293,12 +293,13 @@ public class StoreController : BaseController
     /// </summary>
     /// <param name="keyword">keyword</param>
     /// <param name="ct">cancellation token</param>
+    /// <param name="customerId">customerId</param>
     /// <returns>Country List</returns>
     [HttpGet]
     [Route("GetAllCountries")]
-    public async Task<IActionResult> GetAllCountries(string? keyword = null, CancellationToken ct = default)
+    public async Task<IActionResult> GetAllCountries(string? keyword = null, Guid? customerId = null, CancellationToken ct = default)
     {
-        return this.Result(await _storeService.GetAllCountries(keyword, ct));
+        return this.Result(await _storeService.GetAllCountries(keyword, customerId, ct));
     }
 
 
@@ -308,13 +309,14 @@ public class StoreController : BaseController
     /// </summary>
     /// <param name="country">country</param>
     /// <param name="keyword">keyword</param>
+    /// <param name="customerId">customerId</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Country List</returns>
     [HttpGet]
     [Route("GetAllRegionByCountry")]
-    public async Task<IActionResult> GetAllRegionByCountry([BindRequired] string country, string? keyword = null, CancellationToken ct = default)
+    public async Task<IActionResult> GetAllRegionByCountry([BindRequired] string country, string? keyword = null, Guid? customerId = null, CancellationToken ct = default)
     {
-        return this.Result(await _storeService.GetAllRegionByCountry(country, keyword, ct));
+        return this.Result(await _storeService.GetAllRegionByCountry(country, keyword, customerId, ct));
     }
     #endregion
 

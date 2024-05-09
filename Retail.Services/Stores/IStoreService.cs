@@ -287,7 +287,7 @@ public interface IStoreService
     /// <param name="keyword">keyword</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Country List</returns>
-    Task<ResultDto<List<string>>> GetAllCountries(string? keyword = null, CancellationToken ct = default);
+    Task<ResultDto<List<string>>> GetAllCountries(string? keyword = null, Guid? customerId = null, CancellationToken ct = default);
 
 
     /// <summary>
@@ -295,5 +295,5 @@ public interface IStoreService
     /// </summary>
     /// <param name="keyword">keyword</param>
     /// <returns>Region List</returns>
-    Task<ResultDto<List<string>>> GetAllRegionByCountry(string country, string? keyword = null, CancellationToken ct = default);
+    Task<ResultDto<List<string>>> GetAllRegionByCountry(string country, string? keyword = null, Guid? customerId =null, CancellationToken ct = default);
 }

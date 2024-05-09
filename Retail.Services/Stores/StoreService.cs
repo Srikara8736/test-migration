@@ -14,6 +14,7 @@ using Retail.DTOs.Stores;
 using Retail.DTOs.XML;
 using Retail.Services.Common;
 using Retail.Services.Master;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Xml.Linq;
@@ -3449,18 +3450,23 @@ public class StoreService : IStoreService
     /// <param name="keyword">keyword</param>
     /// <param name="ct">cancellation token</param>
     /// <returns>Country List</returns>
-    public async Task<ResultDto<List<string>>> GetAllCountries(string? keyword = null, CancellationToken ct = default)
+    public async Task<ResultDto<List<string>>> GetAllCountries(string? keyword = null, Guid? customerId = null, CancellationToken ct = default)
     {
-        var query = _repositoryContext.Addresses
-            .AsNoTracking()
-            .Select(x => x.Country).Distinct();
+
+        var query = _repositoryContext.Stores
+           .Include(x => x.Address)
+           .Where(p => customerId == null || p.CustomerId == customerId)
+          .Select(x => x.Address.Country).Distinct();
+
 
         if (keyword != null)
         {
             query = query.Where(x => x.Contains(keyword));
         }
 
-       var countries = await query.ToListAsync();
+       
+
+        List<string> countries = await query.ToListAsync();
 
         if (countries.Count <= 0)
         {
@@ -3468,7 +3474,7 @@ public class StoreService : IStoreService
             {
                 IsSuccess = false,
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NoContent
+                StatusCode = HttpStatusCode.NotFound
             };
 
             return errorResponse;
@@ -3492,12 +3498,18 @@ public class StoreService : IStoreService
     /// <param name="keyword">keyword</param>
     /// <param name="ct">ct</param>
     /// <returns>Region List</returns>
-    public async Task<ResultDto<List<string>>> GetAllRegionByCountry(string country, string? keyword = null, CancellationToken ct = default)
+    public async Task<ResultDto<List<string>>> GetAllRegionByCountry(string country, string? keyword = null, Guid? customerId = null, CancellationToken ct = default)
     {
-        var query = _repositoryContext.Addresses
-        .AsNoTracking()
-        .Where(x => x.Country == country && x.Region != null)
-        .Select(x => x.Region).Distinct();
+
+
+        var query = _repositoryContext.Stores
+           .Include(x => x.Address)
+            .Where(sd => sd.Address.Country == country && sd.Address.Region != null)
+           .Where(p => customerId == null || p.CustomerId == customerId)
+          .Select(x => x.Address.Region).Distinct();
+
+
+      
 
 
         if (keyword != null)
@@ -3505,7 +3517,11 @@ public class StoreService : IStoreService
             query = query.Where(x => x.Contains(keyword));
         }
 
-        var regions = await query.ToListAsync();
+
+        
+      
+
+        List<string> regions = await query.ToListAsync();
 
         if (regions.Count <= 0)
         {
@@ -3513,7 +3529,7 @@ public class StoreService : IStoreService
             {
                 IsSuccess = false,
                 ErrorMessage = StringResources.NoResultsFound,
-                StatusCode = HttpStatusCode.NoContent
+                StatusCode = HttpStatusCode.NotFound
             };
 
             return errorResponse;

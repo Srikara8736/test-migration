@@ -1489,6 +1489,7 @@ public class StoreService : IStoreService
 
             var areaTypeId = areaTypeGrid.Where( y => y.AreaType == "SalesArea").Select(x => x.AreaTypeId).FirstOrDefault();
             var categoriesItems = areaTypeGrid.Where( y => y.AreaType == "SalesArea").Select(x =>  x.Categories);
+            var categoriesSubItems = areaTypeGrid.Select(x =>  x.Categories);
            
             foreach (var categories in categoriesItems)
             {
@@ -1566,6 +1567,25 @@ public class StoreService : IStoreService
                 {
                     var totalspaceArea = category.Spaces.Sum(x => x.Area);
 
+
+                    var chartItem = new ChartItemDto
+                    {
+                        CategoryId = category.CategoryId,
+                        ParentCategoryId = mainItem.AreaTypeId,
+                        Key = category.Category,
+                        Value = category.TotalArea,
+                        TotalPercentage = Math.Round((category.TotalArea / totalspaceArea) * 100, 0),
+                        Unit = "m2"
+                    };
+
+                    chartData.chartItems.Add(chartItem);
+
+                    var spaceData = new ChartGraphDto();
+                    spaceData.ChartTitle = category.Category;
+                    spaceData.ChartCategory = fileterValue;
+                    spaceData.ChartType = "Pie";
+
+
                     foreach (var spaceItem in category.Spaces)
                     {
                         var spaceChartItem = new ChartItemDto
@@ -1577,7 +1597,7 @@ public class StoreService : IStoreService
                             TotalPercentage = Math.Round((spaceItem.Area / totalspaceArea) * 100, 0),
                             Unit = spaceItem.Unit
                         };
-                        chartData.chartItems.Add(spaceChartItem);
+                        spaceData.chartItems.Add(spaceChartItem);
                     }
                     
                 }
@@ -1588,7 +1608,7 @@ public class StoreService : IStoreService
             }
 
 
-            foreach (var categories in categoriesItems)
+            foreach (var categories in categoriesSubItems)
             {
                 var totalAreacategoriesItem = categories.Sum(x => x.TotalArea);
 
